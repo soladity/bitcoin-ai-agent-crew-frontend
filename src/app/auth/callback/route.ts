@@ -4,11 +4,7 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
 // Function to get the base URL based on the environment
 const getBaseUrl = () => {
-  if (process.env.NODE_ENV === "production") {
-    return process.env.NEXT_PUBLIC_SITE_URL!; // Ensure this is set in your production environment
-  }
-  // for local dev
-  return "http://localhost:3000";
+  return process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 };
 
 export async function GET(request: Request) {
