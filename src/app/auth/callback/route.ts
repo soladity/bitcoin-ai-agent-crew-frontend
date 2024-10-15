@@ -8,8 +8,7 @@ const getBaseUrl = () => {
     return process.env.NEXT_PUBLIC_SITE_URL!; // Ensure this is set in your production environment
   }
   // for local dev
-  // return "http://localhost:3000";
-  return "https://aibtcdev-backend.replit.app";
+  return "http://localhost:3000";
 };
 
 export async function GET(request: Request) {
