@@ -7,7 +7,9 @@ const getBaseUrl = () => {
   if (process.env.NODE_ENV === "production") {
     return process.env.NEXT_PUBLIC_SITE_URL!; // Ensure this is set in your production environment
   }
-  return "http://localhost:3000"; // Default for local development
+  // for local dev
+  // return "http://localhost:3000";
+  return "https://aibtcdev-backend.replit.app";
 };
 
 export async function GET(request: Request) {
