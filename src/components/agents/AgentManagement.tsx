@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 
-export function AgentManagement({
+export default function AgentManagement({
   crewId,
   onAgentAdded,
 }: AgentManagementProps) {

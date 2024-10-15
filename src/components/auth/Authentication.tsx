@@ -50,8 +50,7 @@ function ConnectWallet() {
   if (mounted && userSession.isUserSignedIn()) {
     const mainnetAddress =
       userSession.loadUserData().profile.stxAddress.mainnet;
-    const testnetAddress =
-      userSession.loadUserData().profile.stxAddress.testnet;
+    //const testnetAddress = userSession.loadUserData().profile.stxAddress.testnet;
     return (
       <div className="Container">
         <Card className="w-full max-w-md mx-auto text-center">

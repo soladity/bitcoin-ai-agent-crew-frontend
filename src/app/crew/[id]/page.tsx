@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
-import { AgentManagement } from "@/components/agents/AgentManagement";
+import AgentManagement from "@/components/agents/AgentManagement";
 import TaskManagement from "@/components/tasks/TaskManagement";
 import ExecutionPanel from "@/components/dashboard/Execution";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -31,8 +31,8 @@ export default function CrewDetails() {
   const params = useParams();
   const id = params.id as string;
   const [crew, setCrew] = useState<Crew | null>(null);
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [, setAgents] = useState<Agent[]>([]);
+  const [, setTasks] = useState<Task[]>([]);
 
   useEffect(() => {
     if (id) {

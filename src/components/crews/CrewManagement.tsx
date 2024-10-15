@@ -61,6 +61,7 @@ export function CrewManagement({
         description: "The crew has been successfully deleted.",
       });
     } catch (error) {
+      console.log(error);
       toast({
         title: "Error",
         description: "Failed to delete the crew. Please try again.",

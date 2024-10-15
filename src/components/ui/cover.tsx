@@ -217,6 +217,8 @@ export const CircleIcon = ({
   className?: string;
   delay?: number;
 }) => {
+  // TODO: what is delay for?
+  console.log(delay);
   return (
     <div
       className={cn(
