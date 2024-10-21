@@ -2,7 +2,8 @@
 
 import React from "react";
 import { SparklesCore } from "../ui/sparkles";
-import { Authentication } from "../auth/Authentication";
+// import Authentication from "../auth/Authentication"; #FOR GITHUB AUTH
+import StacksAuth from "../auth/StacksAuth"; //FOR STACKS AUTH
 
 export default function Home() {
   return (
@@ -36,7 +37,8 @@ export default function Home() {
 
             {/* Authentication component */}
             <div className="pt-4">
-              <Authentication />
+              <StacksAuth />
+              {/* <Authentication/> */}
             </div>
           </div>
         </div>
