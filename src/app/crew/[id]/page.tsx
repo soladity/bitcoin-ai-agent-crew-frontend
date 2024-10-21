@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
 import AgentManagement from "@/components/agents/AgentManagement";
@@ -34,56 +34,50 @@ export default function CrewDetails() {
   const [, setAgents] = useState<Agent[]>([]);
   const [, setTasks] = useState<Task[]>([]);
 
+  const fetchCrew = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("crews")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error) {
+      console.error("Error fetching crew:", error);
+      return;
+    }
+    setCrew(data);
+  }, [id]);
+
+  const fetchAgents = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("agents")
+      .select("*")
+      .eq("crew_id", id);
+    if (error) {
+      console.error("Error fetching agents:", error);
+      return;
+    }
+    setAgents(data);
+  }, [id]);
+
+  const fetchTasks = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("tasks")
+      .select("*")
+      .eq("crew_id", id);
+    if (error) {
+      console.error("Error fetching tasks:", error);
+      return;
+    }
+    setTasks(data);
+  }, [id]);
+
   useEffect(() => {
     if (id) {
       fetchCrew();
       fetchAgents();
       fetchTasks();
     }
-  }, [id]);
-
-  const fetchCrew = async () => {
-    const { data, error } = await supabase
-      .from("crews")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error) {
-      console.error("Error fetching crew:", error);
-      return;
-    }
-
-    setCrew(data);
-  };
-
-  const fetchAgents = async () => {
-    const { data, error } = await supabase
-      .from("agents")
-      .select("*")
-      .eq("crew_id", id);
-
-    if (error) {
-      console.error("Error fetching agents:", error);
-      return;
-    }
-
-    setAgents(data);
-  };
-
-  const fetchTasks = async () => {
-    const { data, error } = await supabase
-      .from("tasks")
-      .select("*")
-      .eq("crew_id", id);
-
-    if (error) {
-      console.error("Error fetching tasks:", error);
-      return;
-    }
-
-    setTasks(data);
-  };
+  }, [id, fetchCrew, fetchAgents, fetchTasks]); // Add the memoized functions as dependencies
 
   if (!crew) {
     return <div>Loading...</div>;
