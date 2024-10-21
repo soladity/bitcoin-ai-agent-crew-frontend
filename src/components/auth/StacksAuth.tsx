@@ -61,7 +61,7 @@ export default function StacksAuth() {
       return;
     }
 
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email: `${stxAddress}@stacks.id`,
       password: stxAddress,
       options: {
@@ -98,7 +98,7 @@ export default function StacksAuth() {
       return;
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email: `${stxAddress}@stacks.id`,
       password: stxAddress,
     });
