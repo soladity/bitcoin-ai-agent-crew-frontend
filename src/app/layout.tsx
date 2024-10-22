@@ -4,6 +4,11 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 
+export const metadata: Metadata = {
+  title: "AIBTC Champions Sprint",
+  description: "Compete with AI on Stacks, the leading Bitcoin L2",
+};
+
 const rocGroteskRegular = localFont({
   src: [
     {
@@ -54,11 +59,6 @@ const rocGroteskExtraWide = localFont({
   variable: "--font-roc-grotesk-extra-wide",
   display: "swap",
 });
-
-export const metadata: Metadata = {
-  title: "AIBTC Champions Sprint",
-  description: "Compete with AI on Stacks, the leading Bitcoin L2",
-};
 
 export default function RootLayout({
   children,
