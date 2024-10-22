@@ -15,6 +15,7 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import SignOut from "../auth/SignOut";
 
 export function Nav() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -96,9 +97,7 @@ export function Nav() {
             </nav>
           </SheetContent>
         </Sheet>
-        <Button variant="outline" size="lg">
-          Sign Out
-        </Button>
+        <SignOut />
       </div>
     </header>
   );
