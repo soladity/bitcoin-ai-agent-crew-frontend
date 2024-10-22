@@ -12,6 +12,4 @@ export async function socialAuth(provider: Provider) {
 }
 
 // Function to logout
-export async function handleLogout() {
-  await supabase.auth.signOut();
-}
+
