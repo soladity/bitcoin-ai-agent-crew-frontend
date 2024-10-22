@@ -4,21 +4,61 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+export const metadata: Metadata = {
+  title: "AIBTC Champions Sprint",
+  description: "Compete with AI on Stacks, the leading Bitcoin L2",
+};
+
+const rocGroteskRegular = localFont({
+  src: [
+    {
+      path: "./fonts/RocGrotesk-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/RocGrotesk-Regular.woff",
+      weight: "400",
+      style: "normal",
+    },
+  ],
+  variable: "--font-roc-grotesk-regular",
+  display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "Crew Generator | AI-BTC",
-  description: "Generate your own crews using crews.",
-};
+const rocGroteskWide = localFont({
+  src: [
+    {
+      path: "./fonts/RocGrotesk-WideMedium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/RocGrotesk-WideMedium.woff",
+      weight: "500",
+      style: "normal",
+    },
+  ],
+  variable: "--font-roc-grotesk-wide",
+  display: "swap",
+});
+
+const rocGroteskExtraWide = localFont({
+  src: [
+    {
+      path: "./fonts/RocGrotesk-ExtraWideMedium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/RocGrotesk-ExtraWideMedium.woff",
+      weight: "500",
+      style: "normal",
+    },
+  ],
+  variable: "--font-roc-grotesk-extra-wide",
+  display: "swap",
+});
 
 export default function RootLayout({
   children,
@@ -28,7 +68,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${rocGroteskRegular.variable} ${rocGroteskWide.variable} ${rocGroteskExtraWide.variable} antialiased`}
       >
         {" "}
         <ThemeProvider
