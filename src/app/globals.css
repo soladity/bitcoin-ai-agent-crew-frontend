@@ -78,7 +78,9 @@ body {
     font-family: var(--font-roc-grotesk-regular);
   }
   h1,
-  h2,
+  h2 {
+    font-family: var(--font-roc-grotesk-extra-wide);
+  }
   h3,
   h4,
   h5,
