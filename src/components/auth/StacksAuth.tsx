@@ -121,54 +121,49 @@ export default function StacksAuth() {
   if (!mounted) return null;
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle className="text-center">AIBTC Crew Generator</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Button
-              onClick={handleAuth}
-              disabled={isLoading}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Connecting...
-                </>
-              ) : (
-                "Connect your wallet to access our platform"
-              )}
-            </Button>
-            {message.content && (
-              <div
-                className={`mt-4 flex items-center space-x-2 ${
-                  message.type === "error"
-                    ? "text-red-600"
-                    : message.type === "success"
-                    ? "text-green-600"
-                    : "text-blue-600"
-                }`}
-                role="alert"
-              >
-                {message.type === "error" ? (
-                  <AlertCircle className="h-5 w-5" aria-hidden="true" />
-                ) : message.type === "success" ? (
-                  <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
-                ) : (
-                  <Loader2
-                    className="h-5 w-5 animate-spin"
-                    aria-hidden="true"
-                  />
-                )}
-                <p>{message.content}</p>
-              </div>
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle className="text-center">AIBTC Crew Generator</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <Button
+            onClick={handleAuth}
+            disabled={isLoading}
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Connecting...
+              </>
+            ) : (
+              "Connect your wallet to access our platform"
             )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </Button>
+          {message.content && (
+            <div
+              className={`mt-4 flex items-center space-x-2 ${
+                message.type === "error"
+                  ? "text-red-600"
+                  : message.type === "success"
+                  ? "text-green-600"
+                  : "text-blue-600"
+              }`}
+              role="alert"
+            >
+              {message.type === "error" ? (
+                <AlertCircle className="h-5 w-5" aria-hidden="true" />
+              ) : message.type === "success" ? (
+                <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
+              ) : (
+                <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+              )}
+              <p>{message.content}</p>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
