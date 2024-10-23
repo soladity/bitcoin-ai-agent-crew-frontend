@@ -25,11 +25,10 @@ export default function StacksAuth() {
   const handleAuthentication = async (stxAddress: string) => {
     try {
       // Try to sign in first
-      const { data: signInData, error: signInError } =
-        await supabase.auth.signInWithPassword({
-          email: `${stxAddress}@stacks.id`,
-          password: stxAddress,
-        });
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: `${stxAddress}@stacks.id`,
+        password: stxAddress,
+      });
 
       if (signInError && signInError.status === 400) {
         // User doesn't exist, proceed with sign up
@@ -38,11 +37,10 @@ export default function StacksAuth() {
           content: "Looks like you haven't signed up. Creating your account...",
         });
 
-        const { data: signUpData, error: signUpError } =
-          await supabase.auth.signUp({
-            email: `${stxAddress}@stacks.id`,
-            password: stxAddress,
-          });
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: `${stxAddress}@stacks.id`,
+          password: stxAddress,
+        });
 
         if (signUpError) throw signUpError;
 
