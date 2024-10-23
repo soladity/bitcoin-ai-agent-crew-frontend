@@ -5,22 +5,14 @@ import { AppConfig, showConnect, UserSession } from "@stacks/connect";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
-import Link from "next/link";
 
 const appConfig = new AppConfig(["store_write", "publish_data"]);
 const userSession = new UserSession({ appConfig });
 
-export default function SignIn() {
+export default function StacksAuth() {
   const [mounted, setMounted] = useState(false);
-  const [stxAddress, setStxAddress] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", content: "" });
   const supabase = createClient();
@@ -30,64 +22,96 @@ export default function SignIn() {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (stxAddress) {
-      signIn();
-    }
-  }, [stxAddress]);
-
-  const authenticateWallet = () => {
-    setIsLoading(true);
-    showConnect({
-      appDetails: {
-        name: "AIBTC Crew Generator",
-        icon: window.location.origin + "/logos/aibtcdev-avatar-1000px.png",
-      },
-      redirectTo: "/",
-      onFinish: () => {
-        const userData = userSession.loadUserData();
-        setStxAddress(userData.profile.stxAddress.mainnet);
-      },
-      userSession,
-    });
-  };
-
-  const signIn = async () => {
-    setIsLoading(true);
-    setMessage({ type: "", content: "" });
-
-    if (!stxAddress) {
-      setMessage({
-        type: "error",
-        content: "Please connect your wallet first",
-      });
-      setIsLoading(false);
-      return;
-    }
-
+  const handleAuthentication = async (stxAddress: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: `${stxAddress}@stacks.id`,
-        password: stxAddress,
-      });
+      // Try to sign in first
+      const { data: signInData, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email: `${stxAddress}@stacks.id`,
+          password: stxAddress,
+        });
 
-      if (error) {
-        throw error;
+      if (signInError && signInError.status === 400) {
+        // User doesn't exist, proceed with sign up
+        setMessage({
+          type: "info",
+          content: "Looks like you haven't signed up. Creating your account...",
+        });
+
+        const { data: signUpData, error: signUpError } =
+          await supabase.auth.signUp({
+            email: `${stxAddress}@stacks.id`,
+            password: stxAddress,
+          });
+
+        if (signUpError) throw signUpError;
+
+        setMessage({
+          type: "success",
+          content: "Account created successfully! Redirecting to dashboard...",
+        });
+
+        return true;
+      } else if (signInError) {
+        throw signInError;
       }
 
       setMessage({
         type: "success",
-        content: "Sign in successful! Redirecting to Dashboard....",
+        content: "Signed in successfully! Redirecting to dashboard...",
       });
 
-      // Delay redirect to show success message
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 2000);
+      return true;
     } catch (error) {
+      console.error("Authentication error:", error);
       setMessage({
         type: "error",
-        content: "Sign in failed. Please make sure you've signed up first.",
+        content: "Authentication failed. Please try again.",
+      });
+      return false;
+    }
+  };
+
+  const handleAuth = async () => {
+    setIsLoading(true);
+    setMessage({ type: "", content: "" });
+
+    try {
+      setMessage({ type: "info", content: "Connecting wallet..." });
+
+      // Connect wallet
+      await new Promise<void>((resolve) => {
+        showConnect({
+          appDetails: {
+            name: "AIBTC Crew Generator",
+            icon: window.location.origin + "/logos/aibtcdev-avatar-1000px.png",
+          },
+          onFinish: () => resolve(),
+          userSession,
+        });
+      });
+
+      const userData = userSession.loadUserData();
+      const stxAddress = userData.profile.stxAddress.mainnet;
+
+      setMessage({
+        type: "info",
+        content: "Wallet connected. Authenticating...",
+      });
+
+      const success = await handleAuthentication(stxAddress);
+
+      if (success) {
+        // Delay redirect to show success message
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 2000);
+      }
+    } catch (error) {
+      console.error("Wallet connection error:", error);
+      setMessage({
+        type: "error",
+        content: "Failed to connect wallet. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -99,47 +123,45 @@ export default function SignIn() {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle className="mx-auto">Sign In</CardTitle>
+        <CardTitle className="text-center">AIBTC Crew Generator</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <Button
-            onClick={authenticateWallet}
+            onClick={handleAuth}
             disabled={isLoading}
-            className="w-full"
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {stxAddress ? "Signing In..." : "Connecting Wallet..."}
+                Connecting...
               </>
             ) : (
-              "Connect Wallet to Sign In"
+              "Connect your wallet to access our platform"
             )}
           </Button>
           {message.content && (
             <div
               className={`mt-4 flex items-center space-x-2 ${
-                message.type === "error" ? "text-red-600" : "text-green-600"
+                message.type === "error"
+                  ? "text-red-600"
+                  : message.type === "success"
+                  ? "text-green-600"
+                  : "text-blue-600"
               }`}
               role="alert"
             >
               {message.type === "error" ? (
                 <AlertCircle className="h-5 w-5" aria-hidden="true" />
-              ) : (
+              ) : message.type === "success" ? (
                 <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
+              ) : (
+                <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
               )}
               <p>{message.content}</p>
             </div>
           )}
-          <div className="text-center">
-            <Link
-              href="/sign-up"
-              className="text-sm text-blue-600 hover:underline"
-            >
-              Don't have an account? Sign up
-            </Link>
-          </div>
         </div>
       </CardContent>
     </Card>
