@@ -31,13 +31,13 @@ export function Nav() {
           className="mr-2"
         />
       </Link>
-      <Link className="flex items-center justify-center" href="/dashboard">
+      <Link className="flex-grow flex items-center justify-center" href="/dashboard">
         <Image
           src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
           height={500}
           width={100}
           alt="aibtc.dev"
-          className="mr-2"
+          className="mr-2 w-auto max-w-[300px]"
         />
       </Link>
       <div className="flex items-center gap-4">
