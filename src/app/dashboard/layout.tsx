@@ -2,6 +2,7 @@ import React from "react";
 import { Metadata } from "next";
 import { Nav } from "@/components/reusables/Navbar";
 import { Footer } from "@/components/reusables/Footer";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "Dashboard | AIBTC Champions Sprint",
@@ -19,6 +20,7 @@ export default function DashboardLayout({
         <Nav />
         {children}
         <Footer />
+        <Toaster />
       </div>
     </>
   );

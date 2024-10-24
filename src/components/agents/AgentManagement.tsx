@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase-client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -19,9 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, Edit2Icon } from "lucide-react";
 import AgentForm from "./AgentForm";
-import { AgentManagementProps, Agent } from "./types";
 import { Badge } from "@/components/ui/badge";
 import {
   Popover,
@@ -29,6 +28,20 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+
+interface Agent {
+  id: number;
+  name: string;
+  role: string;
+  goal: string;
+  backstory: string;
+  agent_tools: string[];
+}
+
+interface AgentManagementProps {
+  crewId: number;
+  onAgentAdded: () => void;
+}
 
 export default function AgentManagement({
   crewId,
@@ -38,13 +51,10 @@ export default function AgentManagement({
   const [loading, setLoading] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchAgents();
-  }, [crewId]);
-
-  const fetchAgents = async () => {
+  const fetchAgents = useCallback(async () => {
     const { data, error } = await supabase
       .from("agents")
       .select("*")
@@ -60,7 +70,11 @@ export default function AgentManagement({
     } else {
       setAgents(data);
     }
-  };
+  }, [crewId, toast]);
+
+  useEffect(() => {
+    fetchAgents();
+  }, [crewId, fetchAgents]);
 
   const handleSubmit = async (agentData: Omit<Agent, "id">) => {
     setLoading(true);
@@ -78,32 +92,56 @@ export default function AgentManagement({
 
       const formattedAgentTools = `{${agentData.agent_tools.join(",")}}`;
 
-      const { error } = await supabase.from("agents").insert({
-        ...agentData,
-        agent_tools: formattedAgentTools,
-        crew_id: crewId,
-        profile_id: user.id,
-      });
+      let error;
+
+      if (editingAgent) {
+        const { error: updateError } = await supabase
+          .from("agents")
+          .update({ ...agentData, agent_tools: formattedAgentTools })
+          .eq("id", editingAgent.id);
+        error = updateError;
+      } else {
+        const { error: insertError } = await supabase.from("agents").insert({
+          ...agentData,
+          agent_tools: formattedAgentTools,
+          crew_id: crewId,
+          profile_id: user.id,
+        });
+        error = insertError;
+      }
 
       if (error) throw error;
 
       setIsDialogOpen(false);
       toast({
-        title: "Agent created",
-        description: "The new agent has been successfully created.",
+        title: editingAgent ? "Agent updated" : "Agent created",
+        description: editingAgent
+          ? "The agent has been successfully updated."
+          : "The new agent has been successfully created.",
       });
       onAgentAdded();
       fetchAgents();
+      setEditingAgent(null);
     } catch (error) {
-      console.error("Error creating agent:", error);
+      console.error(
+        editingAgent ? "Error updating agent:" : "Error creating agent:",
+        error
+      );
       toast({
         title: "Error",
-        description: "Failed to create the agent. Please try again.",
+        description: editingAgent
+          ? "Failed to update the agent. Please try again."
+          : "Failed to create the agent. Please try again.",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditAgent = (agent: Agent) => {
+    setEditingAgent(agent);
+    setIsDialogOpen(true);
   };
 
   const filteredAgents = agents.filter((agent) =>
@@ -114,7 +152,13 @@ export default function AgentManagement({
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold tracking-tight mt-3">Agents</h2>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) setEditingAgent(null);
+          }}
+        >
           <DialogTrigger asChild>
             <Button>
               <PlusIcon className="mr-2 h-4 w-4" />
@@ -123,9 +167,15 @@ export default function AgentManagement({
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create New Agent</DialogTitle>
+              <DialogTitle>
+                {editingAgent ? "Edit Agent" : "Create New Agent"}
+              </DialogTitle>
             </DialogHeader>
-            <AgentForm onSubmit={handleSubmit} loading={loading} />
+            <AgentForm
+              agent={editingAgent || undefined}
+              onSubmit={handleSubmit}
+              loading={loading}
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -144,6 +194,7 @@ export default function AgentManagement({
               <TableHead>Goal</TableHead>
               <TableHead>Backstory</TableHead>
               <TableHead>Assigned Tools</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -194,6 +245,16 @@ export default function AgentManagement({
                       </Badge>
                     ))}
                   </div>
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEditAgent(agent)}
+                  >
+                    <Edit2Icon className="h-4 w-4 mr-2" />
+                    Edit
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}

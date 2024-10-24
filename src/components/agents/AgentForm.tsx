@@ -1,23 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckIcon } from "lucide-react";
-import { AgentFormProps } from "./types";
+
+interface Agent {
+  id?: number;
+  name: string;
+  role: string;
+  goal: string;
+  backstory: string;
+  agent_tools: string[];
+}
+
+interface AgentFormProps {
+  agent?: Agent;
+  onSubmit: (agent: Omit<Agent, "id">) => Promise<void>;
+  loading: boolean;
+}
 
 const AVAILABLE_TOOLS = ["search_web", "fetch_contract_code", "bitcoin_data"];
 
-export default function AgentForm({ onSubmit, loading }: AgentFormProps) {
-  const [agentName, setAgentName] = useState("");
-  const [role, setRole] = useState("");
-  const [goal, setGoal] = useState("");
-  const [backstory, setBackstory] = useState("");
-  const [selectedTools, setSelectedTools] = useState<string[]>([]);
+export default function AgentForm({
+  agent,
+  onSubmit,
+  loading,
+}: AgentFormProps) {
+  const [agentName, setAgentName] = useState(agent?.name || "");
+  const [role, setRole] = useState(agent?.role || "");
+  const [goal, setGoal] = useState(agent?.goal || "");
+  const [backstory, setBackstory] = useState(agent?.backstory || "");
+  const [selectedTools, setSelectedTools] = useState<string[]>(
+    agent?.agent_tools || []
+  );
   const [isToolsDropdownOpen, setIsToolsDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    if (agent) {
+      setAgentName(agent.name);
+      setRole(agent.role);
+      setGoal(agent.goal);
+      setBackstory(agent.backstory);
+      setSelectedTools(agent.agent_tools);
+    }
+  }, [agent]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,11 +58,6 @@ export default function AgentForm({ onSubmit, loading }: AgentFormProps) {
       backstory,
       agent_tools: selectedTools,
     });
-    setAgentName("");
-    setRole("");
-    setGoal("");
-    setBackstory("");
-    setSelectedTools([]);
   };
 
   const handleToolToggle = (tool: string) => {
@@ -135,7 +160,7 @@ export default function AgentForm({ onSubmit, loading }: AgentFormProps) {
         ))}
       </div>
       <Button type="submit" disabled={loading}>
-        {loading ? "Creating..." : "Create Agent"}
+        {loading ? "Saving..." : agent ? "Update Agent" : "Create Agent"}
       </Button>
     </form>
   );
