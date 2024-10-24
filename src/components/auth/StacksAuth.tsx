@@ -5,8 +5,8 @@ import { AppConfig, showConnect, UserSession } from "@stacks/connect";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const appConfig = new AppConfig(["store_write", "publish_data"]);
 const userSession = new UserSession({ appConfig });
@@ -14,9 +14,9 @@ const userSession = new UserSession({ appConfig });
 export default function StacksAuth() {
   const [mounted, setMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState({ type: "", content: "" });
   const supabase = createClient();
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     setMounted(true);
@@ -32,9 +32,8 @@ export default function StacksAuth() {
 
       if (signInError && signInError.status === 400) {
         // User doesn't exist, proceed with sign up
-        setMessage({
-          type: "info",
-          content: "Looks like you haven't signed up. Creating your account...",
+        toast({
+          description: "Creating your account...",
         });
 
         const { error: signUpError } = await supabase.auth.signUp({
@@ -44,9 +43,9 @@ export default function StacksAuth() {
 
         if (signUpError) throw signUpError;
 
-        setMessage({
-          type: "success",
-          content: "Account created successfully! Redirecting to dashboard...",
+        toast({
+          description: "Successfully signed up...",
+          variant: "default",
         });
 
         return true;
@@ -54,17 +53,17 @@ export default function StacksAuth() {
         throw signInError;
       }
 
-      setMessage({
-        type: "success",
-        content: "Signed in successfully! Redirecting to dashboard...",
+      toast({
+        description: "Redirecting to dashboard...",
+        variant: "default",
       });
 
       return true;
     } catch (error) {
       console.error("Authentication error:", error);
-      setMessage({
-        type: "error",
-        content: "Authentication failed. Please try again.",
+      toast({
+        description: "Authentication failed. Please try again.",
+        variant: "destructive",
       });
       return false;
     }
@@ -72,17 +71,23 @@ export default function StacksAuth() {
 
   const handleAuth = async () => {
     setIsLoading(true);
-    setMessage({ type: "", content: "" });
-
     try {
-      setMessage({ type: "info", content: "Connecting wallet..." });
+      toast({
+        description: "Connecting wallet...",
+      });
 
       // Connect wallet
       await new Promise<void>((resolve) => {
         showConnect({
           appDetails: {
-            name: "AIBTC Crew Generator",
+            name: "AIBTC Champions Sprint",
             icon: window.location.origin + "/logos/aibtcdev-avatar-1000px.png",
+          },
+          onCancel: () => {
+            toast({
+              description: "Wallet connection cancelled.",
+            });
+            setIsLoading(false);
           },
           onFinish: () => resolve(),
           userSession,
@@ -92,9 +97,8 @@ export default function StacksAuth() {
       const userData = userSession.loadUserData();
       const stxAddress = userData.profile.stxAddress.mainnet;
 
-      setMessage({
-        type: "info",
-        content: "Wallet connected. Authenticating...",
+      toast({
+        description: "Wallet connected. Authenticating...",
       });
 
       const success = await handleAuthentication(stxAddress);
@@ -107,9 +111,9 @@ export default function StacksAuth() {
       }
     } catch (error) {
       console.error("Wallet connection error:", error);
-      setMessage({
-        type: "error",
-        content: "Failed to connect wallet. Please try again.",
+      toast({
+        description: "Failed to connect wallet. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -119,49 +123,21 @@ export default function StacksAuth() {
   if (!mounted) return null;
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle className="text-center">AIBTC Crew Generator</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <Button
-            onClick={handleAuth}
-            disabled={isLoading}
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Connecting...
-              </>
-            ) : (
-              "Connect your wallet to access our platform"
-            )}
-          </Button>
-          {message.content && (
-            <div
-              className={`mt-4 flex items-center space-x-2 ${
-                message.type === "error"
-                  ? "text-red-600"
-                  : message.type === "success"
-                  ? "text-green-600"
-                  : "text-blue-600"
-              }`}
-              role="alert"
-            >
-              {message.type === "error" ? (
-                <AlertCircle className="h-5 w-5" aria-hidden="true" />
-              ) : message.type === "success" ? (
-                <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
-              ) : (
-                <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-              )}
-              <p>{message.content}</p>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      <Button
+        onClick={handleAuth}
+        disabled={isLoading}
+        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-bold"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Connecting...
+          </>
+        ) : (
+          "Connect Wallet"
+        )}
+      </Button>
+    </div>
   );
 }
