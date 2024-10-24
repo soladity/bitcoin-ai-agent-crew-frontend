@@ -5,7 +5,6 @@ import { AppConfig, showConnect, UserSession } from "@stacks/connect";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 
 const appConfig = new AppConfig(["store_write", "publish_data"]);

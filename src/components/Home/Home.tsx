@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 // import Authentication from "../auth/Authentication"; #FOR GITHUB AUTH
 import SignIn from "../auth/StacksAuth";
 
@@ -9,9 +10,12 @@ export default function Home() {
     <div className="relative h-screen w-full bg-black flex flex-col items-center justify-center overflow-hidden">
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center space-y-8">
-        <h1 className="text-4xl md:text-6xl lg:text-8xl font-bold text-center text-white">
-          AIBTC.DEV
-        </h1>
+        <Image
+          src="/logos/aibtcdev-champions-sprint-trading-series-800px.png"
+          alt="aibtc.dev"
+          width={800}
+          height={400}
+        />
 
         <div className="w-full max-w-md px-4">
           {/* Authentication component */}
