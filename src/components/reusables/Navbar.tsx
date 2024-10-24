@@ -21,7 +21,7 @@ export function Nav() {
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (
-    <header className="px-4 lg:px-6 h-16 flex items-center justify-between border-b">
+    <header className="px-4 lg:px-6 h-16 flex items-center justify-between mb-8">
       <Link className="flex items-center justify-center" href="/dashboard">
         <Image
           src="/logos/aibtcdev-avatar-250px.png"
@@ -31,13 +31,16 @@ export function Nav() {
           className="mr-2"
         />
       </Link>
-      <Link className="flex-grow flex items-center justify-center" href="/dashboard">
+      <Link
+        className="flex-grow flex items-center justify-center"
+        href="/dashboard"
+      >
         <Image
           src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
-          height={500}
-          width={100}
+          height={100}
+          width={500}
           alt="aibtc.dev"
-          className="mr-2 w-auto max-w-[300px]"
+          className="mr-2 w-auto max-w-[500px]"
         />
       </Link>
       <div className="flex items-center gap-4">
