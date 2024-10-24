@@ -12,8 +12,8 @@ import { NavigationMenuLink } from "@/components/ui/navigation-menu";
 
 export function Footer() {
   return (
-    <footer className="border-t">
-      <div className="container flex flex-col justify-center items-center">
+    <footer className="border-t py-6">
+      <div className="container flex flex-col justify-center items-center max-w-screen-xl mx-auto px-4">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <Link href="https://github.com/aibtcdev">
