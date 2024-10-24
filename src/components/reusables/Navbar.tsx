@@ -44,6 +44,7 @@ export function Nav() {
         />
       </Link>
       <div className="flex items-center gap-4">
+        <span className="text-sm font-medium text-muted-foreground">STX ADDRESS</span>
         <SignOut />
       </div>
     </header>
