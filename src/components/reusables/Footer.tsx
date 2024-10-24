@@ -15,19 +15,19 @@ export function Footer() {
       <div className="container flex flex-col justify-center items-center">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
-            <Link href="https://github.com">
+            <Link href="https://github.com/aibtcdev">
               <GitHubLogoIcon className="h-6 w-6" />
               <span className="sr-only">GitHub</span>
             </Link>
           </Button>
           <Button variant="ghost" size="icon" asChild>
-            <Link href="https://discord.com">
+            <Link href="https://discord.gg/Z59Z3FNbEX">
               <DiscordLogoIcon className="h-6 w-6" />
               <span className="sr-only">Discord</span>
             </Link>
           </Button>
           <Button variant="ghost" size="icon" asChild>
-            <Link href="https://twitter.com">
+            <Link href="https://x.com/aibtcdev">
               <TwitterLogoIcon className="h-6 w-6" />
               <span className="sr-only">Twitter</span>
             </Link>
