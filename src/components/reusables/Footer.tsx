@@ -4,6 +4,7 @@ import {
   DiscordLogoIcon,
   GitHubLogoIcon,
   TwitterLogoIcon,
+  GlobeIcon,
 } from "@radix-ui/react-icons";
 
 import { Button } from "@/components/ui/button";
@@ -11,25 +12,31 @@ import { NavigationMenuLink } from "@/components/ui/navigation-menu";
 
 export function Footer() {
   return (
-    <footer className="border-t">
-      <div className="container flex flex-col justify-center items-center">
+    <footer className="border-t py-6">
+      <div className="container flex flex-col justify-center items-center max-w-screen-xl mx-auto px-4">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
-            <Link href="https://github.com">
+            <Link href="https://github.com/aibtcdev">
               <GitHubLogoIcon className="h-6 w-6" />
               <span className="sr-only">GitHub</span>
             </Link>
           </Button>
           <Button variant="ghost" size="icon" asChild>
-            <Link href="https://discord.com">
+            <Link href="https://discord.gg/Z59Z3FNbEX">
               <DiscordLogoIcon className="h-6 w-6" />
               <span className="sr-only">Discord</span>
             </Link>
           </Button>
           <Button variant="ghost" size="icon" asChild>
-            <Link href="https://twitter.com">
+            <Link href="https://x.com/aibtcdev">
               <TwitterLogoIcon className="h-6 w-6" />
               <span className="sr-only">Twitter</span>
+            </Link>
+          </Button>
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="https://aibtc.dev">
+              <GlobeIcon className="h-6 w-6" />
+              <span className="sr-only">Website</span>
             </Link>
           </Button>
         </div>
