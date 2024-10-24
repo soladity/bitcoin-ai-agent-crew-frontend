@@ -19,23 +19,38 @@ interface Agent {
   name: string;
 }
 
+interface Task {
+  id?: number;
+  description: string;
+  expected_output: string;
+  agent_id: number;
+}
+
 interface TaskFormProps {
   crewId: number;
   agents: Agent[];
-  onTaskAdded: () => void;
+  task?: Task;
+  onTaskSubmitted: () => void;
   onClose: () => void;
 }
 
 export default function TaskForm({
   crewId,
   agents,
-  onTaskAdded,
+  task,
+  onTaskSubmitted,
   onClose,
 }: TaskFormProps) {
-  const [description, setDescription] = useState("");
-  const [expectedOutput, setExpectedOutput] = useState("");
-  const [selectedAgentId, setSelectedAgentId] = useState<number | null>(null);
+  const [description, setDescription] = useState(task?.description || "");
+  const [expectedOutput, setExpectedOutput] = useState(
+    task?.expected_output || ""
+  );
+  const [selectedAgentId, setSelectedAgentId] = useState<number | null>(
+    task?.agent_id || null
+  );
   const [loading, setLoading] = useState(false);
+
+  const isEditing = !!task;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,30 +67,49 @@ export default function TaskForm({
         throw new Error("No authenticated user found");
       }
 
-      const { error } = await supabase.from("tasks").insert({
+      const taskData = {
         description,
         expected_output: expectedOutput,
         agent_id: selectedAgentId,
         crew_id: crewId,
         profile_id: user.id,
-      });
+      };
+
+      let error;
+
+      if (isEditing) {
+        const { error: updateError } = await supabase
+          .from("tasks")
+          .update(taskData)
+          .eq("id", task.id);
+        error = updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from("tasks")
+          .insert(taskData);
+        error = insertError;
+      }
 
       if (error) throw error;
 
-      setDescription("");
-      setExpectedOutput("");
-      setSelectedAgentId(null);
-      onClose();
       toast({
-        title: "Task created",
-        description: "The new task has been successfully created.",
+        title: isEditing ? "Task updated" : "Task created",
+        description: isEditing
+          ? "The task has been successfully updated."
+          : "The new task has been successfully created.",
       });
-      onTaskAdded();
+      onTaskSubmitted();
+      onClose();
     } catch (error) {
-      console.error("Error creating task:", error);
+      console.error(
+        isEditing ? "Error updating task:" : "Error creating task:",
+        error
+      );
       toast({
         title: "Error",
-        description: "Failed to create the task. Please try again.",
+        description: isEditing
+          ? "Failed to update the task. Please try again."
+          : "Failed to create the task. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -107,7 +141,10 @@ export default function TaskForm({
       </div>
       <div>
         <Label htmlFor="agent">Assign to Agent</Label>
-        <Select onValueChange={(value) => setSelectedAgentId(Number(value))}>
+        <Select
+          value={selectedAgentId?.toString()}
+          onValueChange={(value) => setSelectedAgentId(Number(value))}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Select an agent" />
           </SelectTrigger>
@@ -120,9 +157,20 @@ export default function TaskForm({
           </SelectContent>
         </Select>
       </div>
-      <Button type="submit" disabled={loading}>
-        {loading ? "Creating..." : "Create Task"}
-      </Button>
+      <div className="flex justify-end space-x-2">
+        <Button type="button" variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={loading}>
+          {loading
+            ? isEditing
+              ? "Updating..."
+              : "Creating..."
+            : isEditing
+            ? "Update Task"
+            : "Create Task"}
+        </Button>
+      </div>
     </form>
   );
 }

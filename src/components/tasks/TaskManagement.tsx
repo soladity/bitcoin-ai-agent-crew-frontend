@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase-client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, Edit2Icon } from "lucide-react";
 import TaskForm from "./TaskForm";
 import {
   Popover,
@@ -38,6 +38,7 @@ interface Task {
   description: string;
   expected_output: string;
   agent_id: number;
+  profile_id: string;
 }
 
 interface TaskManagementProps {
@@ -52,15 +53,12 @@ export default function TaskManagement({
   const [agents, setAgents] = useState<Agent[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchAgents();
-    fetchTasks();
-  }, [crewId]);
-
-  const fetchAgents = async () => {
+  const fetchAgents = useCallback(async () => {
     const { data, error } = await supabase
       .from("agents")
       .select("id, name")
@@ -75,9 +73,9 @@ export default function TaskManagement({
     } else {
       setAgents(data);
     }
-  };
+  }, [crewId, toast]);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     const { data, error } = await supabase
       .from("tasks")
       .select("*")
@@ -92,11 +90,36 @@ export default function TaskManagement({
     } else {
       setTasks(data);
     }
+  }, [crewId, toast]);
+
+  useEffect(() => {
+    fetchAgents();
+    fetchTasks();
+    fetchCurrentUser();
+  }, [crewId, fetchAgents, fetchTasks]);
+
+  const fetchCurrentUser = async () => {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+    if (error) {
+      console.error("Error fetching current user:", error);
+    } else if (user) {
+      setCurrentUser(user.id);
+    }
   };
 
-  const handleTaskAdded = () => {
+  const handleTaskSubmitted = () => {
     fetchTasks();
     onTaskAdded();
+    setIsDialogOpen(false);
+    setEditingTask(null);
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setIsDialogOpen(true);
   };
 
   const getAgentName = (agentId: number) => {
@@ -121,13 +144,19 @@ export default function TaskManagement({
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create New Task</DialogTitle>
+              <DialogTitle>
+                {editingTask ? "Edit Task" : "Create New Task"}
+              </DialogTitle>
             </DialogHeader>
             <TaskForm
               crewId={crewId}
               agents={agents}
-              onTaskAdded={handleTaskAdded}
-              onClose={() => setIsDialogOpen(false)}
+              task={editingTask || undefined}
+              onTaskSubmitted={handleTaskSubmitted}
+              onClose={() => {
+                setIsDialogOpen(false);
+                setEditingTask(null);
+              }}
             />
           </DialogContent>
         </Dialog>
@@ -145,6 +174,7 @@ export default function TaskManagement({
               <TableHead>Description</TableHead>
               <TableHead>Expected Output</TableHead>
               <TableHead>Assigned Agent</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -175,6 +205,18 @@ export default function TaskManagement({
                   </Popover>
                 </TableCell>
                 <TableCell>{getAgentName(task.agent_id)}</TableCell>
+                <TableCell>
+                  {currentUser === task.profile_id && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditTask(task)}
+                    >
+                      <Edit2Icon className="h-4 w-4 mr-2" />
+                      Edit
+                    </Button>
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
