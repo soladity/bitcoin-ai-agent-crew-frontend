@@ -21,29 +21,29 @@ export function Nav() {
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (
-    <header className="px-4 lg:px-6 h-16 flex items-center justify-between mb-8">
-      <Link className="flex items-center justify-center" href="/dashboard">
-        <Image
-          src="/logos/aibtcdev-avatar-250px.png"
-          height={40}
-          width={40}
-          alt="aibtc.dev"
-          className="mr-2"
-        />
-      </Link>
-      <Link
-        className="flex-grow flex items-center justify-center"
-        href="/dashboard"
-      >
-        <Image
-          src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
-          height={100}
-          width={500}
-          alt="aibtc.dev"
-          className="mr-2 w-auto max-w-[500px]"
-        />
-      </Link>
-      <div className="flex items-center gap-4">
+    <header className="px-4 lg:px-6 h-16 flex items-center mb-8 relative">
+      <div className="w-[100px] flex items-center">
+        <Link href="/dashboard">
+          <Image
+            src="/logos/aibtcdev-avatar-250px.png"
+            height={40}
+            width={40}
+            alt="aibtc.dev"
+          />
+        </Link>
+      </div>
+      <div className="absolute left-1/2 transform -translate-x-1/2">
+        <Link href="/dashboard">
+          <Image
+            src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
+            height={100}
+            width={500}
+            alt="aibtc.dev"
+            className="w-auto max-w-[500px]"
+          />
+        </Link>
+      </div>
+      <div className="ml-auto flex items-center gap-4">
         <span className="text-sm font-medium text-muted-foreground">STX ADDRESS</span>
         <SignOut />
       </div>
