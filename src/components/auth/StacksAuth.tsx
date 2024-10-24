@@ -33,7 +33,7 @@ export default function StacksAuth() {
       if (signInError && signInError.status === 400) {
         // User doesn't exist, proceed with sign up
         toast({
-          description: "Looks like you haven't signed up. Creating your account...",
+          description: "Creating your account...",
         });
 
         const { error: signUpError } = await supabase.auth.signUp({
@@ -44,7 +44,7 @@ export default function StacksAuth() {
         if (signUpError) throw signUpError;
 
         toast({
-          description: "Account created successfully! Redirecting to dashboard...",
+          description: "Successfully signed up...",
           variant: "default",
         });
 
@@ -54,7 +54,7 @@ export default function StacksAuth() {
       }
 
       toast({
-        description: "Signed in successfully! Redirecting to dashboard...",
+        description: "Redirecting to dashboard...",
         variant: "default",
       });
 
