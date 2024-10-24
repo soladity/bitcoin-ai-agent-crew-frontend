@@ -23,7 +23,15 @@ interface AgentFormProps {
   loading: boolean;
 }
 
-const AVAILABLE_TOOLS = ["search_web", "fetch_contract_code", "bitcoin_data"];
+const AVAILABLE_TOOLS = [
+  "alex_get_price_history",
+  "alex_get_swap_info",
+  "alex_get_token_pool_volume",
+  "bitflow_get_available_tokens",
+  "bitflow_execute_trade",
+  "lunarcrush_get_token_data",
+  "web_search_experimental",
+];
 
 export default function AgentForm({
   agent,
