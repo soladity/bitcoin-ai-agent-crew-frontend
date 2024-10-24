@@ -80,8 +80,14 @@ export default function StacksAuth() {
       await new Promise<void>((resolve) => {
         showConnect({
           appDetails: {
-            name: "AIBTC Crew Generator",
+            name: "AIBTC Champions Sprint",
             icon: window.location.origin + "/logos/aibtcdev-avatar-1000px.png",
+          },
+          onCancel: () => {
+            toast({
+              description: "Wallet connection cancelled.",
+            });
+            setIsLoading(false);
           },
           onFinish: () => resolve(),
           userSession,
