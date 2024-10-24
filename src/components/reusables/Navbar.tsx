@@ -3,23 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu } from "lucide-react";
-
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
+import { NavigationMenuLink } from "@/components/ui/navigation-menu";
 import SignOut from "../auth/SignOut";
 
 export function Nav() {
-  const [isOpen, setIsOpen] = React.useState(false);
-
   return (
     <header className="px-4 lg:px-6 h-16 flex items-center mb-8 relative">
       <div className="w-[100px] flex items-center">
@@ -44,7 +32,9 @@ export function Nav() {
         </Link>
       </div>
       <div className="ml-auto flex items-center gap-4">
-        <span className="text-sm font-medium text-muted-foreground">STX ADDRESS</span>
+        <span className="text-sm font-medium text-muted-foreground">
+          STX ADDRESS
+        </span>
         <SignOut />
       </div>
     </header>
