@@ -4,6 +4,7 @@ import {
   DiscordLogoIcon,
   GitHubLogoIcon,
   TwitterLogoIcon,
+  GlobeIcon,
 } from "@radix-ui/react-icons";
 
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,12 @@ export function Footer() {
             <Link href="https://x.com/aibtcdev">
               <TwitterLogoIcon className="h-6 w-6" />
               <span className="sr-only">Twitter</span>
+            </Link>
+          </Button>
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="https://aibtc.dev">
+              <GlobeIcon className="h-6 w-6" />
+              <span className="sr-only">Website</span>
             </Link>
           </Button>
         </div>
