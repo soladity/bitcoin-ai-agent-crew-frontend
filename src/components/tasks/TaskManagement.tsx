@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/utils/supabase/client";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -44,74 +43,32 @@ interface Task {
 interface TaskManagementProps {
   crewId: number;
   onTaskAdded: () => void;
+  tasks: Task[];
+  agents: Agent[];
+  currentUser: string | null;
+  onEditTask: (task: Task) => void;
 }
 
 export default function TaskManagement({
   crewId,
   onTaskAdded,
+  tasks,
+  agents,
+  currentUser,
+  onEditTask,
 }: TaskManagementProps) {
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
-  const [currentUser, setCurrentUser] = useState<string | null>(null);
-
-  const fetchAgents = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("agents")
-      .select("id, name")
-      .eq("crew_id", crewId);
-    if (error) {
-      console.error("Error fetching agents:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch agents. Please try again.",
-        variant: "destructive",
-      });
-    } else {
-      setAgents(data);
-    }
-  }, [crewId, toast]);
-
-  const fetchTasks = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("tasks")
-      .select("*")
-      .eq("crew_id", crewId);
-    if (error) {
-      console.error("Error fetching tasks:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch tasks. Please try again.",
-        variant: "destructive",
-      });
-    } else {
-      setTasks(data);
-    }
-  }, [crewId, toast]);
-
-  useEffect(() => {
-    fetchAgents();
-    fetchTasks();
-    fetchCurrentUser();
-  }, [crewId, fetchAgents, fetchTasks]);
-
-  const fetchCurrentUser = async () => {
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-    if (error) {
-      console.error("Error fetching current user:", error);
-    } else if (user) {
-      setCurrentUser(user.id);
-    }
-  };
 
   const handleTaskSubmitted = () => {
-    fetchTasks();
+    toast({
+      title: "Success",
+      description: editingTask
+        ? "Task updated successfully"
+        : "Task created successfully",
+    });
     onTaskAdded();
     setIsDialogOpen(false);
     setEditingTask(null);
@@ -120,6 +77,7 @@ export default function TaskManagement({
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
     setIsDialogOpen(true);
+    onEditTask(task);
   };
 
   const getAgentName = (agentId: number) => {
