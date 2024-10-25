@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { NavigationMenuLink } from "@/components/ui/navigation-menu";
 import SignOut from "../auth/SignOut";
 import { supabase } from "@/utils/supabase/client";
+import { Button } from "../ui/button";
 
 export function Nav() {
   const [stxAddress, setStxAddress] = React.useState<string>("");
@@ -78,6 +79,9 @@ export function Nav() {
           )}
         </span>
         <SignOut />
+        <Button>
+          <Link href="/leaderboard">Leaderboard</Link>
+        </Button>
       </div>
     </header>
   );
