@@ -6,8 +6,42 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { NavigationMenuLink } from "@/components/ui/navigation-menu";
 import SignOut from "../auth/SignOut";
+import { supabase } from "@/utils/supabase/client";
 
 export function Nav() {
+  const [stxAddress, setStxAddress] = React.useState<string>("");
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    async function fetchStxAddress() {
+      try {
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
+        if (error) throw error;
+        if (user && user.email) {
+          setStxAddress(user.email);
+        } else {
+          throw new Error("User or email not found");
+        }
+      } catch (e) {
+        setError("Failed to fetch STX address");
+        console.error("Error fetching STX address:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchStxAddress();
+  }, []);
+
+  const displayAddress = React.useMemo(() => {
+    const [localPart] = stxAddress.split("@");
+    return `${localPart.slice(0, 10)}...${localPart.slice(-4)}`;
+  }, [stxAddress]);
+
   return (
     <header className="px-4 lg:px-6 h-16 flex items-center mb-8 relative">
       <div className="w-[100px] flex items-center">
@@ -33,7 +67,15 @@ export function Nav() {
       </div>
       <div className="ml-auto flex items-center gap-4">
         <span className="text-sm font-medium text-muted-foreground">
-          STX ADDRESS
+          {isLoading ? (
+            "Loading STX Address..."
+          ) : error ? (
+            <span className="text-red-500">{error}</span>
+          ) : (
+            <span className="ml-2 font-mono" title={stxAddress.split("@")[0]}>
+              {displayAddress}
+            </span>
+          )}
         </span>
         <SignOut />
       </div>
