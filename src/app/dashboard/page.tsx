@@ -3,7 +3,7 @@ import Dashboard from "@/components/dashboard/Dashboard";
 
 const page = () => {
   return (
-    <div className="h-screen">
+    <div className="h-[80vh]">
       <Dashboard />
     </div>
   );
