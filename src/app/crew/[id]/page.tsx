@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase-client";
+import { supabase } from "@/utils/supabase/client";
 import AgentManagement from "@/components/agents/AgentManagement";
 import TaskManagement from "@/components/tasks/TaskManagement";
 import ExecutionPanel from "@/components/dashboard/Execution";

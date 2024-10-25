@@ -1,11 +1,10 @@
 import React from "react";
-import { createClient } from "@/utils/supabase/client";
+import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { AppConfig, UserSession } from "@stacks/connect";
 import { Button } from "../ui/button";
 
 const SignOut = () => {
-  const supabase = createClient();
   const router = useRouter();
   const appConfig = new AppConfig(["store_write", "publish_data"]);
   const userSession = new UserSession({ appConfig });

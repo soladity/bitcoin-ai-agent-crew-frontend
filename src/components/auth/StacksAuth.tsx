@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { AppConfig, showConnect, UserSession } from "@stacks/connect";
-import { createClient } from "@/utils/supabase/client";
+import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
@@ -14,7 +14,6 @@ const userSession = new UserSession({ appConfig });
 export default function StacksAuth() {
   const [mounted, setMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const supabase = createClient();
   const router = useRouter();
   const { toast } = useToast();
 
