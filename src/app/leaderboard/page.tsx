@@ -2,14 +2,27 @@
 
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
-import { Loader2 } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader2, ArrowLeft, Trophy } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 interface Profile {
   email: string;
   stxBalance: number;
+  role: string;
+  assigned_agent_address: string | null;
+  agentBalance?: number;
 }
 
 export default function LeaderBoard() {
@@ -20,32 +33,58 @@ export default function LeaderBoard() {
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        const { data, error } = await supabase.from("profiles").select("email");
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("email, role, assigned_agent_address")
+          .eq("role", "Participant");
 
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
 
         const profilesWithBalance = await Promise.all(
           data.map(async (profile) => {
             try {
-              const stacksAddress = profile.email.split("@")[0].toUpperCase(); // Remove @stacks.id and convert to uppercase
-              const response = await fetch(
-                `https://api.hiro.so/extended/v1/address/${stacksAddress}/balances`
-              );
+              const stacksAddress = profile.assigned_agent_address
+                ? profile.assigned_agent_address.toUpperCase()
+                : null;
+              console.log(stacksAddress);
 
-              if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+              let stxBalance = 0;
+              let agentBalance = undefined;
+
+              if (stacksAddress) {
+                const participantResponse = await fetch(
+                  `https://api.hiro.so/extended/v1/address/${stacksAddress}/balances`
+                );
+
+                if (!participantResponse.ok) {
+                  throw new Error(
+                    `HTTP error! status: ${participantResponse.status}`
+                  );
+                }
+
+                const participantBalanceData = await participantResponse.json();
+                stxBalance = participantBalanceData.stx?.balance
+                  ? parseInt(participantBalanceData.stx.balance) / 1000000
+                  : 0;
+
+                const agentResponse = await fetch(
+                  `https://api.hiro.so/extended/v1/address/${stacksAddress}/balances`
+                );
+
+                if (agentResponse.ok) {
+                  const agentBalanceData = await agentResponse.json();
+                  agentBalance = agentBalanceData.stx?.balance
+                    ? parseInt(agentBalanceData.stx.balance) / 1000000
+                    : 0;
+                }
               }
-
-              const balanceData = await response.json();
-              const stxBalance = balanceData.stx?.balance
-                ? parseInt(balanceData.stx.balance) / 1000000
-                : 0;
 
               return {
                 email: profile.email,
                 stxBalance: stxBalance,
+                role: profile.role,
+                assigned_agent_address: stacksAddress,
+                agentBalance: agentBalance,
               };
             } catch (err) {
               console.error(
@@ -55,12 +94,16 @@ export default function LeaderBoard() {
               return {
                 email: profile.email,
                 stxBalance: 0,
+                role: profile.role,
+                assigned_agent_address: profile.assigned_agent_address
+                  ? profile.assigned_agent_address.toUpperCase()
+                  : null,
+                agentBalance: undefined,
               };
             }
           })
         );
 
-        // Sort profiles by STX balance in descending order
         const sortedProfiles = profilesWithBalance.sort(
           (a, b) => b.stxBalance - a.stxBalance
         );
@@ -79,13 +122,8 @@ export default function LeaderBoard() {
 
   if (loading) {
     return (
-      <div
-        className="flex justify-center items-center h-64"
-        aria-live="polite"
-        aria-busy="true"
-      >
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="sr-only">Loading leaderboard data...</span>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -93,38 +131,74 @@ export default function LeaderBoard() {
   if (error) {
     return (
       <Alert variant="destructive">
-        <AlertTitle>Error</AlertTitle>
         <AlertDescription>{error}</AlertDescription>
       </Alert>
     );
   }
 
   return (
-    <div className="p-4 space-y-4">
-      <h1 className="text-2xl font-bold">Leaderboard</h1>
-      <Link href="/">
-        <Button>Go back</Button>
-      </Link>
-      <ul className="space-y-2">
-        {profiles.map((profile, index) => (
-          <li
-            key={profile.email}
-            className="p-3 bg-card text-card-foreground rounded-lg shadow hover:shadow-md transition-shadow flex justify-between items-center"
-          >
-            <span>
-              <span className="font-medium mr-2">{index + 1}.</span>
-              {profile.email.split("@")[0]}
-            </span>
-            <span className="text-sm">
-              <span className="font-medium">
-                {profile.stxBalance.toFixed(2)}
-              </span>{" "}
-              STX
-            </span>
-          </li>
-        ))}
-      </ul>
-      <p className="text-muted-foreground">Total profiles: {profiles.length}</p>
-    </div>
+    <Card className="w-full mx-auto my-8">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-2xl font-bold">
+          Participant Leaderboard
+        </CardTitle>
+        <Link href="/">
+          <Button variant="outline" size="sm">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Go back
+          </Button>
+        </Link>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[50px]">Rank</TableHead>
+              <TableHead>Participant</TableHead>
+              <TableHead>Agent Address</TableHead>
+              <TableHead className="text-right">Agent Balance</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {profiles.map((profile, index) => (
+              <TableRow key={profile.email}>
+                <TableCell className="font-medium">
+                  {index < 3 ? (
+                    <Trophy
+                      className={`h-5 w-5 ${
+                        index === 0
+                          ? "text-yellow-500"
+                          : index === 1
+                          ? "text-gray-400"
+                          : "text-amber-600"
+                      }`}
+                    />
+                  ) : (
+                    `${index + 1}`
+                  )}
+                </TableCell>
+                <TableCell>
+                  <span className="font-mono">
+                    {profile.email.split("@")[0].toUpperCase()}
+                  </span>
+                </TableCell>
+                <TableCell className="font-mono text-sm">
+                  {profile.assigned_agent_address || (
+                    <Badge variant="outline">No agent assigned</Badge>
+                  )}
+                </TableCell>
+                <TableCell className="text-right font-bold">
+                  {profile.agentBalance !== undefined
+                    ? `${profile.agentBalance.toFixed(2)} STX`
+                    : "-"}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        <div className="mt-6 text-sm text-muted-foreground text-center">
+          Total participants: {profiles.length}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
