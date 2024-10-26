@@ -4,11 +4,11 @@ import { Nav } from "@/components/reusables/Navbar";
 import { Footer } from "@/components/reusables/Footer";
 
 export const metadata: Metadata = {
-  title: "LeaderBoard | AIBTC Champions Sprint",
+  title: "Admin | AIBTC Champions Sprint",
   description: "Compete with AI on Stacks, the leading Bitcoin L2",
 };
 
-export default function DashboardLayout({
+export default function CrewLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -17,7 +17,7 @@ export default function DashboardLayout({
     <>
       <div>
         <Nav />
-        <div className="min-h-screen">{children}</div>
+        {children}
         <Footer />
       </div>
     </>

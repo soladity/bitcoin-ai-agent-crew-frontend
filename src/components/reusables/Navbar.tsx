@@ -8,39 +8,64 @@ import { NavigationMenuLink } from "@/components/ui/navigation-menu";
 import SignOut from "../auth/SignOut";
 import { supabase } from "@/utils/supabase/client";
 import { Button } from "../ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown, User } from "lucide-react";
 
 export function Nav() {
   const [stxAddress, setStxAddress] = React.useState<string>("");
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = React.useState(false);
 
   React.useEffect(() => {
-    async function fetchStxAddress() {
+    async function fetchUserData() {
       try {
         const {
           data: { user },
-          error,
+          error: userError,
         } = await supabase.auth.getUser();
-        if (error) throw error;
+
+        if (userError) throw userError;
+
         if (user && user.email) {
           setStxAddress(user.email);
+
+          const { data: profileData, error: profileError } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", user.id)
+            .single();
+
+          if (profileError) throw profileError;
+
+          if (profileData && profileData.role === "Admin") {
+            setIsAdmin(true);
+          }
         } else {
           throw new Error("User or email not found");
         }
       } catch (e) {
-        setError("Failed to fetch STX address");
-        console.error("Error fetching STX address:", e);
+        setError("Failed to fetch user data");
+        console.error("Error fetching user data:", e);
       } finally {
         setIsLoading(false);
       }
     }
 
-    fetchStxAddress();
+    fetchUserData();
   }, []);
 
   const displayAddress = React.useMemo(() => {
     const [localPart] = stxAddress.split("@");
-    return `${localPart.slice(0, 10)}...${localPart.slice(-4)}`;
+    const shortened = `${localPart.slice(0, 10)}...${localPart.slice(-4)}`;
+    return shortened.toUpperCase();
   }, [stxAddress]);
 
   return (
@@ -67,21 +92,39 @@ export function Nav() {
         </Link>
       </div>
       <div className="ml-auto flex items-center gap-4">
-        <span className="text-sm font-medium text-muted-foreground">
-          {isLoading ? (
-            "Loading STX Address..."
-          ) : error ? (
-            <span className="text-red-500">{error}</span>
-          ) : (
-            <span className="ml-2 font-mono" title={stxAddress.split("@")[0]}>
-              {displayAddress}
-            </span>
-          )}
-        </span>
-        <SignOut />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              {isLoading ? (
+                "Loading..."
+              ) : error ? (
+                <span className="text-red-500">Error</span>
+              ) : (
+                <span className="font-mono">{displayAddress}</span>
+              )}
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuItem className="font-mono">
+              {stxAddress.split("@")[0].toUpperCase()}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <SignOut />
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button>
           <Link href="/leaderboard">Leaderboard</Link>
         </Button>
+        {isAdmin && (
+          <Button variant="outline">
+            <Link href="/admin">Admin Panel</Link>
+          </Button>
+        )}
       </div>
     </header>
   );

@@ -2,8 +2,6 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const updateSession = async (request: NextRequest) => {
-  // This `try/catch` block is only here for the interactive tutorial.
-  // Feel free to remove once you have Supabase connected.
   try {
     // Create an unmodified response
     let response = NextResponse.next({
@@ -35,24 +33,43 @@ export const updateSession = async (request: NextRequest) => {
       }
     );
 
-    // This will refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/server-side/nextjs
-    const user = await supabase.auth.getUser();
+    // Get the user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    // protected routes
-    if (request.nextUrl.pathname.startsWith("/dashboard") && user.error) {
+    // If trying to access admin route
+    if (request.nextUrl.pathname.startsWith("/admin")) {
+      if (userError || !user) {
+        // If no user, redirect to login
+        return NextResponse.redirect(new URL("/", request.url));
+      }
+
+      // Check user role in profiles table
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError || !profileData || profileData.role !== "Admin") {
+        // If not admin, redirect to dashboard
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+    }
+
+    // Regular route protection
+    if (request.nextUrl.pathname.startsWith("/dashboard") && userError) {
       return NextResponse.redirect(new URL("/", request.url));
     }
 
-    if (request.nextUrl.pathname === "/" && !user.error) {
+    if (request.nextUrl.pathname === "/" && !userError) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
     return response;
   } catch (error) {
-    // If you are here, a Supabase client could not be created!
-    // This is likely because you have not set up environment variables.
-    // Check out http://localhost:3000 for Next Steps.
     console.error(error);
     return NextResponse.next({
       request: {
