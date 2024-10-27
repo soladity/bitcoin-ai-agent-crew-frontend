@@ -5,6 +5,7 @@ import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 
 interface CrewFormProps {
@@ -14,6 +15,7 @@ interface CrewFormProps {
 
 export default function CrewForm({ onCrewCreated, onClose }: CrewFormProps) {
   const [crewName, setCrewName] = useState("");
+  const [crewDescription, setCrewDescription] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,12 +35,14 @@ export default function CrewForm({ onCrewCreated, onClose }: CrewFormProps) {
 
       const { error } = await supabase.from("crews").insert({
         name: crewName,
+        description: crewDescription,
         profile_id: user.id,
       });
 
       if (error) throw error;
 
       setCrewName("");
+      setCrewDescription("");
       onClose();
       onCrewCreated();
       toast({
@@ -67,6 +71,16 @@ export default function CrewForm({ onCrewCreated, onClose }: CrewFormProps) {
           onChange={(e) => setCrewName(e.target.value)}
           placeholder="Enter crew name"
           required
+        />
+      </div>
+      <div>
+        <Label htmlFor="crewDescription">Description</Label>
+        <Textarea
+          id="crewDescription"
+          value={crewDescription}
+          onChange={(e) => setCrewDescription(e.target.value)}
+          placeholder="Enter crew description"
+          rows={3}
         />
       </div>
       <Button type="submit" disabled={loading}>
