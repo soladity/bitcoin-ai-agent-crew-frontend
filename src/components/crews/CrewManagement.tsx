@@ -31,6 +31,7 @@ import CrewForm from "./CrewForm";
 interface Crew {
   id: number;
   name: string;
+  description: string;
   created_at: string;
 }
 
@@ -99,6 +100,7 @@ export function CrewManagement({
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
+              <TableHead>Description</TableHead>
               <TableHead>Created</TableHead>
               <TableHead>Select</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -113,6 +115,9 @@ export function CrewManagement({
                     <span>{crew.name}</span>
                   </div>
                 </TableCell>
+                <TableCell className="max-w-xs truncate">
+                  {crew.description || "No description"}
+                </TableCell>
                 <TableCell>
                   {new Date(crew.created_at).toLocaleDateString()}
                 </TableCell>
@@ -126,7 +131,6 @@ export function CrewManagement({
                   </Button>
                 </TableCell>
                 <TableCell className="text-right">
-                  {/* TODO: NEED TO ADD EDIT AND UPDATE OPTIONS TOO.. */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm">
