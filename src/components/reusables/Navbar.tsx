@@ -35,7 +35,8 @@ export function Nav() {
         if (userError) throw userError;
 
         if (user && user.email) {
-          setStxAddress(user.email);
+          const address = user.email.split("@")[0];
+          setStxAddress(address.toUpperCase());
 
           const { data: profileData, error: profileError } = await supabase
             .from("profiles")
@@ -63,9 +64,8 @@ export function Nav() {
   }, []);
 
   const displayAddress = React.useMemo(() => {
-    const [localPart] = stxAddress.split("@");
-    const shortened = `${localPart.slice(0, 10)}...${localPart.slice(-4)}`;
-    return shortened.toUpperCase();
+    const shortened = `${stxAddress.slice(0, 5)}...${stxAddress.slice(-5)}`;
+    return shortened;
   }, [stxAddress]);
 
   return (
@@ -109,7 +109,13 @@ export function Nav() {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuItem className="font-mono">
-              {stxAddress.split("@")[0].toUpperCase()}
+              <a
+                href={`https://explorer.hiro.so/address/${stxAddress}`}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {stxAddress}
+              </a>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
