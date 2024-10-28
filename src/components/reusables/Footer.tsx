@@ -14,7 +14,6 @@ export function Footer() {
   return (
     <footer className="border-t py-6">
       <div className="container flex flex-col justify-center items-center max-w-screen-xl mx-auto px-4 space-y-6">
-        <Disclaimer />
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <a
@@ -57,6 +56,8 @@ export function Footer() {
             </a>
           </Button>
         </div>
+
+        <Disclaimer />
       </div>
     </footer>
   );
