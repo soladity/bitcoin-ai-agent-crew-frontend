@@ -20,16 +20,16 @@ export default function CrewLayout({
     <div className="container mx-auto p-4 space-y-4">
       <div className="flex justify-between items-center">
         <div className="flex gap-2">
-          <Link href={`/crew/${id}`}>
-            <Button variant={isChat ? "outline" : "default"}>
-              <Settings className="w-4 h-4 mr-2" />
-              Manage
-            </Button>
-          </Link>
           <Link href={`/crew/${id}/chat`}>
             <Button variant={isChat ? "default" : "outline"}>
               <MessageCircle className="w-4 h-4 mr-2" />
               Chat
+            </Button>
+          </Link>
+          <Link href={`/crew/${id}`}>
+            <Button variant={isChat ? "outline" : "default"}>
+              <Settings className="w-4 h-4 mr-2" />
+              Manage
             </Button>
           </Link>
         </div>
