@@ -18,28 +18,44 @@ export function Footer() {
         <Disclaimer />
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
-            <Link href="https://github.com/aibtcdev">
+            <a
+              href="https://github.com/aibtcdev"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
               <GitHubLogoIcon className="h-6 w-6" />
               <span className="sr-only">GitHub</span>
-            </Link>
+            </a>
           </Button>
           <Button variant="ghost" size="icon" asChild>
-            <Link href="https://discord.gg/Z59Z3FNbEX">
+            <a
+              href="https://discord.gg/Z59Z3FNbEX"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
               <DiscordLogoIcon className="h-6 w-6" />
               <span className="sr-only">Discord</span>
-            </Link>
+            </a>
           </Button>
           <Button variant="ghost" size="icon" asChild>
-            <Link href="https://x.com/aibtcdev">
+            <a
+              href="https://x.com/aibtcdev"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
               <TwitterLogoIcon className="h-6 w-6" />
               <span className="sr-only">Twitter</span>
-            </Link>
+            </a>
           </Button>
           <Button variant="ghost" size="icon" asChild>
-            <Link href="https://aibtc.dev">
+            <a
+              href="https://aibtc.dev"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
               <GlobeIcon className="h-6 w-6" />
               <span className="sr-only">Website</span>
-            </Link>
+            </a>
           </Button>
         </div>
       </div>
