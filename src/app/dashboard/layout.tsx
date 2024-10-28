@@ -5,8 +5,7 @@ import { Footer } from "@/components/reusables/Footer";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: "Dashboard | AIBTC Champions Sprint",
-  description: "Compete with AI on Stacks, the leading Bitcoin L2",
+  title: "Dashboard",
 };
 
 export default function DashboardLayout({

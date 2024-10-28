@@ -5,8 +5,18 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 
 export const metadata: Metadata = {
-  title: "AIBTC Champions Sprint",
+  title: {
+    default: "AIBTC Champions Sprint",
+    template: "%s | AIBTC Champions Sprint"
+  },
   description: "Compete with AI on Stacks, the leading Bitcoin L2",
+  keywords: ["Bitcoin", "AI", "Stacks", "L2", "Trading"],
+  authors: [{ name: "AIBTC Champions" }],
+  openGraph: {
+    title: "AIBTC Champions Sprint",
+    description: "Compete with AI on Stacks, the leading Bitcoin L2",
+    type: "website"
+  }
 };
 
 const rocGroteskRegular = localFont({
