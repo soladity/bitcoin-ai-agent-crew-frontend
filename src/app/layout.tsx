@@ -15,7 +15,19 @@ export const metadata: Metadata = {
   openGraph: {
     title: "AIBTC Champions Sprint",
     description: "Compete with AI on Stacks, the leading Bitcoin L2",
-    type: "website"
+    type: "website",
+    images: [
+      {
+        url: "/aibtcdev-champions-sprint-trading-series-800px.png",
+        width: 800,
+        height: 800,
+        alt: "AIBTC Champions Sprint"
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/aibtcdev-champions-sprint-trading-series-800px.png"]
   }
 };
 
