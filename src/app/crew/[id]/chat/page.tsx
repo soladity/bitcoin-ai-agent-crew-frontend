@@ -93,13 +93,8 @@ export default function CrewChat() {
   }
 
   return (
-    <div className="container mx-auto p-4 space-y-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Chat with {crew.name}</h1>
-        <Link href={`/crew/${id}`}>
-          <Button>Back to Crew</Button>
-        </Link>
-      </div>
+    <div className="space-y-4">
+      <h1 className="text-3xl font-bold">Chat with {crew.name}</h1>
 
       <Card className="h-[60vh] flex flex-col">
         <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">

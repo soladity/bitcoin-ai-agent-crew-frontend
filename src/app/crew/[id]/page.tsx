@@ -117,13 +117,8 @@ export default function CrewDetails() {
   }
 
   return (
-    <div className="container mx-auto p-4 space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">{crew.name}</h1>
-        <Link href="/dashboard">
-          <Button>Back to Dashboard</Button>
-        </Link>
-      </div>
+    <div className="space-y-8">
+      <h1 className="text-3xl font-bold">{crew.name}</h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-8">
           <Card>
