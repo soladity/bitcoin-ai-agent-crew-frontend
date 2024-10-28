@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, User } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 export function Nav() {
   const [stxAddress, setStxAddress] = React.useState<string>("");
@@ -35,7 +35,8 @@ export function Nav() {
         if (userError) throw userError;
 
         if (user && user.email) {
-          setStxAddress(user.email);
+          const address = user.email.split("@")[0];
+          setStxAddress(address.toUpperCase());
 
           const { data: profileData, error: profileError } = await supabase
             .from("profiles")
@@ -63,39 +64,23 @@ export function Nav() {
   }, []);
 
   const displayAddress = React.useMemo(() => {
-    const [localPart] = stxAddress.split("@");
-    const shortened = `${localPart.slice(0, 10)}...${localPart.slice(-4)}`;
-    return shortened.toUpperCase();
+    const shortened = `${stxAddress.slice(0, 5)}...${stxAddress.slice(-5)}`;
+    return shortened;
   }, [stxAddress]);
 
   return (
-    <header className="px-4 lg:px-6 h-16 flex items-center mb-8 relative">
-      <div className="w-[100px] flex items-center">
-        <Link href="/dashboard">
-          <Image
-            src="/logos/aibtcdev-avatar-250px.png"
-            height={40}
-            width={40}
-            alt="aibtc.dev"
-          />
-        </Link>
-      </div>
-      <div className="absolute left-1/2 transform -translate-x-1/2">
-        <Link href="/dashboard">
-          <Image
-            src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
-            height={100}
-            width={500}
-            alt="aibtc.dev"
-            className="w-auto max-w-[500px]"
-          />
-        </Link>
-      </div>
-      <div className="ml-auto flex items-center gap-4">
+    <header className="px-4 lg:px-6 h-auto flex flex-col md:flex-row items-center justify-between mt-4 mb-8 gap-4 md:gap-0">
+      <div className="flex items-center gap-4 order-2 md:order-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
+            <Button variant="ghost" className="flex items-center gap-2">
+              <Image
+                src="/logos/aibtcdev-avatar-250px.png"
+                height={40}
+                width={40}
+                alt="aibtc.dev"
+                className="rounded-full"
+              />
               {isLoading ? (
                 "Loading..."
               ) : error ? (
@@ -106,10 +91,16 @@ export function Nav() {
               <ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="start">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuItem className="font-mono">
-              {stxAddress.split("@")[0].toUpperCase()}
+              <a
+                href={`https://explorer.hiro.so/address/${stxAddress}`}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {stxAddress}
+              </a>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
@@ -117,7 +108,25 @@ export function Nav() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button>
+      </div>
+
+      <div className="order-1 md:order-2">
+        <Link href="/dashboard">
+          <Image
+            src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
+            height={100}
+            width={500}
+            alt="aibtc.dev"
+            className="w-auto max-w-[300px] md:max-w-[500px]"
+          />
+        </Link>
+      </div>
+
+      <div className="flex items-center gap-4 order-3">
+        <Button variant="outline">
+          <Link href="/dashboard">Dashboard</Link>
+        </Button>
+        <Button variant="outline">
           <Link href="/leaderboard">Leaderboard</Link>
         </Button>
         {isAdmin && (

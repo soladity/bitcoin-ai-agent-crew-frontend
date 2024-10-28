@@ -144,22 +144,22 @@ export default function Component() {
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
       <Card className="w-full opacity-50 pointer-events-none">
         <CardHeader>
-          <CardTitle>
-            Your Crews (Available at 9:00am PDT on Monday, Ocotober 28th, 2024)
-          </CardTitle>
+          <CardTitle>Your Crews</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Crew management</p>
+          <p className="text-muted-foreground">
+            Available once the competition starts
+          </p>
         </CardContent>
       </Card>
       <Card className="w-full opacity-50 pointer-events-none">
         <CardHeader>
-          <CardTitle>
-            Clone Crew (Available at 9:00am PDT on Monday, Ocotober 28th, 2024)
-          </CardTitle>
+          <CardTitle>Clone Crew</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Clone our crew</p>
+          <p className="text-muted-foreground">
+            Available once the competition starts
+          </p>
         </CardContent>
       </Card>
     </div>

@@ -4,8 +4,7 @@ import { Nav } from "@/components/reusables/Navbar";
 import { Footer } from "@/components/reusables/Footer";
 
 export const metadata: Metadata = {
-  title: "Crews | AIBTC Champions Sprint",
-  description: "Compete with AI on Stacks, the leading Bitcoin L2",
+  title: "Crews",
 };
 
 export default function CrewLayout({

@@ -5,8 +5,30 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 
 export const metadata: Metadata = {
-  title: "AIBTC Champions Sprint",
+  title: {
+    default: "AIBTC Champions Sprint",
+    template: "%s | AIBTC Champions Sprint"
+  },
   description: "Compete with AI on Stacks, the leading Bitcoin L2",
+  keywords: ["Bitcoin", "AI", "Stacks", "L2", "Trading"],
+  authors: [{ name: "AIBTC Champions" }],
+  openGraph: {
+    title: "AIBTC Champions Sprint",
+    description: "Compete with AI on Stacks, the leading Bitcoin L2",
+    type: "website",
+    images: [
+      {
+        url: "/aibtcdev-champions-sprint-trading-series-800px.png",
+        width: 800,
+        height: 800,
+        alt: "AIBTC Champions Sprint"
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/aibtcdev-champions-sprint-trading-series-800px.png"]
+  }
 };
 
 const rocGroteskRegular = localFont({
