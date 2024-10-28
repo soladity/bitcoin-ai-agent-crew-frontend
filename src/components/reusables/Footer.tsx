@@ -6,6 +6,7 @@ import {
   TwitterLogoIcon,
   GlobeIcon,
 } from "@radix-ui/react-icons";
+import { Disclaimer } from "@/components/reusables/Disclaimer";
 
 import { Button } from "@/components/ui/button";
 import { NavigationMenuLink } from "@/components/ui/navigation-menu";
@@ -13,7 +14,8 @@ import { NavigationMenuLink } from "@/components/ui/navigation-menu";
 export function Footer() {
   return (
     <footer className="border-t py-6">
-      <div className="container flex flex-col justify-center items-center max-w-screen-xl mx-auto px-4">
+      <div className="container flex flex-col justify-center items-center max-w-screen-xl mx-auto px-4 space-y-6">
+        <Disclaimer />
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <Link href="https://github.com/aibtcdev">
