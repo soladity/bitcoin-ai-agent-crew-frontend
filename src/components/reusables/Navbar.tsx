@@ -69,33 +69,18 @@ export function Nav() {
   }, [stxAddress]);
 
   return (
-    <header className="px-4 lg:px-6 h-16 flex items-center mb-8 relative">
-      <div className="w-[100px] flex items-center">
-        <Link href="/dashboard">
-          <Image
-            src="/logos/aibtcdev-avatar-250px.png"
-            height={40}
-            width={40}
-            alt="aibtc.dev"
-          />
-        </Link>
-      </div>
-      <div className="absolute left-1/2 transform -translate-x-1/2">
-        <Link href="/dashboard">
-          <Image
-            src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
-            height={100}
-            width={500}
-            alt="aibtc.dev"
-            className="w-auto max-w-[500px]"
-          />
-        </Link>
-      </div>
-      <div className="ml-auto flex items-center gap-4">
+    <header className="px-4 lg:px-6 h-16 flex flex-col md:flex-row items-center justify-between mb-8 gap-4 md:gap-0">
+      <div className="flex items-center gap-4 order-2 md:order-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
+            <Button variant="ghost" className="flex items-center gap-2">
+              <Image
+                src="/logos/aibtcdev-avatar-250px.png"
+                height={40}
+                width={40}
+                alt="aibtc.dev"
+                className="rounded-full"
+              />
               {isLoading ? (
                 "Loading..."
               ) : error ? (
@@ -106,7 +91,7 @@ export function Nav() {
               <ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="start">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuItem className="font-mono">
               <a
@@ -123,6 +108,24 @@ export function Nav() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+      </div>
+
+      <div className="order-1 md:order-2">
+        <Link href="/dashboard">
+          <Image
+            src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
+            height={100}
+            width={500}
+            alt="aibtc.dev"
+            className="w-auto max-w-[300px] md:max-w-[500px]"
+          />
+        </Link>
+      </div>
+
+      <div className="flex items-center gap-4 order-3">
+        <Button variant="outline">
+          <Link href="/dashboard">Dashboard</Link>
+        </Button>
         <Button>
           <Link href="/leaderboard">Leaderboard</Link>
         </Button>
