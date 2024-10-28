@@ -136,67 +136,30 @@
 // }
 
 "use client";
-
-import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 export default function Component() {
-  const [timeLeft, setTimeLeft] = useState(8 * 60 * 60); // 8 hours in seconds
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatTime = (time: number) => {
-    const hours = Math.floor(time / 3600);
-    const minutes = Math.floor((time % 3600) / 60);
-    const seconds = time % 60;
-    return `${hours.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-  };
-
   return (
     <div className="container mx-auto p-4 space-y-8">
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
-      <Card className="w-full mb-6">
+      <Card className="w-full opacity-50 pointer-events-none">
         <CardHeader>
-          <CardTitle>Countdown Timer</CardTitle>
+          <CardTitle>
+            Your Crews (Available at 9:00am PDT on Monday, Ocotober 28th, 2024)
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-bold text-center" aria-live="polite">
-            {formatTime(timeLeft)}
-          </div>
+          <p className="text-muted-foreground">Crew management</p>
         </CardContent>
       </Card>
       <Card className="w-full opacity-50 pointer-events-none">
         <CardHeader>
-          <CardTitle>Your Crews (Available Soon)</CardTitle>
+          <CardTitle>
+            Clone Crew (Available at 9:00am PDT on Monday, Ocotober 28th, 2024)
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">
-            Crew management is currently will be available soon.
-          </p>
-        </CardContent>
-      </Card>
-      <Card className="w-full opacity-50 pointer-events-none">
-        <CardHeader>
-          <CardTitle>Clone Crew (Available Soon)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            Cloning functionality is currently unavailable.
-          </p>
+          <p className="text-muted-foreground">Clone our crew</p>
         </CardContent>
       </Card>
     </div>
