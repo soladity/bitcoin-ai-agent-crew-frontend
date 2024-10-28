@@ -126,7 +126,7 @@ export function Nav() {
         <Button variant="outline">
           <Link href="/dashboard">Dashboard</Link>
         </Button>
-        <Button>
+        <Button variant="outline">
           <Link href="/leaderboard">Leaderboard</Link>
         </Button>
         {isAdmin && (
