@@ -14,7 +14,7 @@ export default function CrewLayout({
   const pathname = usePathname();
   const id = params.id as string;
   
-  const isChat = pathname.endsWith('/chat');
+  const isChat = pathname.includes('/chat');
 
   return (
     <div className="container mx-auto p-4 space-y-4">
@@ -26,7 +26,7 @@ export default function CrewLayout({
               Chat
             </Button>
           </Link>
-          <Link href={`/crew/${id}`}>
+          <Link href={`/crew/${id}/manage`}>
             <Button variant={isChat ? "outline" : "default"}>
               <Settings className="w-4 h-4 mr-2" />
               Manage
