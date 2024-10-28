@@ -69,7 +69,7 @@ export function Nav() {
   }, [stxAddress]);
 
   return (
-    <header className="px-4 lg:px-6 h-16 flex flex-col md:flex-row items-center justify-between mb-8 gap-4 md:gap-0">
+    <header className="px-4 lg:px-6 h-16 flex flex-col md:flex-row items-center justify-between mt-4 mb-8 gap-4 md:gap-0">
       <div className="flex items-center gap-4 order-2 md:order-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
