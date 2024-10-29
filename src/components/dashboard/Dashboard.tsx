@@ -121,12 +121,12 @@ export default function Component() {
                 : "Clone our Starter Crew"}
             </Button>
             {hasClonedAnalyzer ? (
-              <p className="text-sm text-green-600">
+              <p className="text-muted-foreground">
                 You&apos;ve successfully cloned the Trading Analyzer. You can
                 find it in your crews list.
               </p>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground">
                 Start with our pre-configured Trading Analyzer crew or create a
                 custom crew from scratch.
               </p>
