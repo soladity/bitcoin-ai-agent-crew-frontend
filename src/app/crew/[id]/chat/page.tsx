@@ -132,16 +132,7 @@ export default function CrewChat() {
 
       <Card className="h-[60vh] flex flex-col">
         <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-          {isLoading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
-            </div>
-          ) : (
-            messages.map((message, index) => (
+          {messages.map((message, index) => (
               <div
                 key={index}
                 className={`flex ${
