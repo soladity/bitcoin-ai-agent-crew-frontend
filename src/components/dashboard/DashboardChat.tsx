@@ -47,13 +47,13 @@ export default function DashboardChat() {
     // Add initial assistant message
     const crewsList =
       data && data.length > 0
-        ? "# Available Crews\n\n" +
+        ? "# Your Crews\n\n" +
           data.map((crew) => `${crew.name}: ${crew.description}`).join("\n\n")
-        : "You haven't created any crews yet.";
+        : "You haven't created any crews yet. You can get started by:\n\n1. Cloning our Trading Analyzer crew (recommended for beginners)\n2. Creating a custom crew from scratch";
 
     const initialMessage: Message = {
       role: "assistant",
-      content: `${crewsList}\n\nWhat would you like to do?`,
+      content: `${crewsList}\n\nHow would you like to proceed?`,
       timestamp: new Date(),
     };
 
