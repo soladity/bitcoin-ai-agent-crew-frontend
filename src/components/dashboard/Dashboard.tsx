@@ -25,7 +25,6 @@ interface Crew {
 
 export default function Component() {
   const [crews, setCrews] = useState<Crew[]>([]);
-  const [showCloneAnalyzer, setShowCloneAnalyzer] = useState(false);
   const [hasClonedAnalyzer, setHasClonedAnalyzer] = useState(false);
   const router = useRouter();
 
@@ -106,13 +105,10 @@ export default function Component() {
           )}
         </CardContent>
         <CardFooter className="flex flex-col items-start space-y-4">
-          {showCloneAnalyzer ? (
-            <CloneTradingAnalyzer onCloneComplete={handleCloneComplete} />
-          ) : (
-            <>
+          <>
+              <CloneTradingAnalyzer onCloneComplete={handleCloneComplete} />
               <Button
-                onClick={() => setShowCloneAnalyzer(true)}
-                className="w-full"
+                className="w-full hidden"
                 variant="outline"
                 disabled={hasClonedAnalyzer}
               >
