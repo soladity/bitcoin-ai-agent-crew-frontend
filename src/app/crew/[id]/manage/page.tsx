@@ -118,11 +118,7 @@ export default function CrewDetails() {
     <div className="space-y-8">
       <h1 className="text-3xl font-bold">{crew.name}</h1>
       <div className="space-y-8">
-        <Card>
-          <CardContent>
-            <ExecutionPanel crewName={crew.name} crewId={crew.id} />
-          </CardContent>
-        </Card>
+        <ExecutionPanel crewName={crew.name} crewId={crew.id} />
         <Card>
           <CardContent>
             <AgentManagement
