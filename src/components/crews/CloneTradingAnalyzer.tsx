@@ -120,7 +120,7 @@ export function CloneTradingAnalyzer({
       .from("crews")
       .select("id")
       .eq("profile_id", profile.user.id)
-      .eq("name", "TradingAnalyzer")
+      .eq("name", "Trading Analyzer")
       .single();
 
     if (error && error.code !== "PGRST116") {
