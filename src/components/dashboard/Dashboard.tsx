@@ -12,7 +12,6 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import DashboardChat from "./DashboardChat";
 
 interface Crew {
@@ -47,6 +46,8 @@ export default function Component() {
   };
 
   const checkClonedAnalyzer = async () => {
+    if (hasClonedAnalyzer) return;
+
     const { data: profile } = await supabase.auth.getUser();
     if (!profile.user) return;
 
