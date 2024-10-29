@@ -143,6 +143,14 @@ export default function Component() {
   return (
     <div className="container mx-auto p-4 space-y-8">
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Chat with your Crews</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DashboardChat />
+        </CardContent>
+      </Card>
       <Card className="w-full opacity-50 pointer-events-none">
         <CardHeader>
           <CardTitle>Your Crews</CardTitle>
@@ -164,14 +172,6 @@ export default function Component() {
         </CardContent>
       </Card>
       
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Chat Assistant</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DashboardChat />
-        </CardContent>
-      </Card>
     </div>
   );
 }
