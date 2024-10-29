@@ -86,10 +86,7 @@ export default function Component() {
         </CardContent>
       </Card>
       <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Your Crews</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="mt-4">
           {crews.length > 0 ? (
             <CrewManagement
               crews={crews}
