@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/utils/supabase/client";
-import Link from "next/link";
 
 interface Message {
   role: "user" | "assistant";
@@ -35,7 +34,7 @@ export default function CrewChat() {
         .select("id, name")
         .eq("id", id)
         .single();
-      
+
       if (error) {
         console.error("Error fetching crew:", error);
         return;
@@ -70,7 +69,7 @@ export default function CrewChat() {
 
     try {
       // TODO: Implement actual API call here
-      const response = await new Promise((resolve) => 
+      const response = await new Promise((resolve) =>
         setTimeout(() => resolve({ content: "This is a mock response." }), 1000)
       );
 
