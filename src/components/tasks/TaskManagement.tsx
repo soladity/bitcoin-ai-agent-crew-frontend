@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -18,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusIcon, Edit2Icon } from "lucide-react";
+import { PlusIcon, Edit2Icon, Trash2Icon } from "lucide-react";
 import TaskForm from "./TaskForm";
 import {
   Popover,
@@ -78,6 +79,30 @@ export default function TaskManagement({
     setEditingTask(task);
     setIsDialogOpen(true);
     onEditTask(task);
+  };
+
+  const handleDeleteTask = async (taskId: number) => {
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .delete()
+        .eq("id", taskId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Task deleted successfully",
+      });
+      onTaskAdded(); // Refresh the task list
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete the task. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getAgentName = (agentId: number) => {
@@ -165,14 +190,25 @@ export default function TaskManagement({
                 <TableCell>{getAgentName(task.agent_id)}</TableCell>
                 <TableCell>
                   {currentUser === task.profile_id && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditTask(task)}
-                    >
-                      <Edit2Icon className="h-4 w-4 mr-2" />
-                      Edit
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditTask(task)}
+                      >
+                        <Edit2Icon className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteTask(task.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2Icon className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
                   )}
                 </TableCell>
               </TableRow>
