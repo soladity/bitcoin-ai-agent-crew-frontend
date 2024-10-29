@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { supabase } from "@/utils/supabase/client";
@@ -131,7 +132,16 @@ export default function CrewChat() {
 
       <Card className="h-[60vh] flex flex-col">
         <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((message, index) => (
+          {isLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+            </div>
+          ) : (
+            messages.map((message, index) => (
             <div
               key={index}
               className={`flex ${
@@ -150,7 +160,7 @@ export default function CrewChat() {
                 </ReactMarkdown>
               </div>
             </div>
-          ))}
+          )))}
           <div ref={messagesEndRef} />
         </CardContent>
       </Card>
