@@ -106,17 +106,6 @@ export default function Component() {
         <CardFooter className="flex flex-col items-start space-y-4">
           <>
             <CloneTradingAnalyzer onCloneComplete={handleCloneComplete} />
-            {hasClonedAnalyzer ? (
-              <p className="text-muted-foreground">
-                You&apos;ve successfully cloned the Trading Analyzer. You can
-                find it in your crews list.
-              </p>
-            ) : (
-              <p className="text-muted-foreground">
-                Start with our pre-configured Trading Analyzer crew or create a
-                custom crew from scratch.
-              </p>
-            )}
             <Button
               className="w-full hidden"
               variant="outline"

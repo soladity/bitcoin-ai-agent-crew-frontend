@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "@/hooks/use-toast";
 import { CheckCircle } from "lucide-react";
 import {
   alex_tools,
@@ -197,6 +198,10 @@ export function CloneTradingAnalyzer({
 
       setHasCloned(true);
       onCloneComplete();
+      toast({
+        title: "Success",
+        description: "You've successfully cloned the Trading Analyzer. You can find it in your crews list.",
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
