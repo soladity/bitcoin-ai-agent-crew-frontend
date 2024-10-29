@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import ReactMarkdown from "react-markdown";
@@ -27,6 +28,7 @@ interface Crew {
 }
 
 export default function CrewChat() {
+  const { toast } = useToast();
   const params = useParams();
   const id = params.id as string;
   const [messages, setMessages] = useState<Message[]>([]);
@@ -93,11 +95,11 @@ export default function CrewChat() {
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
       const assistantMessage: Message = {
         role: "assistant",
         content: data.result.raw,
@@ -108,6 +110,11 @@ export default function CrewChat() {
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Error sending message:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to send message",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
