@@ -5,6 +5,7 @@ import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import ReactMarkdown from "react-markdown";
 
 interface Crew {
   id: number;
@@ -45,12 +46,12 @@ export default function DashboardChat() {
     
     // Add initial assistant message
     const crewsList = data && data.length > 0
-      ? data.map(crew => `- ${crew.name}`).join('\n')
+      ? "# Available Crews\n\n" + data.map(crew => `* ${crew.name}`).join('\n')
       : "You haven't created any crews yet.";
       
     const initialMessage: Message = {
       role: "assistant",
-      content: `Welcome! Here are your available crews:\n\n${crewsList}\n\nHow can I help you today?`,
+      content: `Welcome! ${crewsList}\n\nHow can I help you today?`,
       timestamp: new Date(),
     };
     
@@ -117,7 +118,7 @@ export default function DashboardChat() {
                     : "bg-muted"
                 }`}
               >
-                {message.content}
+                <ReactMarkdown>{message.content}</ReactMarkdown>
               </div>
             </div>
           ))}
