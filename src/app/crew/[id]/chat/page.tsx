@@ -153,6 +153,15 @@ export default function CrewChat() {
               </div>
             ))
           )}
+          {isLoading && (
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </CardContent>
       </Card>
