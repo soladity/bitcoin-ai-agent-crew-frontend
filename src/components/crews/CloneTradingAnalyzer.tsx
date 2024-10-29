@@ -150,7 +150,9 @@ export function CloneTradingAnalyzer({
       const { data: crew, error: crewError } = await supabase
         .from("crews")
         .insert({
-          name: "TradingAnalyzer",
+          name: "Trading Analyzer",
+          description:
+            "A pre-configured crew with agents and tasks for trading analysis and execution.",
           profile_id: profile.user.id,
         })
         .select()
@@ -200,7 +202,8 @@ export function CloneTradingAnalyzer({
       onCloneComplete();
       toast({
         title: "Success",
-        description: "You've successfully cloned the Trading Analyzer. You can find it in your crews list.",
+        description:
+          "You've successfully cloned the Trading Analyzer. You can find it in your crews list.",
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
