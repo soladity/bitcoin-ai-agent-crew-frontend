@@ -22,7 +22,7 @@ interface Message {
 
 export default function DashboardChat() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [crews, setCrews] = useState<Crew[]>([]);
+  const [, setCrews] = useState<Crew[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -43,18 +43,20 @@ export default function DashboardChat() {
     }
 
     setCrews(data || []);
-    
+
     // Add initial assistant message
-    const crewsList = data && data.length > 0
-      ? "# Available Crews\n\n" + data.map(crew => `- ${crew.name}`).join('\n\n')
-      : "You haven't created any crews yet.";
-      
+    const crewsList =
+      data && data.length > 0
+        ? "# Available Crews\n\n" +
+          data.map((crew) => `${crew.name}: ${crew.description}`).join("\n\n")
+        : "You haven't created any crews yet.";
+
     const initialMessage: Message = {
       role: "assistant",
-      content: `Welcome! ${crewsList}\n\nHow can I help you today?`,
+      content: `${crewsList}\n\nWhat would you like to do?`,
       timestamp: new Date(),
     };
-    
+
     setMessages([initialMessage]);
   };
 
@@ -82,13 +84,13 @@ export default function DashboardChat() {
 
     try {
       // Mock response
-      const response = await new Promise((resolve) => 
+      const response = await new Promise((resolve) =>
         setTimeout(() => resolve({ content: "This is a mock response." }), 1000)
       );
 
       const assistantMessage: Message = {
         role: "assistant",
-        content: (response as any).content,
+        content: (response as Message).content,
         timestamp: new Date(),
       };
 
