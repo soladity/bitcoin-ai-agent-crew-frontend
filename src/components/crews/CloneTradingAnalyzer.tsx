@@ -214,7 +214,8 @@ export function CloneTradingAnalyzer({
       <Button
         onClick={createTradingAnalyzer}
         disabled={isCloning || hasCloned}
-        className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 w-full"
+        variant="outline"
+        className="w-full"
       >
         {isCloning ? (
           <div className="flex items-center justify-center space-x-2">
@@ -230,11 +231,6 @@ export function CloneTradingAnalyzer({
           "Clone Trading Analyzer"
         )}
       </Button>
-      <p className="text-sm text-gray-600 max-w-md text-center">
-        {hasCloned
-          ? "You have successfully cloned the Trading Analyzer. Check your crews list to view and manage it."
-          : "Clone our trading analyzer to get started with pre-configured agents and tasks."}
-      </p>
     </div>
   );
 }
