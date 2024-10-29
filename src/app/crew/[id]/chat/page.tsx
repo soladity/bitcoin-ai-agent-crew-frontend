@@ -133,26 +133,25 @@ export default function CrewChat() {
       <Card className="h-[60vh] flex flex-col">
         <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`flex ${
+                message.role === "user" ? "justify-end" : "justify-start"
+              }`}
+            >
               <div
-                key={index}
-                className={`flex ${
-                  message.role === "user" ? "justify-end" : "justify-start"
+                className={`max-w-[70%] p-3 rounded-lg ${
+                  message.role === "user"
+                    ? "bg-primary text-primary-foreground ml-4"
+                    : "bg-muted"
                 }`}
               >
-                <div
-                  className={`max-w-[70%] p-3 rounded-lg ${
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground ml-4"
-                      : "bg-muted"
-                  }`}
-                >
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {message.content}
-                  </ReactMarkdown>
-                </div>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {message.content}
+                </ReactMarkdown>
               </div>
-            ))
-          )}
+            </div>
+          ))}
           {isLoading && (
             <div className="space-y-4">
               <Skeleton className="h-4 w-3/4" />
