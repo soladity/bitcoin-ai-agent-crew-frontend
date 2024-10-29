@@ -5,12 +5,20 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { supabase } from "@/utils/supabase/client";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  tokenUsage?: {
+    total_tokens: number;
+    prompt_tokens: number;
+    completion_tokens: number;
+    successful_requests: number;
+  };
 }
 
 interface Crew {
@@ -68,18 +76,33 @@ export default function CrewChat() {
     setIsLoading(true);
 
     try {
-      // TODO: Implement actual API call here
-      const response = await new Promise((resolve) =>
-        setTimeout(
-          () => resolve("Chat not implemented yet, coming soon!"),
-          1000
-        )
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/execute_crew/${id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            input: input,
+            history: messages.map(m => ({
+              role: m.role,
+              content: m.content
+            }))
+          }),
+        }
       );
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
       const assistantMessage: Message = {
         role: "assistant",
-        content: response as string,
+        content: data.result.raw,
         timestamp: new Date(),
+        tokenUsage: data.result.token_usage
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -114,7 +137,9 @@ export default function CrewChat() {
                     : "bg-muted"
                 }`}
               >
-                {message.content}
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {message.content}
+                </ReactMarkdown>
               </div>
             </div>
           ))}
