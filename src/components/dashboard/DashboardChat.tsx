@@ -1,9 +1,17 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+
+interface Crew {
+  id: number;
+  name: string;
+  description: string;
+  created_at: string;
+}
 
 interface Message {
   role: "user" | "assistant";
@@ -13,6 +21,7 @@ interface Message {
 
 export default function DashboardChat() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [crews, setCrews] = useState<Crew[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -20,6 +29,37 @@ export default function DashboardChat() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  const fetchCrews = async () => {
+    const { data, error } = await supabase
+      .from("crews")
+      .select("id, name, description, created_at")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching crews:", error);
+      return;
+    }
+
+    setCrews(data || []);
+    
+    // Add initial assistant message
+    const crewsList = data && data.length > 0
+      ? data.map(crew => `- ${crew.name}`).join('\n')
+      : "You haven't created any crews yet.";
+      
+    const initialMessage: Message = {
+      role: "assistant",
+      content: `Welcome! Here are your available crews:\n\n${crewsList}\n\nHow can I help you today?`,
+      timestamp: new Date(),
+    };
+    
+    setMessages([initialMessage]);
+  };
+
+  useEffect(() => {
+    fetchCrews();
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
