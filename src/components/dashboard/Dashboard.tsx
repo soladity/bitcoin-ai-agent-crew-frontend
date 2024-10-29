@@ -71,7 +71,6 @@ export default function Component() {
   };
 
   const handleCloneComplete = () => {
-    setShowCloneAnalyzer(false);
     setHasClonedAnalyzer(true);
     fetchCrews();
   };
@@ -106,34 +105,33 @@ export default function Component() {
         </CardContent>
         <CardFooter className="flex flex-col items-start space-y-4">
           <>
-              <CloneTradingAnalyzer onCloneComplete={handleCloneComplete} />
-              <Button
-                className="w-full hidden"
-                variant="outline"
-                disabled={hasClonedAnalyzer}
-              >
-                {hasClonedAnalyzer ? (
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                ) : (
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                )}
-                {hasClonedAnalyzer
-                  ? "Trading Analyzer Cloned"
-                  : "Clone our Starter Crew"}
-              </Button>
+            <CloneTradingAnalyzer onCloneComplete={handleCloneComplete} />
+            <Button
+              className="w-full hidden"
+              variant="outline"
+              disabled={hasClonedAnalyzer}
+            >
               {hasClonedAnalyzer ? (
-                <p className="text-sm text-green-600">
-                  You&apos;ve successfully cloned the Trading Analyzer. You can
-                  find it in your crews list.
-                </p>
+                <CheckCircle className="mr-2 h-4 w-4" />
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  Start with our pre-configured Trading Analyzer crew or create
-                  a custom crew from scratch.
-                </p>
+                <PlusCircle className="mr-2 h-4 w-4" />
               )}
-            </>
-          )}
+              {hasClonedAnalyzer
+                ? "Trading Analyzer Cloned"
+                : "Clone our Starter Crew"}
+            </Button>
+            {hasClonedAnalyzer ? (
+              <p className="text-sm text-green-600">
+                You&apos;ve successfully cloned the Trading Analyzer. You can
+                find it in your crews list.
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Start with our pre-configured Trading Analyzer crew or create a
+                custom crew from scratch.
+              </p>
+            )}
+          </>
         </CardFooter>
       </Card>
     </div>
