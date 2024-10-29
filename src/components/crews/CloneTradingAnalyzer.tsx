@@ -4,7 +4,14 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "@/hooks/use-toast";
 import { CheckCircle } from "lucide-react";
+import {
+  alex_tools,
+  bitflow_tools,
+  lunarcrush_tools,
+  web_search_tools,
+} from "../agents/AgentForm";
 
 interface Agent {
   name: string;
@@ -26,7 +33,7 @@ const DEFAULT_AGENTS: Agent[] = [
     goal: "Analyze and provide insights on market trends using ALEX data",
     backstory:
       "Specialized in processing and analyzing ALEX market data to identify trading opportunities and market patterns",
-    agent_tools: ["alex_tools"],
+    agent_tools: [...alex_tools, ...web_search_tools],
   },
   {
     name: "Research agent for bitflow",
@@ -34,7 +41,7 @@ const DEFAULT_AGENTS: Agent[] = [
     goal: "Monitor and analyze Bitflow trading signals and market data",
     backstory:
       "Expert in interpreting Bitflow signals and correlating them with market movements",
-    agent_tools: ["bitflow_tools"],
+    agent_tools: [...bitflow_tools, ...web_search_tools],
   },
   {
     name: "Research agent for lunarcrush",
@@ -42,7 +49,7 @@ const DEFAULT_AGENTS: Agent[] = [
     goal: "Track and analyze social sentiment data from LunarCrush",
     backstory:
       "Specialized in social media sentiment analysis and its correlation with crypto markets",
-    agent_tools: ["lunarcrush_tools"],
+    agent_tools: [...lunarcrush_tools],
   },
   {
     name: "Trade executor for bitflow",
@@ -50,7 +57,7 @@ const DEFAULT_AGENTS: Agent[] = [
     goal: "Execute trades based on analyzed signals and market conditions",
     backstory:
       "Experienced in implementing trading strategies and managing trade execution",
-    agent_tools: ["trade_executor"],
+    agent_tools: [...bitflow_tools],
   },
 ];
 
@@ -58,27 +65,27 @@ const createTaskForAgent = (agent: Agent): Task => {
   const taskMap: { [key: string]: Task } = {
     "Research agent for ALEX": {
       description:
-        "Monitor and analyze ALEX market data for trading opportunities",
+        "Analyze available data from ALEX and provide insights on market trends related to the user's input.",
       expected_output:
-        "Daily report on market trends, potential entry/exit points, and risk analysis",
+        "Report on market trends, potential entry/exit points, and risk analysis.",
     },
     "Research agent for bitflow": {
       description:
-        "Analyze Bitflow signals and identify high-probability trading setups",
+        "Analyze available tokens on Bitflow and provide insights on potential trading opportunities related to the user's input.",
       expected_output:
-        "Hourly updates on signal strength, trade recommendations, and risk assessment",
+        "Report on signal strength, trade recommendations, and risk assessment.",
     },
     "Research agent for lunarcrush": {
       description:
-        "Track social sentiment metrics and their correlation with market movements",
+        "Track social sentiment metrics and their correlation with market movements related to the user's input.",
       expected_output:
-        "Real-time updates on social sentiment shifts and their market implications",
+        "Real-time updates on social sentiment shifts and their market implications.",
     },
     "Trade executor for bitflow": {
       description:
-        "Execute trades based on confirmed signals and risk parameters",
+        "Execute trades if requested based on confirmed signals and risk parameters.",
       expected_output:
-        "Trade execution reports, position management updates, and performance metrics",
+        "Trade execution reports, position management updates, and performance metrics. Always include the txid returned after making a transaction.",
     },
   };
 
@@ -113,7 +120,7 @@ export function CloneTradingAnalyzer({
       .from("crews")
       .select("id")
       .eq("profile_id", profile.user.id)
-      .eq("name", "TradingAnalyzer")
+      .eq("name", "Trading Analyzer")
       .single();
 
     if (error && error.code !== "PGRST116") {
@@ -143,7 +150,9 @@ export function CloneTradingAnalyzer({
       const { data: crew, error: crewError } = await supabase
         .from("crews")
         .insert({
-          name: "TradingAnalyzer",
+          name: "Trading Analyzer",
+          description:
+            "A pre-configured crew with agents and tasks for trading analysis and execution.",
           profile_id: profile.user.id,
         })
         .select()
@@ -191,6 +200,11 @@ export function CloneTradingAnalyzer({
 
       setHasCloned(true);
       onCloneComplete();
+      toast({
+        title: "Success",
+        description:
+          "You've successfully cloned the Trading Analyzer. You can find it in your crews list.",
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -208,7 +222,8 @@ export function CloneTradingAnalyzer({
       <Button
         onClick={createTradingAnalyzer}
         disabled={isCloning || hasCloned}
-        className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 w-full"
+        variant="outline"
+        className="w-full"
       >
         {isCloning ? (
           <div className="flex items-center justify-center space-x-2">
@@ -224,11 +239,6 @@ export function CloneTradingAnalyzer({
           "Clone Trading Analyzer"
         )}
       </Button>
-      <p className="text-sm text-gray-600 max-w-md text-center">
-        {hasCloned
-          ? "You have successfully cloned the Trading Analyzer. Check your crews list to view and manage it."
-          : "Clone our trading analyzer to get started with pre-configured agents and tasks."}
-      </p>
     </div>
   );
 }

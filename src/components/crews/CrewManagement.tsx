@@ -19,13 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { PlusIcon, MoreHorizontal, Trash2Icon, UserIcon } from "lucide-react";
+import { PlusIcon, Trash2Icon, UserIcon, Edit2Icon } from "lucide-react";
 import CrewForm from "./CrewForm";
 
 interface Crew {
@@ -53,16 +47,37 @@ export function CrewManagement({
   const handleDelete = async (id: number) => {
     setLoading(true);
     try {
-      const { error } = await supabase.from("crews").delete().eq("id", id);
+      // First delete all tasks associated with the crew
+      const { error: tasksError } = await supabase
+        .from("tasks")
+        .delete()
+        .eq("crew_id", id);
+      
+      if (tasksError) throw tasksError;
 
-      if (error) throw error;
+      // Then delete all agents associated with the crew
+      const { error: agentsError } = await supabase
+        .from("agents")
+        .delete()
+        .eq("crew_id", id);
+      
+      if (agentsError) throw agentsError;
+
+      // Finally delete the crew itself
+      const { error: crewError } = await supabase
+        .from("crews")
+        .delete()
+        .eq("id", id);
+
+      if (crewError) throw crewError;
+
       onCrewUpdate();
       toast({
         title: "Crew deleted",
-        description: "The crew has been successfully deleted.",
+        description: "The crew and all its associated data has been successfully deleted.",
       });
     } catch (error) {
-      console.log(error);
+      console.error("Error deleting crew:", error);
       toast({
         title: "Error",
         description: "Failed to delete the crew. Please try again.",
@@ -102,8 +117,7 @@ export function CrewManagement({
               <TableHead>Name</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Created</TableHead>
-              <TableHead>Select</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -122,33 +136,26 @@ export function CrewManagement({
                   {new Date(crew.created_at).toLocaleDateString()}
                 </TableCell>
                 <TableCell>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onCrewSelect(crew)}
-                  >
-                    Select Crew
-                  </Button>
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => handleDelete(crew.id)}
-                        disabled={loading}
-                        className="text-destructive"
-                      >
-                        <Trash2Icon className="mr-2 h-4 w-4" />
-                        <span>Delete</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onCrewSelect(crew)}
+                    >
+                      <Edit2Icon className="h-4 w-4 mr-2" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(crew.id)}
+                      disabled={loading}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2Icon className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

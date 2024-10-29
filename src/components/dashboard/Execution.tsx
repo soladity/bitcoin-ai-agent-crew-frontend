@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 import { Send } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
 import {
   PieChart,
   Pie,
@@ -17,7 +17,7 @@ import {
   Legend,
 } from "recharts";
 
-interface ApiResponse {
+export interface ApiResponse {
   result: {
     raw: string;
     token_usage: {
@@ -41,6 +41,7 @@ export default function ExecutionPanel({
   const [inputStr, setInputStr] = useState("");
   const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleExecuteCrew = async () => {
     if (!inputStr.trim()) return;

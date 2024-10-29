@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusIcon, Edit2Icon } from "lucide-react";
+import { PlusIcon, Edit2Icon, Trash2Icon } from "lucide-react";
 import AgentForm from "./AgentForm";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -144,6 +144,39 @@ export default function AgentManagement({
     setIsDialogOpen(true);
   };
 
+  const handleDeleteAgent = async (agentId: number) => {
+    try {
+      // First delete all tasks associated with the agent
+      const { error: tasksError } = await supabase
+        .from("tasks")
+        .delete()
+        .eq("agent_id", agentId);
+
+      if (tasksError) throw tasksError;
+
+      // Then delete the agent
+      const { error: agentError } = await supabase
+        .from("agents")
+        .delete()
+        .eq("id", agentId);
+
+      if (agentError) throw agentError;
+
+      toast({
+        title: "Success",
+        description: "Agent and associated tasks deleted successfully",
+      });
+      onAgentAdded(); // Refresh the agent list
+    } catch (error) {
+      console.error("Error deleting agent:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete the agent. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredAgents = agents.filter((agent) =>
     agent.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -247,14 +280,25 @@ export default function AgentManagement({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEditAgent(agent)}
-                  >
-                    <Edit2Icon className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditAgent(agent)}
+                    >
+                      <Edit2Icon className="h-4 w-4 mr-2" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteAgent(agent.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2Icon className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
