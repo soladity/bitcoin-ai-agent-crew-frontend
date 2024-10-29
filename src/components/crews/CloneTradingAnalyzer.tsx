@@ -62,29 +62,29 @@ const DEFAULT_AGENTS: Agent[] = [
 
 const createTaskForAgent = (agent: Agent): Task => {
   const taskMap: { [key: string]: Task } = {
-    "Research agent for ALEX": {
+    "ALEX Researcher": {
       description:
-        "Monitor and analyze ALEX market data for trading opportunities",
+        "Analyze available data from ALEX and provide insights on market trends related to the user's input.",
       expected_output:
-        "Daily report on market trends, potential entry/exit points, and risk analysis",
+        "Report on market trends, potential entry/exit points, and risk analysis.",
     },
-    "Research agent for bitflow": {
+    "Bitflow Researcher": {
       description:
-        "Analyze Bitflow signals and identify high-probability trading setups",
+        "Analyze available tokens on Bitflow and provide insights on potential trading opportunities related to the user's input.",
       expected_output:
-        "Hourly updates on signal strength, trade recommendations, and risk assessment",
+        "Report on signal strength, trade recommendations, and risk assessment.",
     },
-    "Research agent for lunarcrush": {
+    "LunarCrush Researcher": {
       description:
-        "Track social sentiment metrics and their correlation with market movements",
+        "Track social sentiment metrics and their correlation with market movements related to the user's input.",
       expected_output:
-        "Real-time updates on social sentiment shifts and their market implications",
+        "Real-time updates on social sentiment shifts and their market implications.",
     },
-    "Trade executor for bitflow": {
+    "Bitflow Trade Executor": {
       description:
-        "Execute trades based on confirmed signals and risk parameters",
+        "Execute trades if requested based on confirmed signals and risk parameters.",
       expected_output:
-        "Trade execution reports, position management updates, and performance metrics",
+        "Trade execution reports, position management updates, and performance metrics. Always include the txid returned after making a transaction.",
     },
   };
 
