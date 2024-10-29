@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { supabase } from "@/utils/supabase/client";
+import { ApiResponse } from "@/components/dashboard/Execution";
 
 interface Message {
   role: "user" | "assistant";
@@ -78,6 +79,9 @@ export default function CrewChat() {
     setIsLoading(true);
 
     try {
+      const requestBody = `# Current Input\n${input}\n\n# Conversation History\n${messages
+        .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
+        .join("\n\n")}`;
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/execute_crew/${id}`,
         {
@@ -85,26 +89,22 @@ export default function CrewChat() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            input: input,
-            history: messages.map(m => ({
-              role: m.role,
-              content: m.content
-            }))
-          }),
+          body: JSON.stringify(requestBody),
         }
       );
 
-      const data = await response.json();
-      
+      const data: ApiResponse = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+        throw new Error(
+          data.result.raw || `HTTP error! status: ${response.status}`
+        );
       }
       const assistantMessage: Message = {
         role: "assistant",
         content: data.result.raw,
         timestamp: new Date(),
-        tokenUsage: data.result.token_usage
+        tokenUsage: data.result.token_usage,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -112,7 +112,8 @@ export default function CrewChat() {
       console.error("Error sending message:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send message",
+        description:
+          error instanceof Error ? error.message : "Failed to send message",
         variant: "destructive",
       });
     } finally {

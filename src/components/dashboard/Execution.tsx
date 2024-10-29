@@ -17,7 +17,7 @@ import {
   Legend,
 } from "recharts";
 
-interface ApiResponse {
+export interface ApiResponse {
   result: {
     raw: string;
     token_usage: {
