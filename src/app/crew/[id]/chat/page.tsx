@@ -81,7 +81,7 @@ export default function CrewChat() {
 
     try {
       const requestBody = `# Current Input\n${input}\n\n# Conversation History\n${messages
-        .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
+        .map((m) => `${m.role.toUpperCase()} (${m.timestamp}): ${m.content}`)
         .join("\n\n")}`;
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/execute_crew/${id}`,
@@ -142,25 +142,26 @@ export default function CrewChat() {
             </div>
           ) : (
             messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex ${
-                message.role === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
               <div
-                className={`max-w-[70%] p-3 rounded-lg ${
-                  message.role === "user"
-                    ? "bg-primary text-primary-foreground ml-4"
-                    : "bg-muted"
+                key={index}
+                className={`flex ${
+                  message.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {message.content}
-                </ReactMarkdown>
+                <div
+                  className={`max-w-[70%] p-3 rounded-lg ${
+                    message.role === "user"
+                      ? "bg-primary text-primary-foreground ml-4"
+                      : "bg-muted"
+                  }`}
+                >
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
               </div>
-            </div>
-          )))}
+            ))
+          )}
           <div ref={messagesEndRef} />
         </CardContent>
       </Card>
