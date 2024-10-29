@@ -46,7 +46,7 @@ export default function DashboardChat() {
     
     // Add initial assistant message
     const crewsList = data && data.length > 0
-      ? "# Available Crews\n\n" + data.map(crew => `* ${crew.name}`).join('\n')
+      ? "# Available Crews\n\n" + data.map(crew => `• ${crew.name}`).join('\n')
       : "You haven't created any crews yet.";
       
     const initialMessage: Message = {
