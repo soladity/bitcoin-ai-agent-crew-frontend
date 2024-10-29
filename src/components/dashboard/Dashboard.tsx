@@ -137,6 +137,7 @@
 
 "use client";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import DashboardChat from "./DashboardChat";
 
 export default function Component() {
   return (
@@ -160,6 +161,15 @@ export default function Component() {
           <p className="text-muted-foreground">
             Available once the competition starts
           </p>
+        </CardContent>
+      </Card>
+      
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Chat Assistant</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DashboardChat />
         </CardContent>
       </Card>
     </div>
