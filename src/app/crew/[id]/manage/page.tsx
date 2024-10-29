@@ -117,32 +117,32 @@ export default function CrewDetails() {
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold">{crew.name}</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="space-y-8">
-          <Card>
-            <CardContent>
-              <AgentManagement
-                crewId={crew.id}
-                onAgentAdded={handleAgentAdded}
-              />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <TaskManagement
-                crewId={crew.id}
-                onTaskAdded={handleTaskAdded}
-                tasks={tasks}
-                agents={agents}
-                currentUser={currentUser}
-                onEditTask={handleEditTask}
-              />
-            </CardContent>
-          </Card>
-        </div>
-        <div>
-          <ExecutionPanel crewName={crew.name} crewId={crew.id} />
-        </div>
+      <div className="space-y-8">
+        <Card>
+          <CardContent>
+            <ExecutionPanel crewName={crew.name} crewId={crew.id} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent>
+            <AgentManagement
+              crewId={crew.id}
+              onAgentAdded={handleAgentAdded}
+            />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent>
+            <TaskManagement
+              crewId={crew.id}
+              onTaskAdded={handleTaskAdded}
+              tasks={tasks}
+              agents={agents}
+              currentUser={currentUser}
+              onEditTask={handleEditTask}
+            />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
