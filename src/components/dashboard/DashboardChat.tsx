@@ -85,7 +85,10 @@ export default function DashboardChat() {
     try {
       // Mock response
       const response = await new Promise((resolve) =>
-        setTimeout(() => resolve({ content: "This is a mock response." }), 1000)
+        setTimeout(
+          () => resolve({ content: "Chat not implemented yet, coming soon!" }),
+          1000
+        )
       );
 
       const assistantMessage: Message = {

@@ -70,12 +70,15 @@ export default function CrewChat() {
     try {
       // TODO: Implement actual API call here
       const response = await new Promise((resolve) =>
-        setTimeout(() => resolve({ content: "This is a mock response." }), 1000)
+        setTimeout(
+          () => resolve("Chat not implemented yet, coming soon!"),
+          1000
+        )
       );
 
       const assistantMessage: Message = {
         role: "assistant",
-        content: (response as any).content,
+        content: response as string,
         timestamp: new Date(),
       };
 
