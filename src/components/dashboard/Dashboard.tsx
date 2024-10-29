@@ -13,7 +13,6 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, CheckCircle } from "lucide-react";
 import DashboardChat from "./DashboardChat";
 
 interface Crew {
@@ -106,20 +105,6 @@ export default function Component() {
         <CardFooter className="flex flex-col items-start space-y-4">
           <>
             <CloneTradingAnalyzer onCloneComplete={handleCloneComplete} />
-            <Button
-              className="w-full hidden"
-              variant="outline"
-              disabled={hasClonedAnalyzer}
-            >
-              {hasClonedAnalyzer ? (
-                <CheckCircle className="mr-2 h-4 w-4" />
-              ) : (
-                <PlusCircle className="mr-2 h-4 w-4" />
-              )}
-              {hasClonedAnalyzer
-                ? "Trading Analyzer Cloned"
-                : "Clone our Starter Crew"}
-            </Button>
           </>
         </CardFooter>
       </Card>

@@ -19,13 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { PlusIcon, MoreHorizontal, Trash2Icon, UserIcon } from "lucide-react";
+import { PlusIcon, Trash2Icon, UserIcon } from "lucide-react";
 import CrewForm from "./CrewForm";
 
 interface Crew {
