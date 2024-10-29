@@ -62,25 +62,25 @@ const DEFAULT_AGENTS: Agent[] = [
 
 const createTaskForAgent = (agent: Agent): Task => {
   const taskMap: { [key: string]: Task } = {
-    "ALEX Researcher": {
+    "Research agent for ALEX": {
       description:
         "Analyze available data from ALEX and provide insights on market trends related to the user's input.",
       expected_output:
         "Report on market trends, potential entry/exit points, and risk analysis.",
     },
-    "Bitflow Researcher": {
+    "Research agent for bitflow": {
       description:
         "Analyze available tokens on Bitflow and provide insights on potential trading opportunities related to the user's input.",
       expected_output:
         "Report on signal strength, trade recommendations, and risk assessment.",
     },
-    "LunarCrush Researcher": {
+    "Research agent for lunarcrush": {
       description:
         "Track social sentiment metrics and their correlation with market movements related to the user's input.",
       expected_output:
         "Real-time updates on social sentiment shifts and their market implications.",
     },
-    "Bitflow Trade Executor": {
+    "Trade executor for bitflow": {
       description:
         "Execute trades if requested based on confirmed signals and risk parameters.",
       expected_output:
