@@ -117,7 +117,7 @@ export function CrewManagement({
               <TableHead>Name</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Created</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -135,8 +135,8 @@ export function CrewManagement({
                 <TableCell>
                   {new Date(crew.created_at).toLocaleDateString()}
                 </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
+                <TableCell>
+                  <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
