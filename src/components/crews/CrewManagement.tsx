@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusIcon, Trash2Icon, UserIcon } from "lucide-react";
+import { PlusIcon, Trash2Icon, UserIcon, Edit2Icon } from "lucide-react";
 import CrewForm from "./CrewForm";
 
 interface Crew {
@@ -142,7 +142,8 @@ export function CrewManagement({
                       size="sm"
                       onClick={() => onCrewSelect(crew)}
                     >
-                      Select
+                      <Edit2Icon className="h-4 w-4 mr-2" />
+                      Edit
                     </Button>
                     <Button
                       variant="outline"
@@ -151,7 +152,8 @@ export function CrewManagement({
                       disabled={loading}
                       className="text-destructive hover:text-destructive"
                     >
-                      <Trash2Icon className="h-4 w-4" />
+                      <Trash2Icon className="h-4 w-4 mr-2" />
+                      Delete
                     </Button>
                   </div>
                 </TableCell>
