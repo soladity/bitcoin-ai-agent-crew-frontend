@@ -5,6 +5,12 @@ import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle } from "lucide-react";
+import {
+  alex_tools,
+  bitflow_tools,
+  lunarcrush_tools,
+  web_search_tools,
+} from "../agents/AgentForm";
 
 interface Agent {
   name: string;
@@ -26,7 +32,7 @@ const DEFAULT_AGENTS: Agent[] = [
     goal: "Analyze and provide insights on market trends using ALEX data",
     backstory:
       "Specialized in processing and analyzing ALEX market data to identify trading opportunities and market patterns",
-    agent_tools: ["alex_tools"],
+    agent_tools: [...alex_tools, ...web_search_tools],
   },
   {
     name: "Research agent for bitflow",
@@ -34,7 +40,7 @@ const DEFAULT_AGENTS: Agent[] = [
     goal: "Monitor and analyze Bitflow trading signals and market data",
     backstory:
       "Expert in interpreting Bitflow signals and correlating them with market movements",
-    agent_tools: ["bitflow_tools"],
+    agent_tools: [...bitflow_tools, ...web_search_tools],
   },
   {
     name: "Research agent for lunarcrush",
@@ -42,7 +48,7 @@ const DEFAULT_AGENTS: Agent[] = [
     goal: "Track and analyze social sentiment data from LunarCrush",
     backstory:
       "Specialized in social media sentiment analysis and its correlation with crypto markets",
-    agent_tools: ["lunarcrush_tools"],
+    agent_tools: [...lunarcrush_tools],
   },
   {
     name: "Trade executor for bitflow",
@@ -50,7 +56,7 @@ const DEFAULT_AGENTS: Agent[] = [
     goal: "Execute trades based on analyzed signals and market conditions",
     backstory:
       "Experienced in implementing trading strategies and managing trade execution",
-    agent_tools: ["trade_executor"],
+    agent_tools: [...bitflow_tools],
   },
 ];
 
