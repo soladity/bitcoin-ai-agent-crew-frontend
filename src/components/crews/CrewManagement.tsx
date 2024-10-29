@@ -53,16 +53,37 @@ export function CrewManagement({
   const handleDelete = async (id: number) => {
     setLoading(true);
     try {
-      const { error } = await supabase.from("crews").delete().eq("id", id);
+      // First delete all tasks associated with the crew
+      const { error: tasksError } = await supabase
+        .from("tasks")
+        .delete()
+        .eq("crew_id", id);
+      
+      if (tasksError) throw tasksError;
 
-      if (error) throw error;
+      // Then delete all agents associated with the crew
+      const { error: agentsError } = await supabase
+        .from("agents")
+        .delete()
+        .eq("crew_id", id);
+      
+      if (agentsError) throw agentsError;
+
+      // Finally delete the crew itself
+      const { error: crewError } = await supabase
+        .from("crews")
+        .delete()
+        .eq("id", id);
+
+      if (crewError) throw crewError;
+
       onCrewUpdate();
       toast({
         title: "Crew deleted",
-        description: "The crew has been successfully deleted.",
+        description: "The crew and all its associated data has been successfully deleted.",
       });
     } catch (error) {
-      console.log(error);
+      console.error("Error deleting crew:", error);
       toast({
         title: "Error",
         description: "Failed to delete the crew. Please try again.",
