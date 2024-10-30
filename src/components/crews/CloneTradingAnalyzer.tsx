@@ -12,21 +12,9 @@ import {
   lunarcrush_tools,
   web_search_tools,
 } from "../agents/AgentForm";
+import { CloneAgent, CloneTask } from "@/types/supabase";
 
-interface Agent {
-  name: string;
-  role: string;
-  goal: string;
-  backstory: string;
-  agent_tools: string[];
-}
-
-interface Task {
-  description: string;
-  expected_output: string;
-}
-
-const DEFAULT_AGENTS: Agent[] = [
+const DEFAULT_AGENTS: CloneAgent[] = [
   {
     name: "Research agent for ALEX",
     role: "Market Researcher",
@@ -61,8 +49,8 @@ const DEFAULT_AGENTS: Agent[] = [
   },
 ];
 
-const createTaskForAgent = (agent: Agent): Task => {
-  const taskMap: { [key: string]: Task } = {
+const createTaskForAgent = (agent: CloneAgent): CloneTask => {
+  const taskMap: { [key: string]: CloneTask } = {
     "Research agent for ALEX": {
       description:
         "Analyze available data from ALEX and provide insights on market trends related to the user's input.",

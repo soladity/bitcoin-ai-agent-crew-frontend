@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Search } from "lucide-react";
+import { Loader2, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,12 +16,14 @@ import {
 } from "@/components/ui/select";
 
 type UserRole = "Normal" | "Admin" | "Participant";
+type SortOrder = "asc" | "desc" | null;
 
 interface Profile {
   id: string;
   email: string;
   role: UserRole;
   assigned_agent_address: string | null;
+  account_index: number | null;
 }
 
 interface SupabaseError {
@@ -35,6 +37,10 @@ export default function AdminPanel() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "All">("All");
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [editingProfile, setEditingProfile] = useState<{
+    [key: string]: { assigned_agent_address: string; account_index: string };
+  }>({});
+  const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
   useEffect(() => {
     checkAdminStatus();
@@ -72,13 +78,21 @@ export default function AdminPanel() {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, email, role, assigned_agent_address");
+        .select("id, email, role, assigned_agent_address, account_index");
 
       if (error) throw error;
 
       if (data && Array.isArray(data)) {
         const typedProfiles = data as Profile[];
         setProfiles(typedProfiles);
+        const initialEditingState = typedProfiles.reduce((acc, profile) => {
+          acc[profile.id] = {
+            assigned_agent_address: profile.assigned_agent_address || "",
+            account_index: profile.account_index?.toString() || "",
+          };
+          return acc;
+        }, {} as { [key: string]: { assigned_agent_address: string; account_index: string } });
+        setEditingProfile(initialEditingState);
       }
     } catch (error) {
       const supabaseError = error as SupabaseError;
@@ -88,10 +102,7 @@ export default function AdminPanel() {
     }
   };
 
-  const updateProfile = async (
-    userId: string,
-    updates: Partial<Profile>
-  ): Promise<void> => {
+  const updateProfile = async (userId: string): Promise<void> => {
     if (!isAdmin) {
       setError("Only admins can update profiles");
       return;
@@ -99,6 +110,14 @@ export default function AdminPanel() {
 
     try {
       setError(null);
+      const updates = {
+        assigned_agent_address:
+          editingProfile[userId].assigned_agent_address || null,
+        account_index:
+          editingProfile[userId].account_index === ""
+            ? 0
+            : parseInt(editingProfile[userId].account_index, 10),
+      };
       const { error } = await supabase
         .from("profiles")
         .update(updates)
@@ -112,12 +131,65 @@ export default function AdminPanel() {
     }
   };
 
+  const handleInputChange = (
+    userId: string,
+    field: "assigned_agent_address" | "account_index",
+    value: string
+  ) => {
+    setEditingProfile((prev) => ({
+      ...prev,
+      [userId]: {
+        ...prev[userId],
+        [field]: value,
+      },
+    }));
+  };
+
+  const toggleSort = () => {
+    setSortOrder((current) => {
+      if (current === null) return "asc";
+      if (current === "asc") return "desc";
+      return null;
+    });
+  };
+
+  const sortProfiles = (profiles: Profile[]): Profile[] => {
+    if (sortOrder === null) return profiles;
+
+    return [...profiles].sort((a, b) => {
+      const indexA = a.account_index ?? 0;
+      const indexB = b.account_index ?? 0;
+
+      if (sortOrder === "asc") {
+        return indexA - indexB;
+      } else {
+        return indexB - indexA;
+      }
+    });
+  };
+
+  const getSortIcon = () => {
+    if (sortOrder === "asc")
+      return <ArrowUp className="inline-block ml-1 h-4 w-4" />;
+    if (sortOrder === "desc")
+      return <ArrowDown className="inline-block ml-1 h-4 w-4" />;
+    return <ArrowUpDown className="inline-block ml-1 h-4 w-4" />;
+  };
+
+  const getSortText = () => {
+    if (sortOrder === "asc") return "Ascending";
+    if (sortOrder === "desc") return "Descending";
+    return "Default";
+  };
+
   const filteredProfiles = profiles.filter((profile) => {
     const stacksAddress = profile.email.split("@")[0].toLowerCase();
     const matchesSearch = stacksAddress.includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === "All" || profile.role === roleFilter;
     return matchesSearch && matchesRole;
   });
+
+  const sortedAndFilteredProfiles = sortProfiles(filteredProfiles);
 
   if (loading) {
     return (
@@ -188,6 +260,15 @@ export default function AdminPanel() {
           <table className="w-full">
             <thead>
               <tr className="border-b">
+                <th
+                  className="px-4 py-2 text-left cursor-pointer"
+                  onClick={toggleSort}
+                >
+                  Account Index {getSortIcon()}
+                  <span className="ml-2 text-sm font-normal text-gray-500">
+                    ({getSortText()})
+                  </span>
+                </th>
                 <th className="px-4 py-2 text-left">Stack Address</th>
                 <th className="px-4 py-2 text-left">Role</th>
                 <th className="px-4 py-2 text-left">Agent Address</th>
@@ -195,8 +276,22 @@ export default function AdminPanel() {
               </tr>
             </thead>
             <tbody>
-              {filteredProfiles.map((profile) => (
+              {sortedAndFilteredProfiles.map((profile) => (
                 <tr key={profile.id} className="border-b">
+                  <td className="px-4 py-2">
+                    <Input
+                      type="text"
+                      value={editingProfile[profile.id]?.account_index || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "" || /^\d+$/.test(value)) {
+                          handleInputChange(profile.id, "account_index", value);
+                        }
+                      }}
+                      placeholder="Enter account index"
+                      className="w-full"
+                    />
+                  </td>
                   <td className="px-4 py-2 font-mono">
                     {formatEmail(profile.email)}
                   </td>
@@ -204,11 +299,7 @@ export default function AdminPanel() {
                     <select
                       className="w-full p-2 border rounded-md"
                       value={profile.role}
-                      onChange={(e) =>
-                        updateProfile(profile.id, {
-                          role: e.target.value as UserRole,
-                        })
-                      }
+                      onChange={() => updateProfile(profile.id)}
                     >
                       <option value="Normal">Normal</option>
                       <option value="Admin">Admin</option>
@@ -218,11 +309,15 @@ export default function AdminPanel() {
                   <td className="px-4 py-2">
                     <Input
                       type="text"
-                      value={profile.assigned_agent_address || ""}
+                      value={
+                        editingProfile[profile.id]?.assigned_agent_address || ""
+                      }
                       onChange={(e) =>
-                        updateProfile(profile.id, {
-                          assigned_agent_address: e.target.value || null,
-                        })
+                        handleInputChange(
+                          profile.id,
+                          "assigned_agent_address",
+                          e.target.value
+                        )
                       }
                       placeholder="Enter agent address"
                       className="w-full"
@@ -232,10 +327,20 @@ export default function AdminPanel() {
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={() => updateProfile(profile.id)}
+                      className="mr-2"
+                    >
+                      Update
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() =>
-                        updateProfile(profile.id, {
-                          assigned_agent_address: null,
-                        })
+                        handleInputChange(
+                          profile.id,
+                          "assigned_agent_address",
+                          ""
+                        )
                       }
                     >
                       Clear Agent
@@ -245,7 +350,7 @@ export default function AdminPanel() {
               ))}
             </tbody>
           </table>
-          {filteredProfiles.length === 0 && (
+          {sortedAndFilteredProfiles.length === 0 && (
             <div className="text-center py-4 text-gray-500">
               No profiles found matching your search and filter criteria.
             </div>

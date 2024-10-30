@@ -28,20 +28,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-
-interface Agent {
-  id: number;
-  name: string;
-  role: string;
-  goal: string;
-  backstory: string;
-  agent_tools: string[];
-}
-
-interface AgentManagementProps {
-  crewId: number;
-  onAgentAdded: () => void;
-}
+import { Agent, AgentManagementProps } from "@/types/supabase";
 
 export default function AgentManagement({
   crewId,

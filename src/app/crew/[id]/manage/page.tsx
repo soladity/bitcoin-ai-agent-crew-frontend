@@ -7,25 +7,7 @@ import AgentManagement from "@/components/agents/AgentManagement";
 import TaskManagement from "@/components/tasks/TaskManagement";
 import ExecutionPanel from "@/components/dashboard/Execution";
 import { Card, CardContent } from "@/components/ui/card";
-
-interface Crew {
-  id: number;
-  name: string;
-}
-
-interface Agent {
-  id: number;
-  name: string;
-  role: string;
-}
-
-interface Task {
-  id: number;
-  description: string;
-  expected_output: string;
-  agent_id: number;
-  profile_id: string;
-}
+import { Agent, Crew, Task } from "@/types/supabase";
 
 export default function CrewDetails() {
   const params = useParams();
@@ -121,10 +103,7 @@ export default function CrewDetails() {
         <ExecutionPanel crewName={crew.name} crewId={crew.id} />
         <Card>
           <CardContent>
-            <AgentManagement
-              crewId={crew.id}
-              onAgentAdded={handleAgentAdded}
-            />
+            <AgentManagement crewId={crew.id} onAgentAdded={handleAgentAdded} />
           </CardContent>
         </Card>
         <Card>

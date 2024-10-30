@@ -13,26 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-interface Agent {
-  id: number;
-  name: string;
-}
-
-interface Task {
-  id?: number;
-  description: string;
-  expected_output: string;
-  agent_id: number;
-}
-
-interface TaskFormProps {
-  crewId: number;
-  agents: Agent[];
-  task?: Task;
-  onTaskSubmitted: () => void;
-  onClose: () => void;
-}
+import { TaskFormProps } from "@/types/supabase";
 
 export default function TaskForm({
   crewId,

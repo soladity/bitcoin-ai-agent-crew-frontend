@@ -7,21 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckIcon } from "lucide-react";
-
-interface Agent {
-  id?: number;
-  name: string;
-  role: string;
-  goal: string;
-  backstory: string;
-  agent_tools: string[];
-}
-
-interface AgentFormProps {
-  agent?: Agent;
-  onSubmit: (agent: Omit<Agent, "id">) => Promise<void>;
-  loading: boolean;
-}
+import { AgentFormProps } from "@/types/supabase";
 
 export const alex_tools = [
   "alex_get_price_history",

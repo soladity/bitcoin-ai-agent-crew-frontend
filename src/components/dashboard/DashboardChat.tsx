@@ -6,13 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import ReactMarkdown from "react-markdown";
-
-interface Crew {
-  id: number;
-  name: string;
-  description: string;
-  created_at: string;
-}
+import { Crew } from "@/types/supabase";
 
 interface Message {
   role: "user" | "assistant";

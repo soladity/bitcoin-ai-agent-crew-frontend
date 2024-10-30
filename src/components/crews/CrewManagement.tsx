@@ -21,19 +21,7 @@ import {
 } from "@/components/ui/table";
 import { PlusIcon, Trash2Icon, UserIcon, Edit2Icon } from "lucide-react";
 import CrewForm from "./CrewForm";
-
-interface Crew {
-  id: number;
-  name: string;
-  description: string;
-  created_at: string;
-}
-
-interface CrewManagementProps {
-  crews: Crew[];
-  onCrewSelect: (crew: Crew) => void;
-  onCrewUpdate: () => Promise<void> | void;
-}
+import { CrewManagementProps } from "@/types/supabase";
 
 export function CrewManagement({
   crews,
@@ -52,7 +40,7 @@ export function CrewManagement({
         .from("tasks")
         .delete()
         .eq("crew_id", id);
-      
+
       if (tasksError) throw tasksError;
 
       // Then delete all agents associated with the crew
@@ -60,7 +48,7 @@ export function CrewManagement({
         .from("agents")
         .delete()
         .eq("crew_id", id);
-      
+
       if (agentsError) throw agentsError;
 
       // Finally delete the crew itself
@@ -74,7 +62,8 @@ export function CrewManagement({
       onCrewUpdate();
       toast({
         title: "Crew deleted",
-        description: "The crew and all its associated data has been successfully deleted.",
+        description:
+          "The crew and all its associated data has been successfully deleted.",
       });
     } catch (error) {
       console.error("Error deleting crew:", error);

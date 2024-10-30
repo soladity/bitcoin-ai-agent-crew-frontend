@@ -13,58 +13,66 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import DashboardChat from "./DashboardChat";
-
-interface Crew {
-  id: number;
-  name: string;
-  description: string;
-  created_at: string;
-}
+import { Crew } from "@/types/supabase";
 
 export default function Component() {
   const [crews, setCrews] = useState<Crew[]>([]);
   const [hasClonedAnalyzer, setHasClonedAnalyzer] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const fetchCrews = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("crews")
-      .select("id, name, description, created_at")
-      .order("created_at", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from("crews")
+        .select("id, name, description, created_at")
+        .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("Error fetching crews:", error);
-      return;
+      if (error) {
+        throw error;
+      }
+
+      setCrews(data || []);
+    } catch (err) {
+      console.error("Error fetching crews:", err);
+      setError("Failed to fetch crews");
     }
-
-    setCrews(data);
   }, []);
 
   const checkClonedAnalyzer = useCallback(async () => {
     if (hasClonedAnalyzer) return;
 
-    const { data: profile } = await supabase.auth.getUser();
-    if (!profile.user) return;
+    try {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      if (authError) throw authError;
+      if (!user) {
+        console.error("No authenticated user found");
+        return;
+      }
 
-    const { data, error } = await supabase
-      .from("crews")
-      .select("name")
-      .eq("profile_id", profile.user.id)
-      .eq("name", "TradingAnalyzer")
-      .single();
+      const { data, error } = await supabase
+        .from("crews")
+        .select("*")
+        .eq("profile_id", user.id)
+        .eq("name", "TradingAnalyzer");
 
-    if (error && error.code !== "PGRST116") {
-      console.error("Error checking for cloned analyzer:", error);
-      return;
+      if (error) {
+        throw error;
+      }
+
+      setHasClonedAnalyzer(data && data.length > 0);
+    } catch (err) {
+      console.error("Error checking for cloned analyzer:", err);
+      setError("Failed to check cloned analyzer status");
     }
-
-    setHasClonedAnalyzer(!!data);
   }, [hasClonedAnalyzer]);
 
   useEffect(() => {
     const initializeDashboard = async () => {
-      await fetchCrews();
-      await checkClonedAnalyzer();
+      await Promise.all([fetchCrews(), checkClonedAnalyzer()]);
     };
 
     initializeDashboard();
@@ -85,6 +93,13 @@ export default function Component() {
   return (
     <div className="container mx-auto p-4 space-y-8">
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+
+      {error && (
+        <div className="bg-destructive/15 text-destructive px-4 py-2 rounded-md mb-4">
+          {error}
+        </div>
+      )}
+
       <Card className="w-full">
         <CardHeader>
           <CardTitle>Chat with your Crews</CardTitle>
@@ -93,6 +108,7 @@ export default function Component() {
           <DashboardChat />
         </CardContent>
       </Card>
+
       <Card className="w-full">
         <CardContent className="mt-4">
           {crews.length > 0 ? (
