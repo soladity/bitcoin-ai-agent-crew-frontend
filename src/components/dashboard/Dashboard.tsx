@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { CrewManagement } from "@/components/crews/CrewManagement";
@@ -26,12 +26,7 @@ export default function Component() {
   const [hasClonedAnalyzer, setHasClonedAnalyzer] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchCrews();
-    checkClonedAnalyzer();
-  }, []);
-
-  const fetchCrews = async () => {
+  const fetchCrews = useCallback(async () => {
     const { data, error } = await supabase
       .from("crews")
       .select("id, name, description, created_at")
@@ -43,9 +38,9 @@ export default function Component() {
     }
 
     setCrews(data);
-  };
+  }, []);
 
-  const checkClonedAnalyzer = async () => {
+  const checkClonedAnalyzer = useCallback(async () => {
     if (hasClonedAnalyzer) return;
 
     const { data: profile } = await supabase.auth.getUser();
@@ -64,16 +59,28 @@ export default function Component() {
     }
 
     setHasClonedAnalyzer(!!data);
-  };
+  }, [hasClonedAnalyzer]);
 
-  const handleCrewSelect = (crew: Crew) => {
-    router.push(`/crew/${crew.id}`);
-  };
+  useEffect(() => {
+    const initializeDashboard = async () => {
+      await fetchCrews();
+      await checkClonedAnalyzer();
+    };
 
-  const handleCloneComplete = () => {
+    initializeDashboard();
+  }, [fetchCrews, checkClonedAnalyzer]);
+
+  const handleCrewSelect = useCallback(
+    (crew: Crew) => {
+      router.push(`/crew/${crew.id}`);
+    },
+    [router]
+  );
+
+  const handleCloneComplete = useCallback(() => {
     setHasClonedAnalyzer(true);
     fetchCrews();
-  };
+  }, [fetchCrews]);
 
   return (
     <div className="container mx-auto p-4 space-y-8">
@@ -101,9 +108,7 @@ export default function Component() {
           )}
         </CardContent>
         <CardFooter className="flex flex-col items-start space-y-4">
-          <>
-            <CloneTradingAnalyzer onCloneComplete={handleCloneComplete} />
-          </>
+          <CloneTradingAnalyzer onCloneComplete={handleCloneComplete} />
         </CardFooter>
       </Card>
     </div>
