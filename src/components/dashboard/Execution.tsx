@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import { supabase } from "@/utils/supabase/client";
 
 export interface ApiResponse {
   result: {
@@ -41,7 +42,22 @@ export default function ExecutionPanel({
   const [inputStr, setInputStr] = useState("");
   const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [authToken, setAuthToken] = useState<string | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const getSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        console.log(session.access_token);
+        setAuthToken(session.access_token);
+      }
+    };
+
+    getSession();
+  }, []);
 
   const handleExecuteCrew = async () => {
     if (!inputStr.trim()) return;
@@ -54,6 +70,7 @@ export default function ExecutionPanel({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
           },
           body: JSON.stringify(inputStr),
         }

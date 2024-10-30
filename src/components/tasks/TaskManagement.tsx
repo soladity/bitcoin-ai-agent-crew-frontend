@@ -27,29 +27,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-
-interface Agent {
-  id: number;
-  name: string;
-}
-
-interface Task {
-  id: number;
-  description: string;
-  expected_output: string;
-  agent_id: number;
-  profile_id: string;
-}
-
-interface TaskManagementProps {
-  crewId: number;
-  onTaskAdded: () => void;
-  tasks: Task[];
-  agents: Agent[];
-  currentUser: string | null;
-  onEditTask: (task: Task) => void;
-}
-
+import { Task, TaskManagementProps } from "@/types/supabase";
 export default function TaskManagement({
   crewId,
   onTaskAdded,
@@ -83,10 +61,7 @@ export default function TaskManagement({
 
   const handleDeleteTask = async (taskId: number) => {
     try {
-      const { error } = await supabase
-        .from("tasks")
-        .delete()
-        .eq("id", taskId);
+      const { error } = await supabase.from("tasks").delete().eq("id", taskId);
 
       if (error) throw error;
 

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
-import { Loader2, ArrowLeft, Trophy } from "lucide-react";
+import { Loader2, Search, Trophy } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
@@ -14,111 +14,95 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface Profile {
   email: string;
-  stxBalance: number;
-  role: string;
   assigned_agent_address: string | null;
   agentBalance?: number;
 }
 
 export default function LeaderBoard() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [filteredProfiles, setFilteredProfiles] = useState<Profile[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   useEffect(() => {
-    const fetchProfiles = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("email, role, assigned_agent_address")
-          .eq("role", "Participant");
-
-        if (error) throw error;
-
-        const profilesWithBalance = await Promise.all(
-          data.map(async (profile) => {
-            try {
-              const stacksAddress = profile.assigned_agent_address
-                ? profile.assigned_agent_address.toUpperCase()
-                : null;
-              console.log(stacksAddress);
-
-              let stxBalance = 0;
-              let agentBalance = undefined;
-
-              if (stacksAddress) {
-                const participantResponse = await fetch(
-                  `https://api.hiro.so/extended/v1/address/${stacksAddress}/balances`
-                );
-
-                if (!participantResponse.ok) {
-                  throw new Error(
-                    `HTTP error! status: ${participantResponse.status}`
-                  );
-                }
-
-                const participantBalanceData = await participantResponse.json();
-                stxBalance = participantBalanceData.stx?.balance
-                  ? parseInt(participantBalanceData.stx.balance) / 1000000
-                  : 0;
-
-                const agentResponse = await fetch(
-                  `https://api.hiro.so/extended/v1/address/${stacksAddress}/balances`
-                );
-
-                if (agentResponse.ok) {
-                  const agentBalanceData = await agentResponse.json();
-                  agentBalance = agentBalanceData.stx?.balance
-                    ? parseInt(agentBalanceData.stx.balance) / 1000000
-                    : 0;
-                }
-              }
-
-              return {
-                email: profile.email,
-                stxBalance: stxBalance,
-                role: profile.role,
-                assigned_agent_address: stacksAddress,
-                agentBalance: agentBalance,
-              };
-            } catch (err) {
-              console.error(
-                `Error fetching balance for ${profile.email}:`,
-                err
-              );
-              return {
-                email: profile.email,
-                stxBalance: 0,
-                role: profile.role,
-                assigned_agent_address: profile.assigned_agent_address
-                  ? profile.assigned_agent_address.toUpperCase()
-                  : null,
-                agentBalance: undefined,
-              };
-            }
-          })
-        );
-
-        const sortedProfiles = profilesWithBalance.sort(
-          (a, b) => b.stxBalance - a.stxBalance
-        );
-        setProfiles(sortedProfiles);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "An unknown error occurred"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProfiles();
   }, []);
+
+  useEffect(() => {
+    setFilteredProfiles(
+      profiles.filter((profile) => {
+        const stacksAddress = profile.email.split("@")[0].toLowerCase();
+        return stacksAddress.includes(searchTerm.toLowerCase());
+      })
+    );
+  }, [searchTerm, profiles]);
+
+  const fetchProfiles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("email, assigned_agent_address")
+        .eq("role", "Participant");
+
+      if (error) throw error;
+
+      const profilesWithBalance = await Promise.all(
+        data.map(async (profile) => {
+          try {
+            const stacksAddress = profile.assigned_agent_address
+              ? profile.assigned_agent_address.toUpperCase()
+              : null;
+
+            let agentBalance = undefined;
+
+            if (stacksAddress) {
+              const agentResponse = await fetch(
+                `https://api.hiro.so/extended/v1/address/${stacksAddress}/balances`
+              );
+
+              if (agentResponse.ok) {
+                const agentBalanceData = await agentResponse.json();
+                agentBalance = agentBalanceData.stx?.balance
+                  ? parseInt(agentBalanceData.stx.balance) / 1000000
+                  : 0;
+              }
+            }
+            return {
+              email: profile.email,
+              assigned_agent_address: stacksAddress,
+              agentBalance: agentBalance,
+            };
+          } catch (err) {
+            console.error(`Error fetching balance for ${profile.email}:`, err);
+            return {
+              email: profile.email,
+              assigned_agent_address: profile.assigned_agent_address
+                ? profile.assigned_agent_address.toUpperCase()
+                : null,
+              agentBalance: undefined,
+            };
+          }
+        })
+      );
+
+      const sortedProfiles = profilesWithBalance.sort(
+        (a, b) => (b.agentBalance || 0) - (a.agentBalance || 0)
+      );
+      setProfiles(sortedProfiles);
+      setFilteredProfiles(sortedProfiles);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -138,15 +122,22 @@ export default function LeaderBoard() {
 
   return (
     <Card className="w-full mx-auto my-8">
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <CardTitle className="text-2xl font-bold">
           Participant Leaderboard
         </CardTitle>
-        <Link href="/">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Go back
-          </Button>
-        </Link>
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="relative flex-grow">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <Input
+              type="text"
+              placeholder="Search Participants..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <Table>
@@ -159,7 +150,7 @@ export default function LeaderBoard() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {profiles.map((profile, index) => (
+            {filteredProfiles.map((profile, index) => (
               <TableRow key={profile.email}>
                 <TableCell className="font-medium">
                   {index < 3 ? (
@@ -196,7 +187,7 @@ export default function LeaderBoard() {
           </TableBody>
         </Table>
         <div className="mt-6 text-sm text-muted-foreground text-center">
-          Total participants: {profiles.length}
+          Total participants: {filteredProfiles.length}
         </div>
       </CardContent>
     </Card>
