@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { supabase } from "@/utils/supabase/client";
 import { Loader2, Search, Trophy } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -15,96 +14,21 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-
-interface Profile {
-  email: string;
-  assigned_agent_address: string | null;
-  agentBalance?: number;
-}
+import { useLeaderboardData } from "@/hooks/useLeaderBoardData";
 
 export default function LeaderBoard() {
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [filteredProfiles, setFilteredProfiles] = useState<Profile[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: profiles, isLoading, error } = useLeaderboardData();
   const [searchTerm, setSearchTerm] = useState<string>("");
 
-  useEffect(() => {
-    fetchProfiles();
-  }, []);
-
-  useEffect(() => {
-    setFilteredProfiles(
-      profiles.filter((profile) => {
-        const stacksAddress = profile.email.split("@")[0].toLowerCase();
-        return stacksAddress.includes(searchTerm.toLowerCase());
-      })
-    );
+  const filteredProfiles = React.useMemo(() => {
+    if (!profiles) return [];
+    return profiles.filter((profile) => {
+      const stacksAddress = profile.email.split("@")[0].toLowerCase();
+      return stacksAddress.includes(searchTerm.toLowerCase());
+    });
   }, [searchTerm, profiles]);
 
-  const fetchProfiles = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("email, assigned_agent_address")
-        .eq("role", "Participant");
-
-      if (error) throw error;
-
-      const profilesWithBalance = await Promise.all(
-        data.map(async (profile) => {
-          try {
-            const stacksAddress = profile.assigned_agent_address
-              ? profile.assigned_agent_address.toUpperCase()
-              : null;
-
-            let agentBalance = undefined;
-
-            if (stacksAddress) {
-              const agentResponse = await fetch(
-                `https://api.hiro.so/extended/v1/address/${stacksAddress}/balances`
-              );
-
-              if (agentResponse.ok) {
-                const agentBalanceData = await agentResponse.json();
-                agentBalance = agentBalanceData.stx?.balance
-                  ? parseInt(agentBalanceData.stx.balance) / 1000000
-                  : 0;
-              }
-            }
-            return {
-              email: profile.email,
-              assigned_agent_address: stacksAddress,
-              agentBalance: agentBalance,
-            };
-          } catch (err) {
-            console.error(`Error fetching balance for ${profile.email}:`, err);
-            return {
-              email: profile.email,
-              assigned_agent_address: profile.assigned_agent_address
-                ? profile.assigned_agent_address.toUpperCase()
-                : null,
-              agentBalance: undefined,
-            };
-          }
-        })
-      );
-
-      const sortedProfiles = profilesWithBalance.sort(
-        (a, b) => (b.agentBalance || 0) - (a.agentBalance || 0)
-      );
-      setProfiles(sortedProfiles);
-      setFilteredProfiles(sortedProfiles);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unknown error occurred"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -115,7 +39,7 @@ export default function LeaderBoard() {
   if (error) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>{error}</AlertDescription>
+        <AlertDescription>{error.message}</AlertDescription>
       </Alert>
     );
   }
