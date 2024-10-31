@@ -38,6 +38,7 @@ export default function CrewChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [crew, setCrew] = useState<Crew | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [authToken, setAuthToken] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCrew = async () => {
@@ -56,6 +57,20 @@ export default function CrewChat() {
 
     fetchCrew();
   }, [id]);
+
+  useEffect(() => {
+    const getSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        console.log(session.access_token);
+        setAuthToken(session.access_token);
+      }
+    };
+
+    getSession();
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -89,6 +104,7 @@ export default function CrewChat() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
           },
           body: JSON.stringify(requestBody),
         }
