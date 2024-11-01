@@ -12,5 +12,5 @@ export default function CrewRedirect() {
     router.push(`/crew/${id}/manage`);
   }, [id, router]);
 
-  return <div>Redirecting to chat...</div>;
+  return <div>Redirecting to crew manager...</div>;
 }
