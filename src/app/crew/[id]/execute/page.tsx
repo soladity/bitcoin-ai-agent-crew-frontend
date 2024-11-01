@@ -36,7 +36,7 @@ export default function CrewExecution() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold">{crew.name}</h1>
+      <h1 className="text-3xl font-bold">Crew: {crew.name}</h1>
       <ExecutionPanel crewName={crew.name} crewId={crew.id} />
     </div>
   );
