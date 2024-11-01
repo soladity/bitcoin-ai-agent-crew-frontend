@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { CrewManagement } from "@/components/crews/CrewManagement";
 import { CloneTradingAnalyzer } from "@/components/crews/CloneTradingAnalyzer";
@@ -19,7 +18,6 @@ export default function Component() {
   const [crews, setCrews] = useState<Crew[]>([]);
   const [hasClonedAnalyzer, setHasClonedAnalyzer] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   const fetchCrews = useCallback(async () => {
     try {
@@ -78,12 +76,11 @@ export default function Component() {
     initializeDashboard();
   }, [fetchCrews, checkClonedAnalyzer]);
 
-  const handleCrewSelect = useCallback(
-    (crew: Crew) => {
-      router.push(`/crew/${crew.id}`);
-    },
-    [router]
-  );
+  const [selectedCrew, setSelectedCrew] = useState<Crew | null>(null);
+
+  const handleCrewSelect = useCallback((crew: Crew | null) => {
+    setSelectedCrew(crew);
+  }, []);
 
   const handleCloneComplete = useCallback(() => {
     setHasClonedAnalyzer(true);
@@ -105,7 +102,7 @@ export default function Component() {
           <CardTitle>Chat with your Crews</CardTitle>
         </CardHeader>
         <CardContent>
-          <DashboardChat />
+          <DashboardChat selectedCrew={selectedCrew} />
         </CardContent>
       </Card>
 
@@ -116,6 +113,7 @@ export default function Component() {
               crews={crews}
               onCrewSelect={handleCrewSelect}
               onCrewUpdate={fetchCrews}
+              selectedCrew={selectedCrew}
             />
           ) : (
             <p className="text-muted-foreground">

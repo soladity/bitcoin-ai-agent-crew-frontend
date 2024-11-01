@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -19,18 +20,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusIcon, Trash2Icon, UserIcon, Edit2Icon } from "lucide-react";
+import { PlusIcon, Trash2Icon, UserIcon, Settings, Check, CheckCircle2 } from "lucide-react";
 import CrewForm from "./CrewForm";
-import { CrewManagementProps } from "@/types/supabase";
+import { Crew } from "@/types/supabase";
 
-export function CrewManagement({
+interface CrewManagementProps {
+  crews: Crew[];
+  onCrewSelect: (crew: Crew | null) => void;
+  onCrewUpdate: () => void;
+  selectedCrew: Crew | null;
+}
+
+export function CrewManagement({ 
   crews,
   onCrewSelect,
   onCrewUpdate,
+  selectedCrew,
 }: CrewManagementProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleDelete = async (id: number) => {
     setLoading(true);
@@ -59,6 +69,11 @@ export function CrewManagement({
 
       if (crewError) throw crewError;
 
+      // Clear selected crew if we're deleting it
+      if (selectedCrew?.id === id) {
+        onCrewSelect(null);
+      }
+      
       onCrewUpdate();
       toast({
         title: "Crew deleted",
@@ -127,12 +142,30 @@ export function CrewManagement({
                 <TableCell>
                   <div className="flex gap-2">
                     <Button
-                      variant="outline"
+                      variant={selectedCrew?.id === crew.id ? "secondary" : "outline"}
                       size="sm"
                       onClick={() => onCrewSelect(crew)}
+                      className="min-w-[100px]"
                     >
-                      <Edit2Icon className="h-4 w-4 mr-2" />
-                      Edit
+                      {selectedCrew?.id === crew.id ? (
+                        <>
+                          <CheckCircle2 className="h-4 w-4 mr-2" />
+                          Selected
+                        </>
+                      ) : (
+                        <>
+                          <Check className="h-4 w-4 mr-2" />
+                          Select
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/crew/${crew.id}/manage`)}
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Settings
                     </Button>
                     <Button
                       variant="outline"

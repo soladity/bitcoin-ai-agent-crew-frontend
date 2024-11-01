@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import AgentManagement from "@/components/agents/AgentManagement";
 import TaskManagement from "@/components/tasks/TaskManagement";
-import ExecutionPanel from "@/components/dashboard/Execution";
 import { Card, CardContent } from "@/components/ui/card";
 import { Agent, Crew, Task } from "@/types/supabase";
 
@@ -98,9 +97,8 @@ export default function CrewDetails() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold">{crew.name}</h1>
+      <h1 className="text-3xl font-bold pt-4">Crew: {crew.name}</h1>
       <div className="space-y-8">
-        <ExecutionPanel crewName={crew.name} crewId={crew.id} />
         <Card>
           <CardContent>
             <AgentManagement crewId={crew.id} onAgentAdded={handleAgentAdded} />

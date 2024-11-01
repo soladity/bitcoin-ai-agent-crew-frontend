@@ -9,7 +9,7 @@ export default function CrewRedirect() {
   const id = params.id as string;
 
   useEffect(() => {
-    router.push(`/crew/${id}/chat`);
+    router.push(`/crew/${id}/manage`);
   }, [id, router]);
 
   return <div>Redirecting to chat...</div>;
