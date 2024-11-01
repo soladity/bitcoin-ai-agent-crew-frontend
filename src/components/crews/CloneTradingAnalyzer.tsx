@@ -115,22 +115,25 @@ export function CloneTradingAnalyzer({
   }, []);
 
   const checkIfAlreadyCloned = async () => {
-    const { data: profile } = await supabase.auth.getUser();
-    if (!profile.user) return;
+    try {
+      const { data: profile } = await supabase.auth.getUser();
+      if (!profile.user) return;
 
-    const { data, error } = await supabase
-      .from("crews")
-      .select("id")
-      .eq("profile_id", profile.user.id)
-      .eq("name", "Trading Analyzer")
-      .single();
+      const { data, error } = await supabase
+        .from("crews")
+        .select("*")
+        .eq("profile_id", profile.user.id)
+        .eq("name", "Trading Analyzer");
 
-    if (error && error.code !== "PGRST116") {
-      console.error("Error checking for existing TradingAnalyzer:", error);
-      return;
+      if (error) {
+        console.error("Error checking for existing TradingAnalyzer:", error);
+        return;
+      }
+
+      setHasCloned(data && data.length > 0);
+    } catch (err) {
+      console.error("Error in checkIfAlreadyCloned:", err);
     }
-
-    setHasCloned(!!data);
   };
 
   const createTradingAnalyzer = async () => {
@@ -173,7 +176,7 @@ export function CloneTradingAnalyzer({
             role: agent.role,
             goal: agent.goal,
             backstory: agent.backstory,
-            agent_tools: agent.agent_tools,
+            agent_tools: `{${agent.agent_tools.join(",")}}`,
             crew_id: crew.id,
             profile_id: profile.user.id,
           })
