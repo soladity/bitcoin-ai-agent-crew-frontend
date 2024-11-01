@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { CrewManagement } from "@/components/crews/CrewManagement";
 import { CloneTradingAnalyzer } from "@/components/crews/CloneTradingAnalyzer";
@@ -19,7 +18,6 @@ export default function Component() {
   const [crews, setCrews] = useState<Crew[]>([]);
   const [hasClonedAnalyzer, setHasClonedAnalyzer] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   const fetchCrews = useCallback(async () => {
     try {
