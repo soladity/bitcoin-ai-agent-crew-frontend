@@ -61,7 +61,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
     const initialMessage: Message = {
       role: "assistant",
       content: selectedCrew 
-        ? `# Selected Crew: ${selectedCrew.name}\n\n${selectedCrew.description}\n\nHow can I help you today?`
+        ? `# Selected: ${selectedCrew.name}\n\n${selectedCrew.description}\n\nHow can I help you today?`
         : "Please select a crew to start chatting.",
       timestamp: new Date(),
     };
