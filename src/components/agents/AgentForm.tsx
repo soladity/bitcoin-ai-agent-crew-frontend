@@ -174,7 +174,7 @@ export default function AgentForm({
         {selectedTools.map((tool) => (
           <div
             key={tool}
-            className="bg-primary text-primary-foreground px-2 py-1 rounded-md text-sm"
+            className="bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm"
           >
             {tool}
             <button
