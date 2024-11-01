@@ -11,7 +11,7 @@ import {
   bitflow_tools,
   lunarcrush_tools,
   web_search_tools,
-} from "../agents/AgentForm";
+} from "@/lib/tools";
 import { CloneAgent, CloneTask } from "@/types/supabase";
 
 const DEFAULT_AGENTS: CloneAgent[] = [
