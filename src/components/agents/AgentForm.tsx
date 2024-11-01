@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckIcon } from "lucide-react";
 import { AgentFormProps } from "@/types/supabase";
-import { AVAILABLE_TOOLS } from "@/lib/tools";
+import { TOOL_CATEGORIES, ToolCategory, getToolsByCategory } from "@/lib/tools";
 
 export default function AgentForm({
   agent,
@@ -108,22 +108,39 @@ export default function AgentForm({
           <CheckIcon className="h-4 w-4 opacity-50" />
         </Button>
         {isToolsDropdownOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg">
-            {AVAILABLE_TOOLS.map((tool) => (
-              <div key={tool} className="flex items-center space-x-2 p-2">
-                <Checkbox
-                  id={tool}
-                  checked={selectedTools.includes(tool)}
-                  onCheckedChange={() => handleToolToggle(tool)}
-                />
-                <label
-                  htmlFor={tool}
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  {tool}
-                </label>
-              </div>
-            ))}
+          <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-96 overflow-y-auto">
+            {(Object.keys(TOOL_CATEGORIES) as ToolCategory[]).map(
+              (category) => (
+                <div key={category} className="p-2">
+                  <h3 className="font-semibold text-sm text-muted-foreground mb-2">
+                    {TOOL_CATEGORIES[category]}
+                  </h3>
+                  {getToolsByCategory(category).map((tool) => (
+                    <div
+                      key={tool.id}
+                      className="flex items-start space-x-2 p-2"
+                    >
+                      <Checkbox
+                        id={tool.id}
+                        checked={selectedTools.includes(tool.id)}
+                        onCheckedChange={() => handleToolToggle(tool.id)}
+                      />
+                      <div className="flex flex-col">
+                        <label
+                          htmlFor={tool.id}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {tool.name}
+                        </label>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {tool.description}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            )}
           </div>
         )}
       </div>

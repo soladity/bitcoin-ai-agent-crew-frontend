@@ -6,12 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/hooks/use-toast";
 import { CheckCircle } from "lucide-react";
-import {
-  alex_tools,
-  bitflow_tools,
-  lunarcrush_tools,
-  web_search_tools,
-} from "@/lib/tools";
+import { getToolsByCategory } from "@/lib/tools";
 import { CloneAgent, CloneTask } from "@/types/supabase";
 
 const DEFAULT_AGENTS: CloneAgent[] = [
@@ -21,7 +16,10 @@ const DEFAULT_AGENTS: CloneAgent[] = [
     goal: "Analyze and provide insights on market trends using ALEX data",
     backstory:
       "Specialized in processing and analyzing ALEX market data to identify trading opportunities and market patterns",
-    agent_tools: [...alex_tools, ...web_search_tools],
+    agent_tools: [
+      ...getToolsByCategory("alex").map((t) => t.id),
+      ...getToolsByCategory("web_search").map((t) => t.id),
+    ],
   },
   {
     name: "Research agent for bitflow",
@@ -29,7 +27,10 @@ const DEFAULT_AGENTS: CloneAgent[] = [
     goal: "Monitor and analyze Bitflow trading signals and market data",
     backstory:
       "Expert in interpreting Bitflow signals and correlating them with market movements",
-    agent_tools: [...bitflow_tools, ...web_search_tools],
+    agent_tools: [
+      ...getToolsByCategory("bitflow").map((t) => t.id),
+      ...getToolsByCategory("web_search").map((t) => t.id),
+    ],
   },
   {
     name: "Research agent for lunarcrush",
@@ -37,7 +38,7 @@ const DEFAULT_AGENTS: CloneAgent[] = [
     goal: "Track and analyze social sentiment data from LunarCrush",
     backstory:
       "Specialized in social media sentiment analysis and its correlation with crypto markets",
-    agent_tools: [...lunarcrush_tools],
+    agent_tools: [...getToolsByCategory("lunarcrush").map((t) => t.id)],
   },
   {
     name: "Trade executor for bitflow",
@@ -45,7 +46,7 @@ const DEFAULT_AGENTS: CloneAgent[] = [
     goal: "Execute trades based on analyzed signals and market conditions",
     backstory:
       "Experienced in implementing trading strategies and managing trade execution",
-    agent_tools: [...bitflow_tools],
+    agent_tools: [...getToolsByCategory("bitflow").map((t) => t.id)],
   },
 ];
 
