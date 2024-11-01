@@ -8,14 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckIcon } from "lucide-react";
 import { AgentFormProps } from "@/types/supabase";
-
-import {
-  alex_tools,
-  bitflow_tools,
-  lunarcrush_tools,
-  web_search_tools,
-  AVAILABLE_TOOLS,
-} from "@/lib/tools";
+import { AVAILABLE_TOOLS } from "@/lib/tools";
 
 export default function AgentForm({
   agent,
