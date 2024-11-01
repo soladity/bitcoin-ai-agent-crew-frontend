@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { Settings, Play } from "lucide-react";
 
 export default function CrewLayout({
   children,
@@ -21,6 +21,12 @@ export default function CrewLayout({
             <Button variant="default">
               <Settings className="w-4 h-4 mr-2" />
               Manage
+            </Button>
+          </Link>
+          <Link href={`/crew/${id}/execute`}>
+            <Button variant="default">
+              <Play className="w-4 h-4 mr-2" />
+              Execute
             </Button>
           </Link>
         </div>
