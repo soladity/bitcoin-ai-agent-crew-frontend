@@ -9,7 +9,13 @@ import { CheckCircle } from "lucide-react";
 import { getToolsByCategory } from "@/lib/tools";
 import { CloneAgent, CloneTask } from "@/types/supabase";
 
-const DEFAULT_AGENTS: CloneAgent[] = [
+const getDefaultAgents = async (): Promise<CloneAgent[]> => {
+  const alexTools = await getToolsByCategory("alex");
+  const bitflowTools = await getToolsByCategory("bitflow");
+  const lunarcrushTools = await getToolsByCategory("lunarcrush");
+  const webSearchTools = await getToolsByCategory("web_search");
+
+  return [
   {
     name: "Research agent for ALEX",
     role: "Market Researcher",
@@ -17,8 +23,8 @@ const DEFAULT_AGENTS: CloneAgent[] = [
     backstory:
       "Specialized in processing and analyzing ALEX market data to identify trading opportunities and market patterns",
     agent_tools: [
-      ...getToolsByCategory("alex").map((t) => t.id),
-      ...getToolsByCategory("web_search").map((t) => t.id),
+      ...alexTools.map((t) => t.id),
+      ...webSearchTools.map((t) => t.id),
     ],
   },
   {
@@ -28,8 +34,8 @@ const DEFAULT_AGENTS: CloneAgent[] = [
     backstory:
       "Expert in interpreting Bitflow signals and correlating them with market movements",
     agent_tools: [
-      ...getToolsByCategory("bitflow").map((t) => t.id),
-      ...getToolsByCategory("web_search").map((t) => t.id),
+      ...bitflowTools.map((t) => t.id),
+      ...webSearchTools.map((t) => t.id),
     ],
   },
   {
@@ -38,7 +44,7 @@ const DEFAULT_AGENTS: CloneAgent[] = [
     goal: "Track and analyze social sentiment data from LunarCrush",
     backstory:
       "Specialized in social media sentiment analysis and its correlation with crypto markets",
-    agent_tools: [...getToolsByCategory("lunarcrush").map((t) => t.id)],
+    agent_tools: [...lunarcrushTools.map((t) => t.id)],
   },
   {
     name: "Trade executor for bitflow",
@@ -46,9 +52,10 @@ const DEFAULT_AGENTS: CloneAgent[] = [
     goal: "Execute trades based on analyzed signals and market conditions",
     backstory:
       "Experienced in implementing trading strategies and managing trade execution",
-    agent_tools: [...getToolsByCategory("bitflow").map((t) => t.id)],
+    agent_tools: [...bitflowTools.map((t) => t.id)],
   },
-];
+  ];
+};
 
 const createTaskForAgent = (agent: CloneAgent): CloneTask => {
   const taskMap: { [key: string]: CloneTask } = {
@@ -90,15 +97,21 @@ interface CloneTradingAnalyzerProps {
   onCloneComplete: () => void;
 }
 
-export function CloneTradingAnalyzer({
+export function CloneTradingAnalyzer({ 
   onCloneComplete,
 }: CloneTradingAnalyzerProps) {
   const [isCloning, setIsCloning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasCloned, setHasCloned] = useState(false);
+  const [agents, setAgents] = useState<CloneAgent[]>([]);
 
   useEffect(() => {
-    checkIfAlreadyCloned();
+    const init = async () => {
+      await checkIfAlreadyCloned();
+      const defaultAgents = await getDefaultAgents();
+      setAgents(defaultAgents);
+    };
+    init();
   }, []);
 
   const checkIfAlreadyCloned = async () => {
@@ -152,7 +165,7 @@ export function CloneTradingAnalyzer({
       }
 
       // Create agents and their tasks
-      for (const agent of DEFAULT_AGENTS) {
+      for (const agent of agents) {
         const { data: createdAgent, error: agentError } = await supabase
           .from("agents")
           .insert({
