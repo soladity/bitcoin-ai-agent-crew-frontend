@@ -33,7 +33,7 @@ export default function AgentForm({
         const tools = await fetchTools();
         setAvailableTools(tools);
       } catch (error) {
-        console.error('Failed to load tools:', error);
+        console.error("Failed to load tools:", error);
       } finally {
         setIsLoadingTools(false);
       }
@@ -134,37 +134,38 @@ export default function AgentForm({
                   (tool) => tool.category === category
                 );
                 if (categoryTools.length === 0) return null;
-                
+
                 return (
                   <div key={category} className="p-2">
                     <h3 className="font-semibold text-sm text-muted-foreground mb-2">
                       {TOOL_CATEGORIES[category as ToolCategory]}
                     </h3>
                     {categoryTools.map((tool) => (
-                    <div
-                      key={tool.id}
-                      className="flex items-start space-x-2 p-2"
-                    >
-                      <Checkbox
-                        id={tool.id}
-                        checked={selectedTools.includes(tool.id)}
-                        onCheckedChange={() => handleToolToggle(tool.id)}
-                      />
-                      <div className="flex flex-col">
-                        <label
-                          htmlFor={tool.id}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          {tool.name}
-                        </label>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {tool.description}
-                        </p>
+                      <div
+                        key={tool.id}
+                        className="flex items-start space-x-2 p-2"
+                      >
+                        <Checkbox
+                          id={tool.id}
+                          checked={selectedTools.includes(tool.id)}
+                          onCheckedChange={() => handleToolToggle(tool.id)}
+                        />
+                        <div className="flex flex-col">
+                          <label
+                            htmlFor={tool.id}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            {tool.name}
+                          </label>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {tool.description}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )
+                    ))}
+                  </div>
+                );
+              })
             )}
           </div>
         )}
