@@ -5,20 +5,12 @@ import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Crew } from "@/types/supabase";
 import { ApiResponse } from "@/components/dashboard/Execution";
-import { RefreshCw } from "lucide-react";
 
 interface DashboardChatProps {
   selectedCrew: Crew | null;
@@ -60,7 +52,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
     // Reset messages when crew changes
     const initialMessage: Message = {
       role: "assistant",
-      content: selectedCrew 
+      content: selectedCrew
         ? `# Selected: ${selectedCrew.name}\n\n${selectedCrew.description}\n\nHow can I help you today?`
         : "Please select a crew to start chatting.",
       timestamp: new Date(),
@@ -154,7 +146,6 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
   return (
     <Card className="w-full">
       <CardContent className="space-y-4 p-4">
-
         <div className="h-[300px] overflow-y-auto space-y-4">
           {messages.map((message, index) => (
             <div
