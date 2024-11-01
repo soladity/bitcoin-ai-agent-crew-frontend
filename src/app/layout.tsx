@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://sprint.aibtc.dev'),
   title: {
     default: "AIBTC Champions Sprint",
     template: "%s | AIBTC Champions Sprint",
