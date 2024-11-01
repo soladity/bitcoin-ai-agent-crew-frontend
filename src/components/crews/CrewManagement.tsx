@@ -160,7 +160,8 @@ export function CrewManagement({
                       size="sm"
                       onClick={() => router.push(`/crew/${crew.id}/manage`)}
                     >
-                      <Settings className="h-4 w-4" />
+                      <Settings className="h-4 w-4 mr-2" />
+                      Settings
                     </Button>
                     <Button
                       variant="outline"
