@@ -78,12 +78,11 @@ export default function Component() {
     initializeDashboard();
   }, [fetchCrews, checkClonedAnalyzer]);
 
-  const handleCrewSelect = useCallback(
-    (crew: Crew) => {
-      router.push(`/crew/${crew.id}`);
-    },
-    [router]
-  );
+  const [selectedCrew, setSelectedCrew] = useState<Crew | null>(null);
+
+  const handleCrewSelect = useCallback((crew: Crew) => {
+    setSelectedCrew(crew);
+  }, []);
 
   const handleCloneComplete = useCallback(() => {
     setHasClonedAnalyzer(true);
@@ -105,7 +104,7 @@ export default function Component() {
           <CardTitle>Chat with your Crews</CardTitle>
         </CardHeader>
         <CardContent>
-          <DashboardChat />
+          <DashboardChat selectedCrew={selectedCrew} />
         </CardContent>
       </Card>
 

@@ -20,6 +20,10 @@ import { Crew } from "@/types/supabase";
 import { ApiResponse } from "@/components/dashboard/Execution";
 import { RefreshCw } from "lucide-react";
 
+interface DashboardChatProps {
+  selectedCrew: Crew | null;
+}
+
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -32,11 +36,9 @@ interface Message {
   };
 }
 
-export default function DashboardChat() {
+export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [crews, setCrews] = useState<Crew[]>([]);
-  const [selectedCrew, setSelectedCrew] = useState<Crew | null>(null);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -54,41 +56,17 @@ export default function DashboardChat() {
     }
   };
 
-  const fetchCrews = async () => {
-    const { data, error } = await supabase
-      .from("crews")
-      .select(
-        "id, name, description, created_at, agents(id, name, role), tasks(id, name, description)"
-      )
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching crews:", error);
-      return;
-    }
-
-    setCrews(data || []);
-
-    // Add initial assistant message
-    const message =
-      data && data.length > 0
-        ? "# Your Crews\n\n" +
-          data.map((crew) => `${crew.name}: ${crew.description}`).join("\n\n") +
-          "\n\nPlease select a crew to start chatting."
-        : "Welcome! To get started, click the 'Clone Trading Analyzer' button below to create your first crew with pre-configured agents and tasks.";
-
+  useEffect(() => {
+    // Reset messages when crew changes
     const initialMessage: Message = {
       role: "assistant",
-      content: message,
+      content: selectedCrew 
+        ? `# Selected Crew: ${selectedCrew.name}\n\n${selectedCrew.description}\n\nHow can I help you today?`
+        : "Please select a crew to start chatting.",
       timestamp: new Date(),
     };
-
     setMessages([initialMessage]);
-  };
-
-  useEffect(() => {
-    fetchCrews();
-  }, []);
+  }, [selectedCrew]);
 
   useEffect(() => {
     scrollToBottom();
@@ -176,41 +154,6 @@ export default function DashboardChat() {
   return (
     <Card className="w-full">
       <CardContent className="space-y-4 p-4">
-        <div className="flex items-center space-x-2">
-          <Select
-            onValueChange={(value) => {
-              const crew = crews.find((c) => c.id.toString() === value);
-              setSelectedCrew(crew || null);
-              if (crew) {
-                console.log("Selected Crew:", {
-                  id: crew.id,
-                  name: crew.name,
-                  description: crew.description,
-                  created_at: crew.created_at,
-                });
-              }
-            }}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a crew to chat with" />
-            </SelectTrigger>
-            <SelectContent>
-              {crews.map((crew) => (
-                <SelectItem key={crew.id} value={crew.id.toString()}>
-                  {crew.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleRefetchCrews}
-            title="Refresh crews"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        </div>
 
         <div className="h-[300px] overflow-y-auto space-y-4">
           {messages.map((message, index) => (
