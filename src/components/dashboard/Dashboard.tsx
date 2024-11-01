@@ -80,7 +80,7 @@ export default function Component() {
 
   const [selectedCrew, setSelectedCrew] = useState<Crew | null>(null);
 
-  const handleCrewSelect = useCallback((crew: Crew) => {
+  const handleCrewSelect = useCallback((crew: Crew | null) => {
     setSelectedCrew(crew);
   }, []);
 

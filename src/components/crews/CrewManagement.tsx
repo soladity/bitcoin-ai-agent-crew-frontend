@@ -27,7 +27,7 @@ import { Crew } from "@/types/supabase";
 
 interface CrewManagementProps {
   crews: Crew[];
-  onCrewSelect: (crew: Crew) => void;
+  onCrewSelect: (crew: Crew | null) => void;
   onCrewUpdate: () => void;
   selectedCrew: Crew | null;
 }
@@ -70,6 +70,11 @@ export function CrewManagement({
 
       if (crewError) throw crewError;
 
+      // Clear selected crew if we're deleting it
+      if (selectedCrew?.id === id) {
+        onCrewSelect(null);
+      }
+      
       onCrewUpdate();
       toast({
         title: "Crew deleted",
