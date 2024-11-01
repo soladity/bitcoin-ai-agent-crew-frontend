@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Table,
@@ -141,6 +142,31 @@ export function CrewManagement({
                     >
                       {selectedCrew?.id === crew.id ? "Selected" : "Select"}
                     </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Edit2Icon className="h-4 w-4 mr-2" />
+                          Settings
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Crew Settings - {crew.name}</DialogTitle>
+                          <DialogDescription>
+                            Configure your crew settings
+                          </DialogDescription>
+                        </DialogHeader>
+                        <CrewForm
+                          onCrewCreated={onCrewUpdate}
+                          onClose={() => {}}
+                          crew={crew}
+                          isEditing={true}
+                        />
+                      </DialogContent>
+                    </Dialog>
                     <Button
                       variant="outline"
                       size="sm"
