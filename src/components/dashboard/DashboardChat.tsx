@@ -95,6 +95,8 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
       const requestBody = `# Current Input\n${input}\n\n# Conversation History\n${messages
         .map((m) => `${m.role.toUpperCase()} (${m.timestamp}): ${m.content}`)
         .join("\n\n")}`;
+      console.log("requestBody");
+      console.log(requestBody);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/execute_crew/${selectedCrew.id}`,
         {
@@ -107,13 +109,19 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
         }
       );
 
-      const data: ApiResponse = await response.json();
+      console.log("Response from API");
+      console.log(response);
+      console.log(typeof response);
 
       if (!response.ok) {
-        throw new Error(
-          data.result.raw || `HTTP error! status: ${response.status}`
-        );
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data: ApiResponse = await response.json();
+
+      console.log("data from response.json()");
+      console.log(data);
+
       const assistantMessage: Message = {
         role: "assistant",
         content: data.result.raw,
@@ -135,6 +143,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
     }
   };
 
+  /*
   const handleRefetchCrews = async () => {
     await fetchCrews();
     toast({
@@ -142,6 +151,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
       description: "The list of crews has been updated.",
     });
   };
+  */
 
   return (
     <Card className="w-full">
