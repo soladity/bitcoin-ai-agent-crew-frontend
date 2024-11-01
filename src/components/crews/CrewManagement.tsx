@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusIcon, Trash2Icon, UserIcon, Edit2Icon } from "lucide-react";
+import { PlusIcon, Trash2Icon, UserIcon, Settings, Check, CheckCircle2 } from "lucide-react";
 import CrewForm from "./CrewForm";
 import { Crew } from "@/types/supabase";
 
@@ -141,16 +141,26 @@ export function CrewManagement({
                       variant={selectedCrew?.id === crew.id ? "secondary" : "outline"}
                       size="sm"
                       onClick={() => onCrewSelect(crew)}
+                      className="min-w-[100px]"
                     >
-                      {selectedCrew?.id === crew.id ? "Selected" : "Select"}
+                      {selectedCrew?.id === crew.id ? (
+                        <>
+                          <CheckCircle2 className="h-4 w-4 mr-2" />
+                          Selected
+                        </>
+                      ) : (
+                        <>
+                          <Check className="h-4 w-4 mr-2" />
+                          Select
+                        </>
+                      )}
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => router.push(`/crew/${crew.id}/manage`)}
                     >
-                      <Edit2Icon className="h-4 w-4 mr-2" />
-                      Settings
+                      <Settings className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="outline"
