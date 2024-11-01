@@ -6,22 +6,26 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/hooks/use-toast";
 import { CheckCircle } from "lucide-react";
-import {
-  alex_tools,
-  bitflow_tools,
-  lunarcrush_tools,
-  web_search_tools,
-} from "../agents/AgentForm";
+import { getToolsByCategory } from "@/lib/tools";
 import { CloneAgent, CloneTask } from "@/types/supabase";
 
-const DEFAULT_AGENTS: CloneAgent[] = [
+const getDefaultAgents = async (): Promise<CloneAgent[]> => {
+  const alexTools = await getToolsByCategory("alex");
+  const bitflowTools = await getToolsByCategory("bitflow");
+  const lunarcrushTools = await getToolsByCategory("lunarcrush");
+  const webSearchTools = await getToolsByCategory("web_search");
+
+  return [
   {
     name: "Research agent for ALEX",
     role: "Market Researcher",
     goal: "Analyze and provide insights on market trends using ALEX data",
     backstory:
       "Specialized in processing and analyzing ALEX market data to identify trading opportunities and market patterns",
-    agent_tools: [...alex_tools, ...web_search_tools],
+    agent_tools: [
+      ...alexTools.map((t) => t.id),
+      ...webSearchTools.map((t) => t.id),
+    ],
   },
   {
     name: "Research agent for bitflow",
@@ -29,7 +33,10 @@ const DEFAULT_AGENTS: CloneAgent[] = [
     goal: "Monitor and analyze Bitflow trading signals and market data",
     backstory:
       "Expert in interpreting Bitflow signals and correlating them with market movements",
-    agent_tools: [...bitflow_tools, ...web_search_tools],
+    agent_tools: [
+      ...bitflowTools.map((t) => t.id),
+      ...webSearchTools.map((t) => t.id),
+    ],
   },
   {
     name: "Research agent for lunarcrush",
@@ -37,7 +44,7 @@ const DEFAULT_AGENTS: CloneAgent[] = [
     goal: "Track and analyze social sentiment data from LunarCrush",
     backstory:
       "Specialized in social media sentiment analysis and its correlation with crypto markets",
-    agent_tools: [...lunarcrush_tools],
+    agent_tools: [...lunarcrushTools.map((t) => t.id)],
   },
   {
     name: "Trade executor for bitflow",
@@ -45,9 +52,10 @@ const DEFAULT_AGENTS: CloneAgent[] = [
     goal: "Execute trades based on analyzed signals and market conditions",
     backstory:
       "Experienced in implementing trading strategies and managing trade execution",
-    agent_tools: [...bitflow_tools],
+    agent_tools: [...bitflowTools.map((t) => t.id)],
   },
-];
+  ];
+};
 
 const createTaskForAgent = (agent: CloneAgent): CloneTask => {
   const taskMap: { [key: string]: CloneTask } = {
@@ -89,34 +97,43 @@ interface CloneTradingAnalyzerProps {
   onCloneComplete: () => void;
 }
 
-export function CloneTradingAnalyzer({
+export function CloneTradingAnalyzer({ 
   onCloneComplete,
 }: CloneTradingAnalyzerProps) {
   const [isCloning, setIsCloning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasCloned, setHasCloned] = useState(false);
+  const [agents, setAgents] = useState<CloneAgent[]>([]);
 
   useEffect(() => {
-    checkIfAlreadyCloned();
+    const init = async () => {
+      await checkIfAlreadyCloned();
+      const defaultAgents = await getDefaultAgents();
+      setAgents(defaultAgents);
+    };
+    init();
   }, []);
 
   const checkIfAlreadyCloned = async () => {
-    const { data: profile } = await supabase.auth.getUser();
-    if (!profile.user) return;
+    try {
+      const { data: profile } = await supabase.auth.getUser();
+      if (!profile.user) return;
 
-    const { data, error } = await supabase
-      .from("crews")
-      .select("id")
-      .eq("profile_id", profile.user.id)
-      .eq("name", "Trading Analyzer")
-      .single();
+      const { data, error } = await supabase
+        .from("crews")
+        .select("*")
+        .eq("profile_id", profile.user.id)
+        .eq("name", "Trading Analyzer");
 
-    if (error && error.code !== "PGRST116") {
-      console.error("Error checking for existing TradingAnalyzer:", error);
-      return;
+      if (error) {
+        console.error("Error checking for existing TradingAnalyzer:", error);
+        return;
+      }
+
+      setHasCloned(data && data.length > 0);
+    } catch (err) {
+      console.error("Error in checkIfAlreadyCloned:", err);
     }
-
-    setHasCloned(!!data);
   };
 
   const createTradingAnalyzer = async () => {
@@ -151,7 +168,7 @@ export function CloneTradingAnalyzer({
       }
 
       // Create agents and their tasks
-      for (const agent of DEFAULT_AGENTS) {
+      for (const agent of agents) {
         const { data: createdAgent, error: agentError } = await supabase
           .from("agents")
           .insert({
@@ -159,7 +176,7 @@ export function CloneTradingAnalyzer({
             role: agent.role,
             goal: agent.goal,
             backstory: agent.backstory,
-            agent_tools: agent.agent_tools,
+            agent_tools: `{${agent.agent_tools.join(",")}}`,
             crew_id: crew.id,
             profile_id: profile.user.id,
           })

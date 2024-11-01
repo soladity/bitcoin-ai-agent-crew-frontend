@@ -8,28 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckIcon } from "lucide-react";
 import { AgentFormProps } from "@/types/supabase";
-
-export const alex_tools = [
-  "alex_get_price_history",
-  "alex_get_swap_info",
-  "alex_get_token_pool_volume",
-];
-
-export const bitflow_tools = [
-  "bitflow_get_available_tokens",
-  "bitflow_execute_trade",
-];
-
-export const lunarcrush_tools = ["lunarcrush_get_token_data"];
-
-export const web_search_tools = ["web_search_experimental"];
-
-export const AVAILABLE_TOOLS = [
-  ...alex_tools,
-  ...bitflow_tools,
-  ...lunarcrush_tools,
-  ...web_search_tools,
-];
+import { TOOL_CATEGORIES, ToolCategory, fetchTools, Tool } from "@/lib/tools";
 
 export default function AgentForm({
   agent,
@@ -44,6 +23,23 @@ export default function AgentForm({
     agent?.agent_tools || []
   );
   const [isToolsDropdownOpen, setIsToolsDropdownOpen] = useState(false);
+  const [availableTools, setAvailableTools] = useState<Tool[]>([]);
+  const [isLoadingTools, setIsLoadingTools] = useState(false);
+
+  useEffect(() => {
+    const loadTools = async () => {
+      setIsLoadingTools(true);
+      try {
+        const tools = await fetchTools();
+        setAvailableTools(tools);
+      } catch (error) {
+        console.error("Failed to load tools:", error);
+      } finally {
+        setIsLoadingTools(false);
+      }
+    };
+    loadTools();
+  }, []);
 
   useEffect(() => {
     if (agent) {
@@ -129,22 +125,48 @@ export default function AgentForm({
           <CheckIcon className="h-4 w-4 opacity-50" />
         </Button>
         {isToolsDropdownOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg">
-            {AVAILABLE_TOOLS.map((tool) => (
-              <div key={tool} className="flex items-center space-x-2 p-2">
-                <Checkbox
-                  id={tool}
-                  checked={selectedTools.includes(tool)}
-                  onCheckedChange={() => handleToolToggle(tool)}
-                />
-                <label
-                  htmlFor={tool}
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  {tool}
-                </label>
-              </div>
-            ))}
+          <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-96 overflow-y-auto">
+            {isLoadingTools ? (
+              <div className="p-4 text-center">Loading tools...</div>
+            ) : (
+              Object.keys(TOOL_CATEGORIES).map((category) => {
+                const categoryTools = availableTools.filter(
+                  (tool) => tool.category === category
+                );
+                if (categoryTools.length === 0) return null;
+
+                return (
+                  <div key={category} className="p-2">
+                    <h3 className="font-semibold text-sm text-muted-foreground mb-2">
+                      {TOOL_CATEGORIES[category as ToolCategory]}
+                    </h3>
+                    {categoryTools.map((tool) => (
+                      <div
+                        key={tool.id}
+                        className="flex items-start space-x-2 p-2"
+                      >
+                        <Checkbox
+                          id={tool.id}
+                          checked={selectedTools.includes(tool.id)}
+                          onCheckedChange={() => handleToolToggle(tool.id)}
+                        />
+                        <div className="flex flex-col">
+                          <label
+                            htmlFor={tool.id}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            {tool.name}
+                          </label>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {tool.description}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })
+            )}
           </div>
         )}
       </div>
@@ -152,7 +174,7 @@ export default function AgentForm({
         {selectedTools.map((tool) => (
           <div
             key={tool}
-            className="bg-primary text-primary-foreground px-2 py-1 rounded-md text-sm"
+            className="bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm"
           >
             {tool}
             <button
