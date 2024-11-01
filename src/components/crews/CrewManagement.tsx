@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -31,7 +32,7 @@ interface CrewManagementProps {
   selectedCrew: Crew | null;
 }
 
-export function CrewManagement({
+export function CrewManagement({ 
   crews,
   onCrewSelect,
   onCrewUpdate,
@@ -40,6 +41,7 @@ export function CrewManagement({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleDelete = async (id: number) => {
     setLoading(true);
@@ -142,31 +144,14 @@ export function CrewManagement({
                     >
                       {selectedCrew?.id === crew.id ? "Selected" : "Select"}
                     </Button>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                        >
-                          <Edit2Icon className="h-4 w-4 mr-2" />
-                          Settings
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Crew Settings - {crew.name}</DialogTitle>
-                          <DialogDescription>
-                            Configure your crew settings
-                          </DialogDescription>
-                        </DialogHeader>
-                        <CrewForm
-                          onCrewCreated={onCrewUpdate}
-                          onClose={() => {}}
-                          crew={crew}
-                          isEditing={true}
-                        />
-                      </DialogContent>
-                    </Dialog>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/crew/${crew.id}/manage`)}
+                    >
+                      <Edit2Icon className="h-4 w-4 mr-2" />
+                      Settings
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
