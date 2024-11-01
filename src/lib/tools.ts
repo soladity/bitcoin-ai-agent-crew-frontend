@@ -3,92 +3,80 @@ export interface Tool {
   name: string;
   description: string;
   category: ToolCategory;
+  parameters?: string;
 }
 
-export type ToolCategory = "alex" | "bitflow" | "lunarcrush" | "web_search";
+export type ToolCategory = "alex" | "bitflow" | "lunarcrush" | "web_search" | "velar";
 
 export const TOOL_CATEGORIES: Record<ToolCategory, string> = {
   alex: "ALEX DEX Tools",
   bitflow: "Bitflow Trading Tools",
   lunarcrush: "LunarCrush Analytics",
   web_search: "Web Search Tools",
+  velar: "Velar Tools"
 };
 
-export const TOOLS: Tool[] = [
-  {
-    id: "alex_get_price_history",
-    name: "ALEX Price History",
-    description: "Fetch historical price data from ALEX DEX",
-    category: "alex",
-  },
-  {
-    id: "alex_get_swap_info",
-    name: "ALEX Swap Info",
-    description: "Get swap pool information and rates",
-    category: "alex",
-  },
-  {
-    id: "alex_get_token_pool_volume",
-    name: "ALEX Pool Volume",
-    description: "Retrieve token pool volume statistics",
-    category: "alex",
-  },
-  {
-    id: "bitflow_get_available_tokens",
-    name: "Bitflow Available Tokens",
-    description: "List all available tokens for trading",
-    category: "bitflow",
-  },
-  {
-    id: "bitflow_execute_trade",
-    name: "Bitflow Trade Execution",
-    description: "Execute trades on Bitflow",
-    category: "bitflow",
-  },
-  {
-    id: "lunarcrush_get_token_data",
-    name: "LunarCrush Token Data",
-    description: "Get social and market data for tokens",
-    category: "lunarcrush",
-  },
-  {
-    id: "web_search_experimental",
-    name: "Web Search",
-    description: "Search the web for relevant information",
-    category: "web_search",
-  },
-];
+let toolsCache: Tool[] | null = null;
 
-// Helper functions to get tools
-export const getToolsByCategory = (category: ToolCategory): Tool[] =>
-  TOOLS.filter((tool) => tool.category === category);
+export async function fetchTools(): Promise<Tool[]> {
+  if (toolsCache) return toolsCache;
 
-export const getToolsByIds = (ids: string[]): Tool[] =>
-  TOOLS.filter((tool) => ids.includes(tool.id));
+  try {
+    const response = await fetch('https://core.aibtc.dev/tools');
+    const data = await response.json();
+    
+    const tools: Tool[] = Object.entries(data).map(([id, description]: [string, string]) => {
+      const category = id.split('_')[0] as ToolCategory;
+      const nameMatch = description.match(/^([^:]+):/);
+      const name = nameMatch ? nameMatch[1].trim() : id;
+      
+      // Extract parameters if they exist
+      const paramsMatch = description.match(/\((.*?)\)/);
+      const parameters = paramsMatch ? paramsMatch[1] : undefined;
+      
+      // Clean up description by removing the name prefix and parameters
+      let cleanDescription = description
+        .replace(/^[^:]+:\s*/, '')
+        .replace(/\(.*?\)\s*-\s*/, '');
 
-export const getTool = (id: string): Tool => {
-  const tool = TOOLS.find((tool) => tool.id === id);
+      return {
+        id,
+        name,
+        description: cleanDescription,
+        category,
+        parameters
+      };
+    });
+
+    toolsCache = tools;
+    return tools;
+  } catch (error) {
+    console.error('Failed to fetch tools:', error);
+    throw new Error('Failed to fetch tools from API');
+  }
+}
+
+export const getToolsByCategory = async (category: ToolCategory): Promise<Tool[]> => {
+  const tools = await fetchTools();
+  return tools.filter((tool) => tool.category === category);
+};
+
+export const getToolsByIds = async (ids: string[]): Promise<Tool[]> => {
+  const tools = await fetchTools();
+  return tools.filter((tool) => ids.includes(tool.id));
+};
+
+export const getTool = async (id: string): Promise<Tool> => {
+  const tools = await fetchTools();
+  const tool = tools.find((tool) => tool.id === id);
   if (!tool) {
     throw new Error(`Tool with id "${id}" not found`);
   }
   return tool;
 };
 
-// Legacy exports for backward compatibility
-export const alex_tools = TOOLS.filter((tool) => tool.category === "alex").map(
-  (tool) => tool.id
-);
-
-export const bitflow_tools = TOOLS.filter(
-  (tool) => tool.category === "bitflow"
-).map((tool) => tool.id);
-
-export const lunarcrush_tools = TOOLS.filter(
-  (tool) => tool.category === "lunarcrush"
-).map((tool) => tool.id);
-
-export const web_search_tools = TOOLS.filter(
-  (tool) => tool.category === "web_search"
-).map((tool) => tool.id);
-
-export const AVAILABLE_TOOLS = TOOLS.map((tool) => tool.id);
+// Helper function to get all available tool IDs
+export const getAvailableTools = async (): Promise<string[]> => {
+  const tools = await fetchTools();
+  return tools.map(tool => tool.id);
+};

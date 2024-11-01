@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckIcon } from "lucide-react";
 import { AgentFormProps } from "@/types/supabase";
-import { TOOL_CATEGORIES, ToolCategory, getToolsByCategory } from "@/lib/tools";
+import { useState, useEffect } from "react";
+import { TOOL_CATEGORIES, ToolCategory, fetchTools, Tool } from "@/lib/tools";
 
 export default function AgentForm({
   agent,
@@ -23,6 +24,23 @@ export default function AgentForm({
     agent?.agent_tools || []
   );
   const [isToolsDropdownOpen, setIsToolsDropdownOpen] = useState(false);
+  const [availableTools, setAvailableTools] = useState<Tool[]>([]);
+  const [isLoadingTools, setIsLoadingTools] = useState(false);
+
+  useEffect(() => {
+    const loadTools = async () => {
+      setIsLoadingTools(true);
+      try {
+        const tools = await fetchTools();
+        setAvailableTools(tools);
+      } catch (error) {
+        console.error('Failed to load tools:', error);
+      } finally {
+        setIsLoadingTools(false);
+      }
+    };
+    loadTools();
+  }, []);
 
   useEffect(() => {
     if (agent) {
@@ -109,13 +127,21 @@ export default function AgentForm({
         </Button>
         {isToolsDropdownOpen && (
           <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-96 overflow-y-auto">
-            {(Object.keys(TOOL_CATEGORIES) as ToolCategory[]).map(
-              (category) => (
-                <div key={category} className="p-2">
-                  <h3 className="font-semibold text-sm text-muted-foreground mb-2">
-                    {TOOL_CATEGORIES[category]}
-                  </h3>
-                  {getToolsByCategory(category).map((tool) => (
+            {isLoadingTools ? (
+              <div className="p-4 text-center">Loading tools...</div>
+            ) : (
+              Object.keys(TOOL_CATEGORIES).map((category) => {
+                const categoryTools = availableTools.filter(
+                  (tool) => tool.category === category
+                );
+                if (categoryTools.length === 0) return null;
+                
+                return (
+                  <div key={category} className="p-2">
+                    <h3 className="font-semibold text-sm text-muted-foreground mb-2">
+                      {TOOL_CATEGORIES[category as ToolCategory]}
+                    </h3>
+                    {categoryTools.map((tool) => (
                     <div
                       key={tool.id}
                       className="flex items-start space-x-2 p-2"
