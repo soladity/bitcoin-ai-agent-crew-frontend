@@ -23,9 +23,9 @@ export async function fetchTools(): Promise<Tool[]> {
 
   try {
     const response = await fetch('https://core.aibtc.dev/tools');
-    const data = await response.json();
+    const data = await response.json() as Record<string, string>;
     
-    const tools: Tool[] = Object.entries(data).map(([id, description]: [string, string]) => {
+    const tools: Tool[] = Object.entries(data).map(([id, description]) => {
       const category = id.split('_')[0] as ToolCategory;
       const nameMatch = description.match(/^([^:]+):/);
       const name = nameMatch ? nameMatch[1].trim() : id;
@@ -35,7 +35,7 @@ export async function fetchTools(): Promise<Tool[]> {
       const parameters = paramsMatch ? paramsMatch[1] : undefined;
       
       // Clean up description by removing the name prefix and parameters
-      let cleanDescription = description
+      const cleanDescription = description
         .replace(/^[^:]+:\s*/, '')
         .replace(/\(.*?\)\s*-\s*/, '');
 
