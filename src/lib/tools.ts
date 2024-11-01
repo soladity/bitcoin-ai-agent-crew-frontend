@@ -66,6 +66,14 @@ export const getToolsByCategory = (category: ToolCategory): Tool[] =>
 export const getToolsByIds = (ids: string[]): Tool[] =>
   TOOLS.filter((tool) => ids.includes(tool.id));
 
+export const getTool = (id: string): Tool => {
+  const tool = TOOLS.find((tool) => tool.id === id);
+  if (!tool) {
+    throw new Error(`Tool with id "${id}" not found`);
+  }
+  return tool;
+};
+
 // Legacy exports for backward compatibility
 export const alex_tools = TOOLS.filter((tool) => tool.category === "alex").map(
   (tool) => tool.id
