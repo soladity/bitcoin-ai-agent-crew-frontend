@@ -21,12 +21,20 @@ import {
 } from "@/components/ui/table";
 import { PlusIcon, Trash2Icon, UserIcon, Edit2Icon } from "lucide-react";
 import CrewForm from "./CrewForm";
-import { CrewManagementProps } from "@/types/supabase";
+import { Crew } from "@/types/supabase";
+
+interface CrewManagementProps {
+  crews: Crew[];
+  onCrewSelect: (crew: Crew) => void;
+  onCrewUpdate: () => void;
+  selectedCrew: Crew | null;
+}
 
 export function CrewManagement({
   crews,
   onCrewSelect,
   onCrewUpdate,
+  selectedCrew,
 }: CrewManagementProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -127,12 +135,11 @@ export function CrewManagement({
                 <TableCell>
                   <div className="flex gap-2">
                     <Button
-                      variant="outline"
+                      variant={selectedCrew?.id === crew.id ? "secondary" : "outline"}
                       size="sm"
                       onClick={() => onCrewSelect(crew)}
                     >
-                      <Edit2Icon className="h-4 w-4 mr-2" />
-                      Edit
+                      {selectedCrew?.id === crew.id ? "Selected" : "Select"}
                     </Button>
                     <Button
                       variant="outline"
@@ -150,60 +157,6 @@ export function CrewManagement({
             ))}
           </TableBody>
         </Table>
-      </div>
-    </div>
-  );
-}
-import { Button } from "@/components/ui/button";
-
-interface CrewManagementProps {
-  crews: Crew[];
-  onCrewSelect: (crew: Crew) => void;
-  onCrewUpdate: () => void;
-  selectedCrew: Crew | null;
-}
-
-export function CrewManagement({ crews, onCrewSelect, onCrewUpdate, selectedCrew }: CrewManagementProps) {
-  return (
-    <div className="space-y-4">
-      <div className="rounded-md border">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b bg-muted/50">
-              <th className="p-2 text-left">Name</th>
-              <th className="p-2 text-left">Description</th>
-              <th className="p-2 text-left">Created</th>
-              <th className="p-2 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {crews.map((crew) => (
-              <tr key={crew.id} className="border-b">
-                <td className="p-2">{crew.name}</td>
-                <td className="p-2">{crew.description}</td>
-                <td className="p-2">
-                  {new Date(crew.created_at).toLocaleDateString()}
-                </td>
-                <td className="p-2">
-                  <div className="flex gap-2">
-                    <Button
-                      variant={selectedCrew?.id === crew.id ? "secondary" : "outline"}
-                      onClick={() => onCrewSelect(crew)}
-                    >
-                      {selectedCrew?.id === crew.id ? "Selected" : "Select"}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => window.location.href = `/crew/${crew.id}`}
-                    >
-                      View
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
     </div>
   );

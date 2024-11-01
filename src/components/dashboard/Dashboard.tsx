@@ -115,6 +115,7 @@ export default function Component() {
               crews={crews}
               onCrewSelect={handleCrewSelect}
               onCrewUpdate={fetchCrews}
+              selectedCrew={selectedCrew}
             />
           ) : (
             <p className="text-muted-foreground">
