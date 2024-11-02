@@ -18,6 +18,7 @@ export default function Component() {
   const [crews, setCrews] = useState<Crew[]>([]);
   const [hasClonedAnalyzer, setHasClonedAnalyzer] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isCloneDisabled, setIsCloneDisabled] = useState(true);
 
   const fetchCrews = useCallback(async () => {
     try {
@@ -74,6 +75,15 @@ export default function Component() {
     };
 
     initializeDashboard();
+
+    // Disable cloning for 5 seconds
+    setIsCloneDisabled(true);
+    const timer = setTimeout(() => {
+      setIsCloneDisabled(false);
+    }, 2000);
+
+    // Clear the timer if the component unmounts
+    return () => clearTimeout(timer);
   }, [fetchCrews, checkClonedAnalyzer]);
 
   const [selectedCrew, setSelectedCrew] = useState<Crew | null>(null);
@@ -122,7 +132,16 @@ export default function Component() {
           )}
         </CardContent>
         <CardFooter className="flex flex-col items-start space-y-4">
-          <CloneTradingAnalyzer onCloneComplete={handleCloneComplete} />
+          {isCloneDisabled ? (
+            <p className="text-muted-foreground animate-pulse">
+              Setting up the trading analyzer for you to clone...
+            </p>
+          ) : (
+            <CloneTradingAnalyzer
+              onCloneComplete={handleCloneComplete}
+              disabled={isCloneDisabled}
+            />
+          )}
         </CardFooter>
       </Card>
     </div>
