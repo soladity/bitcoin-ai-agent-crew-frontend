@@ -38,7 +38,11 @@ export default function AdminPanel() {
   const [roleFilter, setRoleFilter] = useState<UserRole | "All">("All");
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [editingProfile, setEditingProfile] = useState<{
-    [key: string]: { assigned_agent_address: string; account_index: string };
+    [key: string]: {
+      assigned_agent_address: string;
+      account_index: string;
+      role: UserRole;
+    };
   }>({});
   const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
@@ -89,9 +93,10 @@ export default function AdminPanel() {
           acc[profile.id] = {
             assigned_agent_address: profile.assigned_agent_address || "",
             account_index: profile.account_index?.toString() || "",
+            role: profile.role,
           };
           return acc;
-        }, {} as { [key: string]: { assigned_agent_address: string; account_index: string } });
+        }, {} as { [key: string]: { assigned_agent_address: string; account_index: string; role: UserRole } });
         setEditingProfile(initialEditingState);
       }
     } catch (error) {
@@ -117,6 +122,7 @@ export default function AdminPanel() {
           editingProfile[userId].account_index === ""
             ? 0
             : parseInt(editingProfile[userId].account_index, 10),
+        role: editingProfile[userId].role,
       };
       const { error } = await supabase
         .from("profiles")
@@ -133,7 +139,7 @@ export default function AdminPanel() {
 
   const handleInputChange = (
     userId: string,
-    field: "assigned_agent_address" | "account_index",
+    field: "assigned_agent_address" | "account_index" | "role",
     value: string
   ) => {
     setEditingProfile((prev) => ({
@@ -269,7 +275,7 @@ export default function AdminPanel() {
                     ({getSortText()})
                   </span>
                 </th>
-                <th className="px-4 py-2 text-left">Stack Address</th>
+                <th className="px-4 py-2 text-left">Stack Addresses</th>
                 <th className="px-4 py-2 text-left">Role</th>
                 <th className="px-4 py-2 text-left">Agent Address</th>
                 <th className="px-4 py-2 text-left">Actions</th>
@@ -298,8 +304,14 @@ export default function AdminPanel() {
                   <td className="px-4 py-2">
                     <select
                       className="w-full p-2 border rounded-md"
-                      value={profile.role}
-                      onChange={() => updateProfile(profile.id)}
+                      value={editingProfile[profile.id]?.role || profile.role}
+                      onChange={(e) =>
+                        handleInputChange(
+                          profile.id,
+                          "role",
+                          e.target.value as UserRole
+                        )
+                      }
                     >
                       <option value="Normal">Normal</option>
                       <option value="Admin">Admin</option>
