@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { CrewFormProps } from "@/types/supabase";
+import { CrewFormProps, Crew } from "@/types/supabase";
 
 export default function CrewForm({ onCrewCreated, onClose }: CrewFormProps) {
   const [crewName, setCrewName] = useState("");
@@ -29,18 +29,29 @@ export default function CrewForm({ onCrewCreated, onClose }: CrewFormProps) {
         throw new Error("No authenticated user found");
       }
 
-      const { error } = await supabase.from("crews").insert({
-        name: crewName,
-        description: crewDescription,
-        profile_id: user.id,
-      });
+      const { data, error } = await supabase
+        .from("crews")
+        .insert({
+          name: crewName,
+          description: crewDescription,
+          profile_id: user.id,
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      const newCrew: Crew = {
+        id: data.id,
+        name: data.name,
+        description: data.description,
+        created_at: data.created_at,
+      };
 
       setCrewName("");
       setCrewDescription("");
       onClose();
-      onCrewCreated();
+      onCrewCreated(newCrew);
       toast({
         title: "Crew created",
         description: "The new crew has been successfully created.",
