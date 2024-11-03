@@ -6,14 +6,16 @@ export interface Tool {
   parameters?: string;
 }
 
-export type ToolCategory = "alex" | "bitflow" | "lunarcrush" | "web_search" | "velar";
+export type ToolCategory = "alex" | "bitflow" | "lunarcrush" | "web_search" | "velar" | "stacks" | "contract";
 
 export const TOOL_CATEGORIES: Record<ToolCategory, string> = {
   alex: "ALEX DEX Tools",
   bitflow: "Bitflow Trading Tools",
   lunarcrush: "LunarCrush Analytics",
   web_search: "Web Search Tools",
-  velar: "Velar Tools"
+  velar: "Velar Tools",
+  stacks: "Stacks Tools",
+  contract: "Contract Tools"
 };
 
 let toolsCache: Tool[] | null = null;
