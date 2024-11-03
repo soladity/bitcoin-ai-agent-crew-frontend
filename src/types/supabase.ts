@@ -8,14 +8,15 @@ export interface Crew {
 
 // Interface for props of the CrewManagement component
 export interface CrewManagementProps {
-    crews: Crew[]; // Array of crew members
-    onCrewSelect: (crew: Crew) => void; // Callback for when a crew is selected
-    onCrewUpdate: () => Promise<void> | void; // Callback for when a crew is updated
-}
+    initialCrews: Crew[]
+    onCrewSelect: (crew: Crew | null) => void
+    onCrewUpdate: (updatedCrews: Crew[]) => void
+    selectedCrew: Crew | null
+  }
 
 // Interface for props of the CrewForm component
 export interface CrewFormProps {
-    onCrewCreated: () => void; // Callback for when a new crew is created
+    onCrewCreated: (newCrew: Crew) => void; // Callback for when a new crew is created
     onClose: () => void; // Callback for when the form is closed
 }
 

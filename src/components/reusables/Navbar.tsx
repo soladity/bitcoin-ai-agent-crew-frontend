@@ -29,6 +29,17 @@ export function Nav() {
 
   const displayAgentAddress = userData?.agentAddress || null;
 
+  const displayRole = React.useMemo(() => {
+    if (
+      !userData?.role ||
+      userData.role === "" ||
+      userData.role.toLowerCase() === "normal"
+    ) {
+      return "Normal User";
+    }
+    return userData.role;
+  }, [userData?.role]);
+
   return (
     <header className="px-4 lg:px-6 h-auto flex flex-col md:flex-row items-center justify-between mt-4 mb-8 gap-4 md:gap-0">
       <div className="flex items-center gap-4 order-2 md:order-1">
@@ -50,7 +61,7 @@ export function Nav() {
                 <>
                   <span className="font-mono">{displayAddress}</span>
                   <Badge variant="secondary" className="ml-2">
-                    {userData?.role}
+                    {displayRole}
                   </Badge>
                 </>
               )}

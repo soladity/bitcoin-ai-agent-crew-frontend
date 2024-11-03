@@ -14,12 +14,15 @@ import {
 import DashboardChat from "./DashboardChat";
 import { Crew } from "@/types/supabase";
 
-export default function Component() {
+export default function Dashboard() {
   const [crews, setCrews] = useState<Crew[]>([]);
   const [hasClonedAnalyzer, setHasClonedAnalyzer] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedCrew, setSelectedCrew] = useState<Crew | null>(null);
 
   const fetchCrews = useCallback(async () => {
+    setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from("crews")
@@ -34,12 +37,12 @@ export default function Component() {
     } catch (err) {
       console.error("Error fetching crews:", err);
       setError("Failed to fetch crews");
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
   const checkClonedAnalyzer = useCallback(async () => {
-    if (hasClonedAnalyzer) return;
-
     try {
       const {
         data: { user },
@@ -55,7 +58,7 @@ export default function Component() {
         .from("crews")
         .select("*")
         .eq("profile_id", user.id)
-        .eq("name", "TradingAnalyzer");
+        .eq("name", "Trading Analyzer");
 
       if (error) {
         throw error;
@@ -66,7 +69,7 @@ export default function Component() {
       console.error("Error checking for cloned analyzer:", err);
       setError("Failed to check cloned analyzer status");
     }
-  }, [hasClonedAnalyzer]);
+  }, []);
 
   useEffect(() => {
     const initializeDashboard = async () => {
@@ -76,8 +79,6 @@ export default function Component() {
     initializeDashboard();
   }, [fetchCrews, checkClonedAnalyzer]);
 
-  const [selectedCrew, setSelectedCrew] = useState<Crew | null>(null);
-
   const handleCrewSelect = useCallback((crew: Crew | null) => {
     setSelectedCrew(crew);
   }, []);
@@ -86,6 +87,17 @@ export default function Component() {
     setHasClonedAnalyzer(true);
     fetchCrews();
   }, [fetchCrews]);
+
+  const handleCrewsUpdated = useCallback(
+    (updatedCrews: Crew[]) => {
+      setCrews(updatedCrews);
+      if (updatedCrews.length === 0) {
+        setSelectedCrew(null);
+      }
+      checkClonedAnalyzer();
+    },
+    [checkClonedAnalyzer]
+  );
 
   return (
     <div className="container mx-auto p-4 space-y-8">
@@ -108,21 +120,28 @@ export default function Component() {
 
       <Card className="w-full">
         <CardContent className="mt-4">
-          {crews.length > 0 ? (
+          {isLoading ? (
+            <p className="text-muted-foreground">Loading crews...</p>
+          ) : crews.length > 0 ? (
             <CrewManagement
-              crews={crews}
+              initialCrews={crews}
               onCrewSelect={handleCrewSelect}
-              onCrewUpdate={fetchCrews}
+              onCrewUpdate={handleCrewsUpdated}
               selectedCrew={selectedCrew}
             />
           ) : (
             <p className="text-muted-foreground">
-              You haven&apos;t created any crews yet.
+              You don&apos;t have any crews yet. Clone our starter crew.
             </p>
           )}
         </CardContent>
         <CardFooter className="flex flex-col items-start space-y-4">
-          <CloneTradingAnalyzer onCloneComplete={handleCloneComplete} />
+          {!isLoading && crews.length === 0 && !hasClonedAnalyzer && (
+            <CloneTradingAnalyzer
+              onCloneComplete={handleCloneComplete}
+              disabled={false}
+            />
+          )}
         </CardFooter>
       </Card>
     </div>

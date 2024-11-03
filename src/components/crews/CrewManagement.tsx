@@ -20,23 +20,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusIcon, Trash2Icon, UserIcon, Settings, Check, CheckCircle2 } from "lucide-react";
+import {
+  PlusIcon,
+  Trash2Icon,
+  UserIcon,
+  Settings,
+  Check,
+  CheckCircle2,
+} from "lucide-react";
 import CrewForm from "./CrewForm";
-import { Crew } from "@/types/supabase";
+import { Crew, CrewManagementProps } from "@/types/supabase";
 
-interface CrewManagementProps {
-  crews: Crew[];
-  onCrewSelect: (crew: Crew | null) => void;
-  onCrewUpdate: () => void;
-  selectedCrew: Crew | null;
-}
-
-export function CrewManagement({ 
-  crews,
+export function CrewManagement({
+  initialCrews,
   onCrewSelect,
   onCrewUpdate,
   selectedCrew,
 }: CrewManagementProps) {
+  const [crews, setCrews] = useState<Crew[]>(initialCrews);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -69,12 +70,16 @@ export function CrewManagement({
 
       if (crewError) throw crewError;
 
+      // Update the local state to remove the deleted crew
+      const updatedCrews = crews.filter((crew) => crew.id !== id);
+      setCrews(updatedCrews);
+
       // Clear selected crew if we're deleting it
       if (selectedCrew?.id === id) {
         onCrewSelect(null);
       }
-      
-      onCrewUpdate();
+
+      onCrewUpdate(updatedCrews);
       toast({
         title: "Crew deleted",
         description:
@@ -90,6 +95,12 @@ export function CrewManagement({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCrewCreated = (newCrew: Crew) => {
+    const updatedCrews = [...crews, newCrew];
+    setCrews(updatedCrews);
+    onCrewUpdate(updatedCrews);
   };
 
   return (
@@ -108,7 +119,7 @@ export function CrewManagement({
               <DialogTitle>Create New Crew</DialogTitle>
             </DialogHeader>
             <CrewForm
-              onCrewCreated={onCrewUpdate}
+              onCrewCreated={handleCrewCreated}
               onClose={() => setIsDialogOpen(false)}
             />
           </DialogContent>
@@ -142,7 +153,9 @@ export function CrewManagement({
                 <TableCell>
                   <div className="flex gap-2">
                     <Button
-                      variant={selectedCrew?.id === crew.id ? "secondary" : "outline"}
+                      variant={
+                        selectedCrew?.id === crew.id ? "secondary" : "outline"
+                      }
                       size="sm"
                       onClick={() => onCrewSelect(crew)}
                       className="min-w-[100px]"

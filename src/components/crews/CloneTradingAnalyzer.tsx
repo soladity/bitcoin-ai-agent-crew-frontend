@@ -16,44 +16,44 @@ const getDefaultAgents = async (): Promise<CloneAgent[]> => {
   const webSearchTools = await getToolsByCategory("web_search");
 
   return [
-  {
-    name: "Research agent for ALEX",
-    role: "Market Researcher",
-    goal: "Analyze and provide insights on market trends using ALEX data",
-    backstory:
-      "Specialized in processing and analyzing ALEX market data to identify trading opportunities and market patterns",
-    agent_tools: [
-      ...alexTools.map((t) => t.id),
-      ...webSearchTools.map((t) => t.id),
-    ],
-  },
-  {
-    name: "Research agent for bitflow",
-    role: "Bitflow Analyst",
-    goal: "Monitor and analyze Bitflow trading signals and market data",
-    backstory:
-      "Expert in interpreting Bitflow signals and correlating them with market movements",
-    agent_tools: [
-      ...bitflowTools.map((t) => t.id),
-      ...webSearchTools.map((t) => t.id),
-    ],
-  },
-  {
-    name: "Research agent for lunarcrush",
-    role: "Social Sentiment Analyst",
-    goal: "Track and analyze social sentiment data from LunarCrush",
-    backstory:
-      "Specialized in social media sentiment analysis and its correlation with crypto markets",
-    agent_tools: [...lunarcrushTools.map((t) => t.id)],
-  },
-  {
-    name: "Trade executor for bitflow",
-    role: "Trade Executor",
-    goal: "Execute trades based on analyzed signals and market conditions",
-    backstory:
-      "Experienced in implementing trading strategies and managing trade execution",
-    agent_tools: [...bitflowTools.map((t) => t.id)],
-  },
+    {
+      name: "Research agent for ALEX",
+      role: "Market Researcher",
+      goal: "Analyze and provide insights on market trends using ALEX data",
+      backstory:
+        "Specialized in processing and analyzing ALEX market data to identify trading opportunities and market patterns",
+      agent_tools: [
+        ...alexTools.map((t) => t.id),
+        ...webSearchTools.map((t) => t.id),
+      ],
+    },
+    {
+      name: "Research agent for bitflow",
+      role: "Bitflow Analyst",
+      goal: "Monitor and analyze Bitflow trading signals and market data",
+      backstory:
+        "Expert in interpreting Bitflow signals and correlating them with market movements",
+      agent_tools: [
+        ...bitflowTools.map((t) => t.id),
+        ...webSearchTools.map((t) => t.id),
+      ],
+    },
+    {
+      name: "Research agent for lunarcrush",
+      role: "Social Sentiment Analyst",
+      goal: "Track and analyze social sentiment data from LunarCrush",
+      backstory:
+        "Specialized in social media sentiment analysis and its correlation with crypto markets",
+      agent_tools: [...lunarcrushTools.map((t) => t.id)],
+    },
+    {
+      name: "Trade executor for bitflow",
+      role: "Trade Executor",
+      goal: "Execute trades based on analyzed signals and market conditions",
+      backstory:
+        "Experienced in implementing trading strategies and managing trade execution",
+      agent_tools: [...bitflowTools.map((t) => t.id)],
+    },
   ];
 };
 
@@ -95,10 +95,12 @@ const createTaskForAgent = (agent: CloneAgent): CloneTask => {
 
 interface CloneTradingAnalyzerProps {
   onCloneComplete: () => void;
+  disabled: boolean;
 }
 
-export function CloneTradingAnalyzer({ 
+export function CloneTradingAnalyzer({
   onCloneComplete,
+  disabled,
 }: CloneTradingAnalyzerProps) {
   const [isCloning, setIsCloning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -226,7 +228,7 @@ export function CloneTradingAnalyzer({
       )}
       <Button
         onClick={createTradingAnalyzer}
-        disabled={isCloning || hasCloned}
+        disabled={isCloning || hasCloned || disabled}
         variant="outline"
         className="w-full"
       >

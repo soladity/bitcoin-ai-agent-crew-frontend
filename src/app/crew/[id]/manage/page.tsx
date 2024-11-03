@@ -97,7 +97,10 @@ export default function CrewDetails() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold pt-4">Crew: {crew.name}</h1>
+      <h1 className="text-primary text-3xl font-bold pt-4">
+        Crew: {crew.name}
+      </h1>
+      <p className="text-ghost">{crew.description}</p>
       <div className="space-y-8">
         <Card>
           <CardContent>
