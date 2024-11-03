@@ -275,7 +275,7 @@ export default function AdminPanel() {
                     ({getSortText()})
                   </span>
                 </th>
-                <th className="px-4 py-2 text-left">Stack Addresses</th>
+                <th className="px-4 py-2 text-left">Stacks Addresses</th>
                 <th className="px-4 py-2 text-left">Role</th>
                 <th className="px-4 py-2 text-left">Agent Address</th>
                 <th className="px-4 py-2 text-left">Actions</th>
