@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckIcon } from "lucide-react";
+import { ChevronDownIcon, XIcon } from "lucide-react";
 import { AgentFormProps } from "@/types/supabase";
 import { TOOL_CATEGORIES, ToolCategory, fetchTools, Tool } from "@/lib/tools";
 
@@ -25,6 +25,7 @@ export default function AgentForm({
   const [isToolsDropdownOpen, setIsToolsDropdownOpen] = useState(false);
   const [availableTools, setAvailableTools] = useState<Tool[]>([]);
   const [isLoadingTools, setIsLoadingTools] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadTools = async () => {
@@ -50,6 +51,22 @@ export default function AgentForm({
       setSelectedTools(agent.agent_tools);
     }
   }, [agent]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsToolsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,7 +126,7 @@ export default function AgentForm({
           placeholder="Enter backstory"
         />
       </div>
-      <div className="relative">
+      <div className="relative" ref={dropdownRef}>
         <Label>Agent Tools</Label>
         <Button
           type="button"
@@ -122,51 +139,53 @@ export default function AgentForm({
                 selectedTools.length > 1 ? "s" : ""
               } selected`
             : "Select tools"}
-          <CheckIcon className="h-4 w-4 opacity-50" />
+          <ChevronDownIcon className="h-4 w-4 opacity-50" />
         </Button>
         {isToolsDropdownOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-96 overflow-y-auto">
-            {isLoadingTools ? (
-              <div className="p-4 text-center">Loading tools...</div>
-            ) : (
-              Object.keys(TOOL_CATEGORIES).map((category) => {
-                const categoryTools = availableTools.filter(
-                  (tool) => tool.category === category
-                );
-                if (categoryTools.length === 0) return null;
+          <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg overflow-hidden">
+            <div className="max-h-[50vh] overflow-y-auto">
+              {isLoadingTools ? (
+                <div className="p-4 text-center">Loading tools...</div>
+              ) : (
+                Object.keys(TOOL_CATEGORIES).map((category) => {
+                  const categoryTools = availableTools.filter(
+                    (tool) => tool.category === category
+                  );
+                  if (categoryTools.length === 0) return null;
 
-                return (
-                  <div key={category} className="p-2">
-                    <h3 className="font-semibold text-sm text-muted-foreground mb-2">
-                      {TOOL_CATEGORIES[category as ToolCategory]}
-                    </h3>
-                    {categoryTools.map((tool) => (
-                      <div
-                        key={tool.id}
-                        className="flex items-start space-x-2 p-2"
-                      >
-                        <Checkbox
-                          id={tool.id}
-                          checked={selectedTools.includes(tool.id)}
-                          onCheckedChange={() => handleToolToggle(tool.id)}
-                        />
-                        <div className="flex flex-col">
-                          <label
-                            htmlFor={tool.id}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            {tool.name}
-                          </label>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {tool.description}
-                          </p>
+                  return (
+                    <div key={category} className="p-2">
+                      <h3 className="font-semibold text-sm text-muted-foreground mb-2">
+                        {TOOL_CATEGORIES[category as ToolCategory]}
+                      </h3>
+                      {categoryTools.map((tool) => (
+                        <div
+                          key={tool.id}
+                          className="flex items-start space-x-2 p-2"
+                        >
+                          <Checkbox
+                            id={tool.id}
+                            checked={selectedTools.includes(tool.id)}
+                            onCheckedChange={() => handleToolToggle(tool.id)}
+                          />
+                          <div className="flex flex-col">
+                            <label
+                              htmlFor={tool.id}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              {tool.name}
+                            </label>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {tool.description}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })
-            )}
+                      ))}
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -174,7 +193,7 @@ export default function AgentForm({
         {selectedTools.map((tool) => (
           <div
             key={tool}
-            className="bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm"
+            className="bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm flex items-center"
           >
             {tool}
             <button
@@ -182,7 +201,7 @@ export default function AgentForm({
               onClick={() => handleToolToggle(tool)}
               className="ml-2 text-primary-foreground hover:text-red-500"
             >
-              ×
+              <XIcon className="h-4 w-4" />
             </button>
           </div>
         ))}
