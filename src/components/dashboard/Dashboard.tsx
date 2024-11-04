@@ -173,8 +173,8 @@ export default function Dashboard() {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>No Crews Found</AlertTitle>
               <AlertDescription>
-                You don't have any crews yet. Use the 'Add Crew' button above to
-                create a new crew.
+                You don&apos;t have any crews yet. Use the &apos;Add Crew&apos;
+                button above to create a new crew.
               </AlertDescription>
             </Alert>
           )}
