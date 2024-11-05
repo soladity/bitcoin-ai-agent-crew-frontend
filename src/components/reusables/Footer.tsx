@@ -2,9 +2,9 @@ import * as React from "react";
 import {
   DiscordLogoIcon,
   GitHubLogoIcon,
-  TwitterLogoIcon,
   GlobeIcon,
 } from "@radix-ui/react-icons";
+import { BsTwitterX } from "react-icons/bs";
 import { Disclaimer } from "@/components/reusables/Disclaimer";
 
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ export function Footer() {
               rel="noopener noreferrer"
               target="_blank"
             >
-              <TwitterLogoIcon className="h-6 w-6" />
+              <BsTwitterX className="h-6 w-6" />
               <span className="sr-only">Twitter</span>
             </a>
           </Button>
