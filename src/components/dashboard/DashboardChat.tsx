@@ -16,6 +16,11 @@ interface DashboardChatProps {
   selectedCrew: Crew | null;
 }
 
+interface StreamMessage {
+  type: "task" | "step";
+  content: string;
+}
+
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -26,6 +31,7 @@ interface Message {
     completion_tokens: number;
     successful_requests: number;
   };
+  streamMessages?: StreamMessage[];
 }
 
 export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
@@ -35,7 +41,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [authToken, setAuthToken] = useState<string | null>(null);
-  const [streamingMessage, setStreamingMessage] = useState("");
+  const [streamingMessages, setStreamingMessages] = useState<StreamMessage[]>([]);
 
   const scrollToBottom = () => {
     const container = messagesEndRef.current?.parentElement;
@@ -62,7 +68,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, streamingMessage]);
+  }, [messages, streamingMessages]);
 
   useEffect(() => {
     const getSession = async () => {
@@ -90,7 +96,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
-    setStreamingMessage("");
+    setStreamingMessages([]);
 
     try {
       const requestBody = `# Current Input\n${input}\n\n# Conversation History\n${messages
@@ -123,28 +129,79 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
 
       eventSource.onmessage = (event) => {
         try {
-          const data = JSON.parse(event.data);
+          console.log("Raw SSE data:", event.data);
+          // Handle empty or invalid events
+          if (!event.data || event.data.trim() === '') {
+            console.log("Received empty SSE event, skipping");
+            return;
+          }
+
+          // Convert Python-style single quotes to JSON-compatible double quotes
+          const jsonString = event.data
+            .replace(/'/g, '"')
+            .replace(/\n/g, "\\n");
+          
+          const data = JSON.parse(jsonString);
+          if (!data || typeof data !== 'object') {
+            console.warn("Parsed data is not an object:", data);
+            return;
+          }
+
           switch (data.type) {
             case "step":
             case "task":
-              setStreamingMessage((prev) => prev + `${data.content}\n\n`);
+              setStreamingMessages((prev) => [
+                ...prev,
+                { type: data.type, content: data.content },
+              ]);
               break;
             case "result":
-              setStreamingMessage((prev) => prev + data.content);
+              // Handle final result if needed
+              console.log("Final result received:", data.content);
               break;
             default:
               console.warn("Unknown message type:", data.type);
           }
         } catch (error) {
           console.error("Error parsing SSE data:", error);
-          setStreamingMessage((prev) => prev + event.data + "\n");
+          console.error("Raw data that failed to parse:", event.data);
         }
       };
 
+      let retryCount = 0;
+      const maxRetries = 3;
+      
       eventSource.onerror = (error) => {
         console.error("EventSource failed:", error);
-        eventSource.close();
-        setIsLoading(false);
+        
+        if (retryCount < maxRetries) {
+          retryCount++;
+          console.log(`Retrying connection (${retryCount}/${maxRetries})...`);
+          // EventSource will automatically try to reconnect
+          toast({
+            title: "Connection Error",
+            description: `Attempting to reconnect (${retryCount}/${maxRetries})...`,
+            duration: 3000,
+          });
+        } else {
+          console.error("Max retries reached, closing connection");
+          eventSource.close();
+          setIsLoading(false);
+          toast({
+            title: "Connection Failed",
+            description: "Failed to maintain connection after multiple attempts",
+            variant: "destructive",
+          });
+          
+          // Add the error state to messages
+          const errorMessage: Message = {
+            role: "assistant",
+            content: "Sorry, I encountered a connection error. Please try again.",
+            timestamp: new Date(),
+          };
+          setMessages(prev => [...prev, errorMessage]);
+          setStreamingMessages([]);
+        }
       };
 
       eventSource.addEventListener("close", () => {
@@ -153,11 +210,12 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
 
         const assistantMessage: Message = {
           role: "assistant",
-          content: streamingMessage.trim(),
+          content: "Task completed",
           timestamp: new Date(),
+          streamMessages: streamingMessages,
         };
         setMessages((prev) => [...prev, assistantMessage]);
-        setStreamingMessage("");
+        setStreamingMessages([]);
       });
     } catch (error) {
       console.error("Error sending message:", error);
@@ -200,16 +258,30 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
               </div>
             </div>
           ))}
-          {streamingMessage && (
+          {streamingMessages.length > 0 && (
             <div className="flex justify-start">
-              <div className="max-w-[70%] p-3 rounded-lg bg-muted">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {streamingMessage}
-                </ReactMarkdown>
+              <div className="max-w-[70%] space-y-2">
+                {streamingMessages.map((msg, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`p-3 rounded-lg ${
+                      msg.type === 'task' 
+                        ? 'bg-blue-100 dark:bg-blue-900' 
+                        : 'bg-muted'
+                    }`}
+                  >
+                    <div className="text-xs uppercase mb-1 text-muted-foreground">
+                      {msg.type}
+                    </div>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
+                ))}
               </div>
             </div>
           )}
-          {isLoading && !streamingMessage && (
+          {isLoading && streamingMessages.length === 0 && (
             <div className="space-y-4">
               <Skeleton className="h-4 w-3/4" />
               <Skeleton className="h-4 w-full" />
