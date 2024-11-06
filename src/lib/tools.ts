@@ -6,7 +6,7 @@ export interface Tool {
   parameters?: string;
 }
 
-export type ToolCategory = "alex" | "bitflow" | "lunarcrush" | "web_search" | "velar" | "stacks" | "contract";
+export type ToolCategory = "alex" | "bitflow" | "lunarcrush" | "web_search" | "velar" | "stacks" | "contract" | "wallet";
 
 export const TOOL_CATEGORIES: Record<ToolCategory, string> = {
   alex: "ALEX DEX Tools",
@@ -15,7 +15,8 @@ export const TOOL_CATEGORIES: Record<ToolCategory, string> = {
   web_search: "Web Search Tools",
   velar: "Velar Tools",
   stacks: "Stacks Tools",
-  contract: "Contract Tools"
+  contract: "Contract Tools",
+  wallet: "Wallet Tools"
 };
 
 let toolsCache: Tool[] | null = null;
