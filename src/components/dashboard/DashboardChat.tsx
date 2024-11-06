@@ -9,8 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Loader2 } from "lucide-react";
 import { Crew } from "@/types/supabase";
-import { ApiResponse } from "@/components/dashboard/Execution";
 
 interface DashboardChatProps {
   selectedCrew: Crew | null;
@@ -35,6 +35,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [authToken, setAuthToken] = useState<string | null>(null);
+  const [streamingMessage, setStreamingMessage] = useState("");
 
   const scrollToBottom = () => {
     const container = messagesEndRef.current?.parentElement;
@@ -49,7 +50,6 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
   };
 
   useEffect(() => {
-    // Reset messages when crew changes
     const initialMessage: Message = {
       role: "assistant",
       content: selectedCrew
@@ -62,7 +62,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, streamingMessage]);
 
   useEffect(() => {
     const getSession = async () => {
@@ -90,15 +90,16 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
+    setStreamingMessage("");
 
     try {
       const requestBody = `# Current Input\n${input}\n\n# Conversation History\n${messages
         .map((m) => `${m.role.toUpperCase()} (${m.timestamp}): ${m.content}`)
         .join("\n\n")}`;
-      console.log("requestBody");
-      console.log(requestBody);
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/execute_crew/${selectedCrew.id}`,
+
+      // Get a connection token
+      const tokenResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/new`,
         {
           method: "POST",
           headers: {
@@ -109,27 +110,55 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
         }
       );
 
-      console.log("Response from API");
-      console.log(response);
-      console.log(typeof response);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!tokenResponse.ok) {
+        throw new Error(`HTTP error! status: ${tokenResponse.status}`);
       }
 
-      const data: ApiResponse = await response.json();
+      const { connection_token } = await tokenResponse.json();
 
-      console.log("data from response.json()");
-      console.log(data);
+      // Start SSE connection
+      const eventSource = new EventSource(
+        `${process.env.NEXT_PUBLIC_API_URL}/sse/execute_crew/${selectedCrew.id}?connection_token=${connection_token}`
+      );
 
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: data.result.raw,
-        timestamp: new Date(),
-        tokenUsage: data.result.token_usage,
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          switch (data.type) {
+            case "step":
+            case "task":
+              setStreamingMessage((prev) => prev + `${data.content}\n\n`);
+              break;
+            case "result":
+              setStreamingMessage((prev) => prev + data.content);
+              break;
+            default:
+              console.warn("Unknown message type:", data.type);
+          }
+        } catch (error) {
+          console.error("Error parsing SSE data:", error);
+          setStreamingMessage((prev) => prev + event.data + "\n");
+        }
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      eventSource.onerror = (error) => {
+        console.error("EventSource failed:", error);
+        eventSource.close();
+        setIsLoading(false);
+      };
+
+      eventSource.addEventListener("close", () => {
+        eventSource.close();
+        setIsLoading(false);
+
+        const assistantMessage: Message = {
+          role: "assistant",
+          content: streamingMessage.trim(),
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+        setStreamingMessage("");
+      });
     } catch (error) {
       console.error("Error sending message:", error);
       toast({
@@ -138,20 +167,9 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
           error instanceof Error ? error.message : "Failed to send message",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
-
-  /*
-  const handleRefetchCrews = async () => {
-    await fetchCrews();
-    toast({
-      title: "Crews Refreshed",
-      description: "The list of crews has been updated.",
-    });
-  };
-  */
 
   return (
     <Card className="w-full">
@@ -182,7 +200,16 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
               </div>
             </div>
           ))}
-          {isLoading && (
+          {streamingMessage && (
+            <div className="flex justify-start">
+              <div className="max-w-[70%] p-3 rounded-lg bg-muted">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {streamingMessage}
+                </ReactMarkdown>
+              </div>
+            </div>
+          )}
+          {isLoading && !streamingMessage && (
             <div className="space-y-4">
               <Skeleton className="h-4 w-3/4" />
               <Skeleton className="h-4 w-full" />
@@ -205,7 +232,14 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
             className="flex-1"
           />
           <Button type="submit" disabled={isLoading || !selectedCrew}>
-            {isLoading ? "Sending..." : "Send"}
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Thinking...
+              </div>
+            ) : (
+              "Send"
+            )}
           </Button>
         </form>
       </CardContent>
