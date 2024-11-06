@@ -129,7 +129,19 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
 
       eventSource.onmessage = (event) => {
         try {
+          console.log("Raw SSE data:", event.data);
+          // Handle empty or invalid events
+          if (!event.data || event.data.trim() === '') {
+            console.log("Received empty SSE event, skipping");
+            return;
+          }
+          
           const data = JSON.parse(event.data);
+          if (!data || typeof data !== 'object') {
+            console.warn("Parsed data is not an object:", data);
+            return;
+          }
+
           switch (data.type) {
             case "step":
             case "task":
@@ -147,6 +159,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
           }
         } catch (error) {
           console.error("Error parsing SSE data:", error);
+          console.error("Raw data that failed to parse:", event.data);
         }
       };
 
