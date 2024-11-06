@@ -135,8 +135,13 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
             console.log("Received empty SSE event, skipping");
             return;
           }
+
+          // Convert Python-style single quotes to JSON-compatible double quotes
+          const jsonString = event.data
+            .replace(/'/g, '"')
+            .replace(/\n/g, "\\n");
           
-          const data = JSON.parse(event.data);
+          const data = JSON.parse(jsonString);
           if (!data || typeof data !== 'object') {
             console.warn("Parsed data is not an object:", data);
             return;
