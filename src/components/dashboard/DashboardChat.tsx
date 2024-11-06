@@ -168,10 +168,40 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
         }
       };
 
+      let retryCount = 0;
+      const maxRetries = 3;
+      
       eventSource.onerror = (error) => {
         console.error("EventSource failed:", error);
-        eventSource.close();
-        setIsLoading(false);
+        
+        if (retryCount < maxRetries) {
+          retryCount++;
+          console.log(`Retrying connection (${retryCount}/${maxRetries})...`);
+          // EventSource will automatically try to reconnect
+          toast({
+            title: "Connection Error",
+            description: `Attempting to reconnect (${retryCount}/${maxRetries})...`,
+            duration: 3000,
+          });
+        } else {
+          console.error("Max retries reached, closing connection");
+          eventSource.close();
+          setIsLoading(false);
+          toast({
+            title: "Connection Failed",
+            description: "Failed to maintain connection after multiple attempts",
+            variant: "destructive",
+          });
+          
+          // Add the error state to messages
+          const errorMessage: Message = {
+            role: "assistant",
+            content: "Sorry, I encountered a connection error. Please try again.",
+            timestamp: new Date(),
+          };
+          setMessages(prev => [...prev, errorMessage]);
+          setStreamingMessages([]);
+        }
       };
 
       eventSource.addEventListener("close", () => {
