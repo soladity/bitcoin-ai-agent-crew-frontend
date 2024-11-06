@@ -233,7 +233,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
               </div>
             </div>
           )}
-          {isLoading && !streamingMessage && (
+          {isLoading && streamingMessages.length === 0 && (
             <div className="space-y-4">
               <Skeleton className="h-4 w-3/4" />
               <Skeleton className="h-4 w-full" />
