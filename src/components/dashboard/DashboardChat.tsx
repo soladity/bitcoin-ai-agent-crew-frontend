@@ -17,7 +17,7 @@ interface DashboardChatProps {
 }
 
 interface StreamMessage {
-  type: "task" | "step";
+  type: "task" | "step" | "result";
   content: string;
 }
 
@@ -41,7 +41,9 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [authToken, setAuthToken] = useState<string | null>(null);
-  const [streamingMessages, setStreamingMessages] = useState<StreamMessage[]>([]);
+  const [streamingMessages, setStreamingMessages] = useState<StreamMessage[]>(
+    []
+  );
 
   const scrollToBottom = () => {
     const container = messagesEndRef.current?.parentElement;
@@ -130,19 +132,13 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
       eventSource.onmessage = (event) => {
         try {
           console.log("Raw SSE data:", event.data);
-          // Handle empty or invalid events
-          if (!event.data || event.data.trim() === '') {
+          if (!event.data || event.data.trim() === "") {
             console.log("Received empty SSE event, skipping");
             return;
           }
 
-          // Convert Python-style single quotes to JSON-compatible double quotes
-          const jsonString = event.data
-            .replace(/'/g, '"')
-            .replace(/\n/g, "\\n");
-          
-          const data = JSON.parse(jsonString);
-          if (!data || typeof data !== 'object') {
+          const data = JSON.parse(event.data);
+          if (!data || typeof data !== "object") {
             console.warn("Parsed data is not an object:", data);
             return;
           }
@@ -150,17 +146,20 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
           switch (data.type) {
             case "step":
             case "task":
+            case "result":
               setStreamingMessages((prev) => [
                 ...prev,
                 { type: data.type, content: data.content },
               ]);
               break;
-            case "result":
-              // Handle final result if needed
-              console.log("Final result received:", data.content);
-              break;
             default:
               console.warn("Unknown message type:", data.type);
+          }
+
+          // Close the connection quietly if a "result" message is received
+          if (data.type === "result") {
+            eventSource.close();
+            setIsLoading(false);
           }
         } catch (error) {
           console.error("Error parsing SSE data:", error);
@@ -168,43 +167,23 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
         }
       };
 
-      let retryCount = 0;
-      const maxRetries = 3;
-      
+      // Handle errors but only show if it's an unexpected failure
       eventSource.onerror = (error) => {
-        console.error("EventSource failed:", error);
-        
-        if (retryCount < maxRetries) {
-          retryCount++;
-          console.log(`Retrying connection (${retryCount}/${maxRetries})...`);
-          // EventSource will automatically try to reconnect
-          toast({
-            title: "Connection Error",
-            description: `Attempting to reconnect (${retryCount}/${maxRetries})...`,
-            duration: 3000,
-          });
-        } else {
-          console.error("Max retries reached, closing connection");
-          eventSource.close();
+        if (isLoading) {
+          console.warn("SSE connection closed after completion");
           setIsLoading(false);
+        } else {
+          console.error("EventSource failed:", error);
           toast({
             title: "Connection Failed",
-            description: "Failed to maintain connection after multiple attempts",
+            description:
+              "There was a problem with the connection. Please try again.",
             variant: "destructive",
           });
-          
-          // Add the error state to messages
-          const errorMessage: Message = {
-            role: "assistant",
-            content: "Sorry, I encountered a connection error. Please try again.",
-            timestamp: new Date(),
-          };
-          setMessages(prev => [...prev, errorMessage]);
-          setStreamingMessages([]);
         }
       };
 
-      eventSource.addEventListener("close", () => {
+      eventSource.addEventListener("finish", () => {
         eventSource.close();
         setIsLoading(false);
 
@@ -262,12 +241,14 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
             <div className="flex justify-start">
               <div className="max-w-[70%] space-y-2">
                 {streamingMessages.map((msg, idx) => (
-                  <div 
-                    key={idx} 
+                  <div
+                    key={idx}
                     className={`p-3 rounded-lg ${
-                      msg.type === 'task' 
-                        ? 'bg-blue-100 dark:bg-blue-900' 
-                        : 'bg-muted'
+                      msg.type === "task"
+                        ? "bg-blue-100 dark:bg-blue-900"
+                        : msg.type === "result"
+                        ? "bg-green-100 dark:bg-green-900"
+                        : "bg-muted"
                     }`}
                   >
                     <div className="text-xs uppercase mb-1 text-muted-foreground">
