@@ -1,12 +1,20 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronDownIcon, XIcon } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Search, X } from "lucide-react";
 import { AgentFormProps } from "@/types/supabase";
 import { TOOL_CATEGORIES, ToolCategory, fetchTools, Tool } from "@/lib/tools";
 
@@ -22,10 +30,10 @@ export default function AgentForm({
   const [selectedTools, setSelectedTools] = useState<string[]>(
     agent?.agent_tools || []
   );
-  const [isToolsDropdownOpen, setIsToolsDropdownOpen] = useState(false);
   const [availableTools, setAvailableTools] = useState<Tool[]>([]);
   const [isLoadingTools, setIsLoadingTools] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isToolDialogOpen, setIsToolDialogOpen] = useState(false);
 
   useEffect(() => {
     const loadTools = async () => {
@@ -40,32 +48,6 @@ export default function AgentForm({
       }
     };
     loadTools();
-  }, []);
-
-  useEffect(() => {
-    if (agent) {
-      setAgentName(agent.name);
-      setRole(agent.role);
-      setGoal(agent.goal);
-      setBackstory(agent.backstory);
-      setSelectedTools(agent.agent_tools);
-    }
-  }, [agent]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsToolsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,6 +66,10 @@ export default function AgentForm({
       prev.includes(tool) ? prev.filter((t) => t !== tool) : [...prev, tool]
     );
   };
+
+  const filteredTools = availableTools.filter((tool) =>
+    tool.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -126,35 +112,45 @@ export default function AgentForm({
           placeholder="Enter backstory"
         />
       </div>
-      <div className="relative" ref={dropdownRef}>
+      <div>
         <Label>Agent Tools</Label>
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full justify-between"
-          onClick={() => setIsToolsDropdownOpen(!isToolsDropdownOpen)}
-        >
-          {selectedTools.length > 0
-            ? `${selectedTools.length} tool${
-                selectedTools.length > 1 ? "s" : ""
-              } selected`
-            : "Select tools"}
-          <ChevronDownIcon className="h-4 w-4 opacity-50" />
-        </Button>
-        {isToolsDropdownOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg overflow-hidden">
-            <div className="max-h-[50vh] overflow-y-auto">
+        <Dialog open={isToolDialogOpen} onOpenChange={setIsToolDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="w-full justify-between">
+              {selectedTools.length > 0
+                ? `${selectedTools.length} tool${
+                    selectedTools.length > 1 ? "s" : ""
+                  } selected`
+                : "Select tools"}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-3xl h-[80vh] flex flex-col p-0">
+            <DialogHeader className="p-6 pb-2">
+              <DialogTitle>Select Tools</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="flex-grow px-6">
+              <div className="sticky top-0 bg-background pt-4 pb-2 z-10">
+                <div className="flex items-center space-x-2">
+                  <Search className="w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search tools..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="flex-grow"
+                  />
+                </div>
+              </div>
               {isLoadingTools ? (
                 <div className="p-4 text-center">Loading tools...</div>
               ) : (
                 Object.keys(TOOL_CATEGORIES).map((category) => {
-                  const categoryTools = availableTools.filter(
+                  const categoryTools = filteredTools.filter(
                     (tool) => tool.category === category
                   );
                   if (categoryTools.length === 0) return null;
 
                   return (
-                    <div key={category} className="p-2">
+                    <div key={category} className="mb-6">
                       <h3 className="font-semibold text-sm text-muted-foreground mb-2">
                         {TOOL_CATEGORIES[category as ToolCategory]}
                       </h3>
@@ -185,9 +181,12 @@ export default function AgentForm({
                   );
                 })
               )}
+            </ScrollArea>
+            <div className="p-6 pt-2 border-t">
+              <Button onClick={() => setIsToolDialogOpen(false)}>Close</Button>
             </div>
-          </div>
-        )}
+          </DialogContent>
+        </Dialog>
       </div>
       <div className="flex flex-wrap gap-2">
         {selectedTools.map((tool) => (
@@ -201,7 +200,7 @@ export default function AgentForm({
               onClick={() => handleToolToggle(tool)}
               className="ml-2 text-primary-foreground hover:text-red-500"
             >
-              <XIcon className="h-4 w-4" />
+              <X className="h-4 w-4" />
             </button>
           </div>
         ))}

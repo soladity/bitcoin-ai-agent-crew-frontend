@@ -11,19 +11,10 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import DashboardChat from "./DashboardChat";
 import { Crew } from "@/types/supabase";
-import { AlertCircle, PlusIcon } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import CrewForm from "@/components/crews/CrewForm";
 
 export default function Dashboard() {
   const [crews, setCrews] = useState<Crew[]>([]);
@@ -31,7 +22,6 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCrew, setSelectedCrew] = useState<Crew | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const fetchCrews = useCallback(async () => {
     setIsLoading(true);
@@ -111,11 +101,6 @@ export default function Dashboard() {
     [checkClonedAnalyzer]
   );
 
-  const handleCrewCreated = useCallback((newCrew: Crew) => {
-    setCrews((prevCrews) => [...prevCrews, newCrew]);
-    setIsDialogOpen(false);
-  }, []);
-
   return (
     <div className="container mx-auto p-4 space-y-8">
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
@@ -138,45 +123,19 @@ export default function Dashboard() {
       </Card>
 
       <Card className="w-full">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader>
           <CardTitle className="text-sm font-medium">Manage Crews</CardTitle>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <PlusIcon className="mr-2 h-4 w-4" />
-                Add Crew
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Crew</DialogTitle>
-              </DialogHeader>
-              <CrewForm
-                onCrewCreated={handleCrewCreated}
-                onClose={() => setIsDialogOpen(false)}
-              />
-            </DialogContent>
-          </Dialog>
         </CardHeader>
         <CardContent className="mt-4">
           {isLoading ? (
             <p className="text-muted-foreground">Loading crews...</p>
-          ) : crews.length > 0 ? (
+          ) : (
             <CrewManagement
               initialCrews={crews}
               onCrewSelect={handleCrewSelect}
               onCrewUpdate={handleCrewsUpdated}
               selectedCrew={selectedCrew}
             />
-          ) : (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>No Crews Found</AlertTitle>
-              <AlertDescription>
-                You don&apos;t have any crews yet. Use the &apos;Add Crew&apos;
-                button above to create a new crew.
-              </AlertDescription>
-            </Alert>
           )}
         </CardContent>
         <CardFooter className="flex flex-col items-start space-y-4">
