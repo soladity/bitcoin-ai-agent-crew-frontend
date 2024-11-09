@@ -4,17 +4,17 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { CrewManagement } from "@/components/crews/CrewManagement";
 import { CloneTradingAnalyzer } from "@/components/crews/CloneTradingAnalyzer";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
 import DashboardChat from "./DashboardChat";
 import { Crew } from "@/types/supabase";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Menu } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
 export default function Dashboard() {
   const [crews, setCrews] = useState<Crew[]>([]);
@@ -31,10 +31,7 @@ export default function Dashboard() {
         .select("id, name, description, created_at")
         .order("created_at", { ascending: false });
 
-      if (error) {
-        throw error;
-      }
-
+      if (error) throw error;
       setCrews(data || []);
     } catch (err) {
       console.error("Error fetching crews:", err);
@@ -62,10 +59,7 @@ export default function Dashboard() {
         .eq("profile_id", user.id)
         .eq("name", "Trading Analyzer");
 
-      if (error) {
-        throw error;
-      }
-
+      if (error) throw error;
       setHasClonedAnalyzer(data && data.length > 0);
     } catch (err) {
       console.error("Error checking for cloned analyzer:", err);
@@ -77,7 +71,6 @@ export default function Dashboard() {
     const initializeDashboard = async () => {
       await Promise.all([fetchCrews(), checkClonedAnalyzer()]);
     };
-
     initializeDashboard();
   }, [fetchCrews, checkClonedAnalyzer]);
 
@@ -102,31 +95,12 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="container mx-auto p-4 space-y-8">
-      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
-
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Chat with your Crews</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DashboardChat selectedCrew={selectedCrew} />
-        </CardContent>
-      </Card>
-
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">Manage Crews</CardTitle>
-        </CardHeader>
-        <CardContent className="mt-4">
+    <div className="flex h-screen overflow-hidden w-full">
+      <Sidebar className="w-64 border-r">
+        <SidebarHeader className="p-4 border-b">
+          <h2 className="text-lg font-semibold">Manage Crews</h2>
+        </SidebarHeader>
+        <SidebarContent className="p-4">
           {isLoading ? (
             <p className="text-muted-foreground">Loading crews...</p>
           ) : (
@@ -137,16 +111,37 @@ export default function Dashboard() {
               selectedCrew={selectedCrew}
             />
           )}
-        </CardContent>
-        <CardFooter className="flex flex-col items-start space-y-4">
           {!isLoading && !hasClonedAnalyzer && (
             <CloneTradingAnalyzer
               onCloneComplete={handleCloneComplete}
               disabled={false}
             />
           )}
-        </CardFooter>
-      </Card>
+        </SidebarContent>
+      </Sidebar>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <header className="flex items-center justify-between p-4 border-b">
+          <div className="flex items-center space-x-4">
+            <SidebarTrigger>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Toggle sidebar</span>
+              </Button>
+            </SidebarTrigger>
+            <h1 className="text-2xl font-bold">Dashboard</h1>
+          </div>
+        </header>
+        <main className="flex-1 overflow-auto p-4">
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <DashboardChat selectedCrew={selectedCrew} />
+        </main>
+      </div>
     </div>
   );
 }

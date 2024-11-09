@@ -211,7 +211,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
   return (
     <Card className="w-full">
       <CardContent className="space-y-4 p-4">
-        <div className="h-[300px] overflow-y-auto space-y-4">
+        <div className="h-[500px] overflow-y-auto space-y-4">
           {messages.map((message, index) => (
             <div
               key={index}
