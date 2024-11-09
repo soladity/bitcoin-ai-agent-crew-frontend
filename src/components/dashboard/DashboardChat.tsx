@@ -107,7 +107,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
 
       // Get a connection token
       const tokenResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/new`,
+        `${process.env.NEXT_PUBLIC_API_URL}/execute_crew/${selectedCrew.id}`,
         {
           method: "POST",
           headers: {
@@ -122,11 +122,11 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
         throw new Error(`HTTP error! status: ${tokenResponse.status}`);
       }
 
-      const { connection_token } = await tokenResponse.json();
+      const { task_id } = await tokenResponse.json();
 
       // Start SSE connection
       const eventSource = new EventSource(
-        `${process.env.NEXT_PUBLIC_API_URL}/sse/execute_crew/${selectedCrew.id}?connection_token=${connection_token}`
+        `${process.env.NEXT_PUBLIC_API_URL}/sse?task_id=${task_id}`
       );
 
       eventSource.onmessage = (event) => {
