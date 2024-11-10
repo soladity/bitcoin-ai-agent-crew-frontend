@@ -11,10 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
-import {
-  SidebarContent,
-  SidebarHeader,
-} from "@/components/ui/sidebar";
+import { SidebarContent, SidebarHeader } from "@/components/ui/sidebar";
 
 export default function Dashboard() {
   const [crews, setCrews] = useState<Crew[]>([]);
@@ -98,11 +95,18 @@ export default function Dashboard() {
     <div className="flex h-screen overflow-hidden w-full">
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="fixed left-4 top-4 z-40">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="fixed left-4 top-4 z-40"
+          >
             <Menu className="h-6 w-6" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0">
+        <SheetContent
+          side="left"
+          className="w-[300px] sm:w-[400px] md:w-[600px] p-0"
+        >
           <div className="h-full flex flex-col">
             <SidebarHeader className="p-4 border-b">
               <h2 className="text-lg font-semibold">Manage Crews</h2>
