@@ -6,7 +6,7 @@ import { CrewManagement } from "@/components/crews/CrewManagement";
 import { CloneTradingAnalyzer } from "@/components/crews/CloneTradingAnalyzer";
 import DashboardChat from "./DashboardChat";
 import { Crew } from "@/types/supabase";
-import { AlertCircle, Menu } from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -123,10 +123,16 @@ export default function Dashboard() {
         <header className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center space-x-4">
             <SidebarTrigger className="block">
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
-                <span className="sr-only">Toggle sidebar</span>
-              </Button>
+              {({ state }) => (
+                <Button variant="ghost" size="icon">
+                  {state === "expanded" ? (
+                    <ChevronLeft className="h-6 w-6" />
+                  ) : (
+                    <ChevronRight className="h-6 w-6" />
+                  )}
+                  <span className="sr-only">Toggle sidebar</span>
+                </Button>
+              )}
             </SidebarTrigger>
             <h1 className="text-2xl font-bold">Dashboard</h1>
           </div>
