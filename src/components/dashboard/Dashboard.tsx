@@ -124,14 +124,11 @@ export default function Dashboard() {
           <div className="flex items-center space-x-4">
             <SidebarTrigger className="block">
               {({ state }) => (
-                <Button variant="ghost" size="icon">
-                  {state === "expanded" ? (
-                    <ChevronLeft className="h-6 w-6" />
-                  ) : (
-                    <ChevronRight className="h-6 w-6" />
-                  )}
-                  <span className="sr-only">Toggle sidebar</span>
-                </Button>
+                state === "expanded" ? (
+                  <ChevronLeft className="h-6 w-6" />
+                ) : (
+                  <ChevronRight className="h-6 w-6" />
+                )
               )}
             </SidebarTrigger>
             <h1 className="text-2xl font-bold">Dashboard</h1>
