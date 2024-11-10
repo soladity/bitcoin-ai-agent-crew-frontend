@@ -19,6 +19,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCrew, setSelectedCrew] = useState<Crew | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const fetchCrews = useCallback(async () => {
     setIsLoading(true);
