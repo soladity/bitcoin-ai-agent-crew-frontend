@@ -136,20 +136,10 @@ export default function Dashboard() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setSidebarOpen(true)}
-              className="hover:bg-accent"
-            >
-              <Settings className="h-5 w-5" />
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              {selectedCrew ? `Current: ${selectedCrew.name}` : "Select a crew"}
-            </span>
-          </div>
-          <DashboardChat selectedCrew={selectedCrew} />
+          <DashboardChat 
+            selectedCrew={selectedCrew}
+            onOpenCrewManager={() => setSidebarOpen(true)}
+          />
         </main>
       </div>
     </div>

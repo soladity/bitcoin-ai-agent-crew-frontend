@@ -14,6 +14,7 @@ import { Crew } from "@/types/supabase";
 
 interface DashboardChatProps {
   selectedCrew: Crew | null;
+  onOpenCrewManager: () => void;
 }
 
 interface StreamMessage {
@@ -34,7 +35,7 @@ interface Message {
   streamMessages?: StreamMessage[];
 }
 
-export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
+export default function DashboardChat({ selectedCrew, onOpenCrewManager }: DashboardChatProps) {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -273,13 +274,22 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={onOpenCrewManager}
+            className="hover:bg-accent"
+          >
+            <Settings className="h-5 w-5" />
+          </Button>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={
               selectedCrew
                 ? "Type your message..."
-                : "Click the gear to select a crew."
+                : "Select a crew to start chatting"
             }
             disabled={isLoading || !selectedCrew}
             className="flex-1"
