@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Loader2, Settings } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Crew } from "@/types/supabase";
 
 interface DashboardChatProps {
@@ -35,10 +35,7 @@ interface Message {
   streamMessages?: StreamMessage[];
 }
 
-export default function DashboardChat({
-  selectedCrew,
-  onOpenCrewManager,
-}: DashboardChatProps) {
+export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -281,22 +278,11 @@ export default function DashboardChat({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={
-              selectedCrew
-                ? "Type your message..."
-                : "Click to select a crew -->"
+              selectedCrew ? "Type your message..." : "Select a crew to chat.."
             }
             disabled={isLoading || !selectedCrew}
             className="flex-1"
           />
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={onOpenCrewManager}
-            className="hover:bg-accent"
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
           <Button type="submit" disabled={isLoading || !selectedCrew}>
             {isLoading ? (
               <div className="flex items-center gap-2">

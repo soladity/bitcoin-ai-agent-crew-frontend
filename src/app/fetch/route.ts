@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const response = await fetch(`https://api.hiro.so/extended/v1/address/${address}/balances`, {
+    const response = await fetch(`https://cache.aibtc.dev/hiro-api/extended/v1/address/${address}/balances`, {
       headers: {
         "Accept": "application/json",
         "X-API-Key": process.env.HIRO_API_KEY || "",

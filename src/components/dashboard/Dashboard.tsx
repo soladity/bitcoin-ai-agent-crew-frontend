@@ -6,11 +6,17 @@ import { CrewManagement } from "@/components/crews/CrewManagement";
 import { CloneTradingAnalyzer } from "@/components/crews/CloneTradingAnalyzer";
 import DashboardChat from "./DashboardChat";
 import { Crew } from "@/types/supabase";
-import { AlertCircle } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowBigLeft,
+  ArrowBigRightDash,
+  ArrowLeft,
+} from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-
 import { SidebarContent, SidebarHeader } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Dashboard() {
   const [crews, setCrews] = useState<Crew[]>([]);
@@ -100,7 +106,7 @@ export default function Dashboard() {
         >
           <div className="h-full flex flex-col">
             <SidebarHeader className="p-4 border-b">
-              <h2 className="text-lg font-semibold">Manage Crews</h2>
+              <h2 className="text-lg font-semibold">Select Crews to chat</h2>
             </SidebarHeader>
             <SidebarContent className="p-4">
               {isLoading ? (
@@ -125,7 +131,16 @@ export default function Dashboard() {
       </Sheet>
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="flex items-center justify-between p-4 border-b">
-          <h1 className="text-2xl font-bold ml-12 md:ml-0">Dashboard</h1>
+          <Button onClick={() => setSidebarOpen(true)}>
+            Click to select a crew
+          </Button>
+          <Link href="/public-crews" passHref>
+            <Button variant="secondary">
+              <span className="flex gap-2 items-center justify-center">
+                View Public Crews <ArrowBigRightDash />
+              </span>
+            </Button>
+          </Link>
         </header>
         <main className="flex-1 overflow-auto p-4 space-y-4">
           {error && (

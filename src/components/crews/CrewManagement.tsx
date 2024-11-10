@@ -18,8 +18,6 @@ import {
   Trash2Icon,
   UserIcon,
   Settings,
-  Check,
-  CheckCircle2,
   Globe,
   Lock,
 } from "lucide-react";
@@ -90,20 +88,22 @@ export function CrewManagement({
 
       if (error) throw error;
 
-      const updatedCrews = crews.map((c) =>
-        c.id === crew.id ? { ...c, is_public: data.is_public } : c
-      );
-      setCrews(updatedCrews);
-      onCrewUpdate(updatedCrews);
+      if (data) {
+        const updatedCrews = crews.map((c) =>
+          c.id === crew.id ? { ...c, is_public: data.is_public } : c
+        );
+        setCrews(updatedCrews);
+        onCrewUpdate(updatedCrews);
 
-      toast({
-        title: "Crew updated",
-        description: `The crew is now ${
-          data.is_public
-            ? "public. Everyone can see your crew and clone it."
-            : "private. Only you can see it."
-        }.`,
-      });
+        toast({
+          title: "Crew updated",
+          description: `The crew is now ${
+            data.is_public
+              ? "public. Everyone can see your crew and clone it."
+              : "private. Only you can see it."
+          }.`,
+        });
+      }
     } catch (error) {
       console.error("Error updating crew:", error);
       toast({
@@ -143,7 +143,7 @@ export function CrewManagement({
           {crews.map((crew) => (
             <div
               key={crew.id}
-              className="flex flex-col space-y-2 p-3 border rounded-md "
+              className="flex flex-col space-y-2 p-3 border rounded-md"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -207,3 +207,5 @@ export function CrewManagement({
     </div>
   );
 }
+
+export default CrewManagement;
