@@ -108,28 +108,28 @@ export default function Dashboard() {
           <SidebarHeader className="p-4 border-b">
             <h2 className="text-lg font-semibold">Manage Crews</h2>
           </SidebarHeader>
-        <SidebarContent className="p-4">
-          {isLoading ? (
-            <p className="text-muted-foreground">Loading crews...</p>
-          ) : (
-            <CrewManagement
-              initialCrews={crews}
-              onCrewSelect={handleCrewSelect}
-              onCrewUpdate={handleCrewsUpdated}
-              selectedCrew={selectedCrew}
-            />
-          )}
-          {!isLoading && !hasClonedAnalyzer && (
-            <CloneTradingAnalyzer
-              onCloneComplete={handleCloneComplete}
-              disabled={false}
-            />
-          )}
-        </SidebarContent>
-        <SidebarTrigger className="absolute -right-7 top-4 z-50">
-          {({ state }) => getChevronIcon(state)}
-        </SidebarTrigger>
-      </Sidebar>
+          <SidebarContent className="p-4">
+            {isLoading ? (
+              <p className="text-muted-foreground">Loading crews...</p>
+            ) : (
+              <CrewManagement
+                initialCrews={crews}
+                onCrewSelect={handleCrewSelect}
+                onCrewUpdate={handleCrewsUpdated}
+                selectedCrew={selectedCrew}
+              />
+            )}
+            {!isLoading && !hasClonedAnalyzer && (
+              <CloneTradingAnalyzer
+                onCloneComplete={handleCloneComplete}
+                disabled={false}
+              />
+            )}
+          </SidebarContent>
+          <SidebarTrigger className="absolute -right-10 top-5 z-50">
+            {({ state }) => getChevronIcon(state)}
+          </SidebarTrigger>
+        </Sidebar>
       </div>
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="flex items-center justify-between p-4 border-b">
