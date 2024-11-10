@@ -103,10 +103,11 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen overflow-hidden w-full">
-      <Sidebar className="w-64 border-r">
-        <SidebarHeader className="p-4 border-b">
-          <h2 className="text-lg font-semibold">Manage Crews</h2>
-        </SidebarHeader>
+      <div className="relative">
+        <Sidebar className="w-64 border-r">
+          <SidebarHeader className="p-4 border-b">
+            <h2 className="text-lg font-semibold">Manage Crews</h2>
+          </SidebarHeader>
         <SidebarContent className="p-4">
           {isLoading ? (
             <p className="text-muted-foreground">Loading crews...</p>
@@ -125,15 +126,14 @@ export default function Dashboard() {
             />
           )}
         </SidebarContent>
+        <SidebarTrigger className="absolute -right-3 top-4 z-50">
+          {({ state }) => getChevronIcon(state)}
+        </SidebarTrigger>
       </Sidebar>
+      </div>
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="flex items-center justify-between p-4 border-b">
-          <div className="flex items-center space-x-4">
-            <SidebarTrigger className="block">
-              {({ state }) => getChevronIcon(state)}
-            </SidebarTrigger>
-            <h1 className="text-2xl font-bold">Dashboard</h1>
-          </div>
+          <h1 className="text-2xl font-bold">Dashboard</h1>
         </header>
         <main className="flex-1 overflow-auto p-4">
           {error && (
