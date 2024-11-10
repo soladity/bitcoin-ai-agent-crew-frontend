@@ -96,7 +96,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen overflow-hidden w-full">
-      <Sidebar className="w-64 border-r" defaultOpen={false}>
+      <Sidebar className="w-64 border-r">
         <SidebarHeader className="p-4 border-b">
           <h2 className="text-lg font-semibold">Manage Crews</h2>
         </SidebarHeader>
