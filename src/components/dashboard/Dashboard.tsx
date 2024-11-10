@@ -6,8 +6,10 @@ import { CrewManagement } from "@/components/crews/CrewManagement";
 import { CloneTradingAnalyzer } from "@/components/crews/CloneTradingAnalyzer";
 import DashboardChat from "./DashboardChat";
 import { Crew } from "@/types/supabase";
-import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight, Menu } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 const getChevronIcon = (state: "expanded" | "collapsed") => {
   return state === "expanded" ? (
@@ -103,7 +105,42 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen overflow-hidden w-full">
-      <div className="relative">
+      {/* Mobile Menu */}
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="icon" className="md:hidden fixed left-4 top-4 z-40">
+            <Menu className="h-6 w-6" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0">
+          <div className="h-full flex flex-col">
+            <SidebarHeader className="p-4 border-b">
+              <h2 className="text-lg font-semibold">Manage Crews</h2>
+            </SidebarHeader>
+            <SidebarContent className="p-4">
+              {isLoading ? (
+                <p className="text-muted-foreground">Loading crews...</p>
+              ) : (
+                <CrewManagement
+                  initialCrews={crews}
+                  onCrewSelect={handleCrewSelect}
+                  onCrewUpdate={handleCrewsUpdated}
+                  selectedCrew={selectedCrew}
+                />
+              )}
+              {!isLoading && !hasClonedAnalyzer && (
+                <CloneTradingAnalyzer
+                  onCloneComplete={handleCloneComplete}
+                  disabled={false}
+                />
+              )}
+            </SidebarContent>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop Sidebar */}
+      <div className="relative hidden md:block">
         <Sidebar className="w-128 border-r">
           <SidebarHeader className="p-4 border-b">
             <h2 className="text-lg font-semibold">Manage Crews</h2>
@@ -126,14 +163,14 @@ export default function Dashboard() {
               />
             )}
           </SidebarContent>
-          <SidebarTrigger className="absolute -right-10 top-5 z-50">
+          <SidebarTrigger className="absolute -right-7 top-5 z-50">
             {({ state }) => getChevronIcon(state)}
           </SidebarTrigger>
         </Sidebar>
       </div>
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="flex items-center justify-between p-4 border-b">
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <h1 className="text-2xl font-bold ml-12 md:ml-0">Dashboard</h1>
         </header>
         <main className="flex-1 overflow-auto p-4">
           {error && (
