@@ -11,18 +11,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
-const getChevronIcon = (state: "expanded" | "collapsed") => {
-  return state === "expanded" ? (
-    <ChevronLeft className="h-6 w-6" />
-  ) : (
-    <ChevronRight className="h-6 w-6" />
-  );
-};
 import {
-  Sidebar,
   SidebarContent,
   SidebarHeader,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 export default function Dashboard() {
@@ -105,10 +96,9 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen overflow-hidden w-full">
-      {/* Mobile Menu */}
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="md:hidden fixed left-4 top-4 z-40">
+          <Button variant="ghost" size="icon" className="fixed left-4 top-4 z-40">
             <Menu className="h-6 w-6" />
           </Button>
         </SheetTrigger>
@@ -138,36 +128,6 @@ export default function Dashboard() {
           </div>
         </SheetContent>
       </Sheet>
-
-      {/* Desktop Sidebar */}
-      <div className="relative hidden md:block">
-        <Sidebar className="w-128 border-r">
-          <SidebarHeader className="p-4 border-b">
-            <h2 className="text-lg font-semibold">Manage Crews</h2>
-          </SidebarHeader>
-          <SidebarContent className="p-4">
-            {isLoading ? (
-              <p className="text-muted-foreground">Loading crews...</p>
-            ) : (
-              <CrewManagement
-                initialCrews={crews}
-                onCrewSelect={handleCrewSelect}
-                onCrewUpdate={handleCrewsUpdated}
-                selectedCrew={selectedCrew}
-              />
-            )}
-            {!isLoading && !hasClonedAnalyzer && (
-              <CloneTradingAnalyzer
-                onCloneComplete={handleCloneComplete}
-                disabled={false}
-              />
-            )}
-          </SidebarContent>
-          <SidebarTrigger className="absolute -right-7 top-5 z-50">
-            {({ state }) => getChevronIcon(state)}
-          </SidebarTrigger>
-        </Sidebar>
-      </div>
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="flex items-center justify-between p-4 border-b">
           <h1 className="text-2xl font-bold ml-12 md:ml-0">Dashboard</h1>
