@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Circle, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
