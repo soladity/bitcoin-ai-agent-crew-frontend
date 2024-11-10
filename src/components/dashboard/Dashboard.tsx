@@ -6,7 +6,7 @@ import { CrewManagement } from "@/components/crews/CrewManagement";
 import { CloneTradingAnalyzer } from "@/components/crews/CloneTradingAnalyzer";
 import DashboardChat from "./DashboardChat";
 import { Crew } from "@/types/supabase";
-import { AlertCircle, Menu } from "lucide-react";
+import { AlertCircle, Settings } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -93,16 +93,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen overflow-hidden w-full">
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="fixed left-4 top-4 z-40"
-          >
-            <Menu className="h-6 w-6" />
-          </Button>
-        </SheetTrigger>
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent
           side="left"
           className="w-[300px] sm:w-[400px] md:w-[600px] p-0"
@@ -136,7 +127,7 @@ export default function Dashboard() {
         <header className="flex items-center justify-between p-4 border-b">
           <h1 className="text-2xl font-bold ml-12 md:ml-0">Dashboard</h1>
         </header>
-        <main className="flex-1 overflow-auto p-4">
+        <main className="flex-1 overflow-auto p-4 space-y-4">
           {error && (
             <Alert variant="destructive" className="mb-4">
               <AlertCircle className="h-4 w-4" />
@@ -144,6 +135,19 @@ export default function Dashboard() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setSidebarOpen(true)}
+              className="hover:bg-accent"
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              {selectedCrew ? `Current: ${selectedCrew.name}` : 'Select a crew'}
+            </span>
+          </div>
           <DashboardChat selectedCrew={selectedCrew} />
         </main>
       </div>
