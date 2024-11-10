@@ -8,6 +8,12 @@ import DashboardChat from "./DashboardChat";
 import { Crew } from "@/types/supabase";
 import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+const getChevronIcon = (state: "expanded" | "collapsed") => {
+  return state === "expanded" 
+    ? <ChevronLeft className="h-6 w-6" /> 
+    : <ChevronRight className="h-6 w-6" />;
+};
 import {
   Sidebar,
   SidebarContent,
@@ -122,13 +128,7 @@ export default function Dashboard() {
         <header className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center space-x-4">
             <SidebarTrigger className="block">
-              {({ state }) =>
-                state === "expanded" ? (
-                  <ChevronLeft className="h-6 w-6" />
-                ) : (
-                  <ChevronRight className="h-6 w-6" />
-                )
-              }
+              {({ state }) => getChevronIcon(state)}
             </SidebarTrigger>
             <h1 className="text-2xl font-bold">Dashboard</h1>
           </div>
