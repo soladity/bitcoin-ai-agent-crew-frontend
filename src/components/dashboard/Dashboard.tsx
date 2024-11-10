@@ -104,7 +104,7 @@ export default function Dashboard() {
   return (
     <div className="flex h-screen overflow-hidden w-full">
       <div className="relative">
-        <Sidebar className="w-64 border-r">
+        <Sidebar className="w-128 border-r">
           <SidebarHeader className="p-4 border-b">
             <h2 className="text-lg font-semibold">Manage Crews</h2>
           </SidebarHeader>
