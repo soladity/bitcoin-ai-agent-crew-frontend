@@ -13,14 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  PlusIcon,
-  Trash2Icon,
-  UserIcon,
-  Settings,
-  Check,
-  CheckCircle2,
-} from "lucide-react";
+import { PlusIcon, Trash2Icon, UserIcon, Settings } from "lucide-react";
 import CrewForm from "./CrewForm";
 import { Crew, CrewManagementProps } from "@/types/supabase";
 import { ScrollArea } from "@/components/ui/scroll-area";
