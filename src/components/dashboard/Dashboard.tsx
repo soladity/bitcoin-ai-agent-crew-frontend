@@ -126,7 +126,7 @@ export default function Dashboard() {
             />
           )}
         </SidebarContent>
-        <SidebarTrigger className="absolute -right-3 top-4 z-50">
+        <SidebarTrigger className="absolute -right-7 top-4 z-50">
           {({ state }) => getChevronIcon(state)}
         </SidebarTrigger>
       </Sidebar>
