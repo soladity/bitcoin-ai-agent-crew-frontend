@@ -8,7 +8,7 @@ import DashboardChat from "./DashboardChat";
 import { Crew } from "@/types/supabase";
 import { AlertCircle, Settings } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
 import { SidebarContent, SidebarHeader } from "@/components/ui/sidebar";
@@ -146,7 +146,7 @@ export default function Dashboard() {
               <Settings className="h-5 w-5" />
             </Button>
             <span className="text-sm text-muted-foreground">
-              {selectedCrew ? `Current: ${selectedCrew.name}` : 'Select a crew'}
+              {selectedCrew ? `Current: ${selectedCrew.name}` : "Select a crew"}
             </span>
           </div>
           <DashboardChat selectedCrew={selectedCrew} />

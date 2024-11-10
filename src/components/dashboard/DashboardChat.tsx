@@ -61,7 +61,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
     const initialMessage: Message = {
       role: "assistant",
       content: selectedCrew
-        ? `# Selected: ${selectedCrew.name}\n\n${selectedCrew.description}\n\nHow can I help you today?`
+        ? `# Selected: ${selectedCrew.name}\n\n${selectedCrew.description}`
         : "Please select a crew to start chatting.",
       timestamp: new Date(),
     };
@@ -279,7 +279,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
             placeholder={
               selectedCrew
                 ? "Type your message..."
-                : "Select a crew to start chatting"
+                : "Click the gear to select a crew."
             }
             disabled={isLoading || !selectedCrew}
             className="flex-1"
