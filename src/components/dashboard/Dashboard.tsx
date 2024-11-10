@@ -6,12 +6,7 @@ import { CrewManagement } from "@/components/crews/CrewManagement";
 import { CloneTradingAnalyzer } from "@/components/crews/CloneTradingAnalyzer";
 import DashboardChat from "./DashboardChat";
 import { Crew } from "@/types/supabase";
-import {
-  AlertCircle,
-  ArrowBigLeft,
-  ArrowBigRightDash,
-  ArrowLeft,
-} from "lucide-react";
+import { AlertCircle, ArrowBigRightDash } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { SidebarContent, SidebarHeader } from "@/components/ui/sidebar";
