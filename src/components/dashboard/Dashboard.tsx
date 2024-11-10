@@ -96,7 +96,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen overflow-hidden w-full">
-      <Sidebar className="w-64 border-r">
+      <Sidebar className="w-64 border-r" defaultOpen={false}>
         <SidebarHeader className="p-4 border-b">
           <h2 className="text-lg font-semibold">Manage Crews</h2>
         </SidebarHeader>
@@ -122,7 +122,7 @@ export default function Dashboard() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center space-x-4">
-            <SidebarTrigger>
+            <SidebarTrigger className="block">
               <Button variant="ghost" size="icon">
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle sidebar</span>
