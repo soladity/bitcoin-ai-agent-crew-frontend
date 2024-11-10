@@ -10,9 +10,11 @@ import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const getChevronIcon = (state: "expanded" | "collapsed") => {
-  return state === "expanded" 
-    ? <ChevronLeft className="h-6 w-6" /> 
-    : <ChevronRight className="h-6 w-6" />;
+  return state === "expanded" ? (
+    <ChevronLeft className="h-6 w-6" />
+  ) : (
+    <ChevronRight className="h-6 w-6" />
+  );
 };
 import {
   Sidebar,
