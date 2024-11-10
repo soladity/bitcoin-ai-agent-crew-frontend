@@ -35,7 +35,10 @@ interface Message {
   streamMessages?: StreamMessage[];
 }
 
-export default function DashboardChat({ selectedCrew, onOpenCrewManager }: DashboardChatProps) {
+export default function DashboardChat({
+  selectedCrew,
+  onOpenCrewManager,
+}: DashboardChatProps) {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -63,7 +66,7 @@ export default function DashboardChat({ selectedCrew, onOpenCrewManager }: Dashb
       role: "assistant",
       content: selectedCrew
         ? `# Selected: ${selectedCrew.name}\n\n${selectedCrew.description}`
-        : "Please select a crew to start chatting.",
+        : "# Select a Crew\n\nClick the gear icon to select a crew.",
       timestamp: new Date(),
     };
     setMessages([initialMessage]);
@@ -274,6 +277,17 @@ export default function DashboardChat({ selectedCrew, onOpenCrewManager }: Dashb
         </div>
 
         <form onSubmit={handleSubmit} className="flex gap-2">
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={
+              selectedCrew
+                ? "Type your message..."
+                : "Click to select a crew -->"
+            }
+            disabled={isLoading || !selectedCrew}
+            className="flex-1"
+          />
           <Button
             type="button"
             variant="outline"
@@ -283,17 +297,6 @@ export default function DashboardChat({ selectedCrew, onOpenCrewManager }: Dashb
           >
             <Settings className="h-5 w-5" />
           </Button>
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={
-              selectedCrew
-                ? "Type your message..."
-                : "Select a crew to start chatting"
-            }
-            disabled={isLoading || !selectedCrew}
-            className="flex-1"
-          />
           <Button type="submit" disabled={isLoading || !selectedCrew}>
             {isLoading ? (
               <div className="flex items-center gap-2">

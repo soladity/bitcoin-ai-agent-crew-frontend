@@ -17,11 +17,7 @@ import { ChevronDown, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useUserData } from "@/hooks/useUserData";
 
-interface NavProps {
-  openCrewSidebar?: () => void;
-}
-
-export function Nav({ openCrewSidebar }: NavProps) {
+export function Nav() {
   const { data: userData, isLoading, error } = useUserData();
 
   const displayAddress = React.useMemo(() => {
@@ -138,9 +134,6 @@ export function Nav({ openCrewSidebar }: NavProps) {
       <div className="flex items-center gap-4 order-3">
         <Button variant="outline">
           <Link href="/dashboard">Dashboard</Link>
-        </Button>
-        <Button variant="outline" onClick={openCrewSidebar}>
-          Manage Crews
         </Button>
         <Button variant="outline">
           <Link href="/leaderboard">Leaderboard</Link>
