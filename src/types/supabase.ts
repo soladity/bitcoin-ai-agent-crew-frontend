@@ -4,6 +4,7 @@ export interface Crew {
     name: string;
     description: string;
     created_at: string;
+    is_public: boolean;
 }
 
 // Interface for props of the CrewManagement component

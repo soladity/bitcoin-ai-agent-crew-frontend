@@ -13,7 +13,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { PlusIcon, Trash2Icon, UserIcon, Settings } from "lucide-react";
+import {
+  PlusIcon,
+  Trash2Icon,
+  UserIcon,
+  Settings,
+  Check,
+  CheckCircle2,
+  Globe,
+  Lock,
+} from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import CrewForm from "./CrewForm";
 import { Crew, CrewManagementProps } from "@/types/supabase";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -66,6 +76,44 @@ export function CrewManagement({
     const updatedCrews = [...crews, newCrew];
     setCrews(updatedCrews);
     onCrewUpdate(updatedCrews);
+  };
+
+  const handlePublicToggle = async (crew: Crew) => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("crews")
+        .update({ is_public: !crew.is_public })
+        .eq("id", crew.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const updatedCrews = crews.map((c) =>
+        c.id === crew.id ? { ...c, is_public: data.is_public } : c
+      );
+      setCrews(updatedCrews);
+      onCrewUpdate(updatedCrews);
+
+      toast({
+        title: "Crew updated",
+        description: `The crew is now ${
+          data.is_public
+            ? "public. Everyone can see your crew and clone it."
+            : "private. Only you can see it."
+        }.`,
+      });
+    } catch (error) {
+      console.error("Error updating crew:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update the crew. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -121,7 +169,19 @@ export function CrewManagement({
                 <span>
                   Created: {new Date(crew.created_at).toLocaleDateString()}
                 </span>
-                <div className="flex space-x-1">
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-1">
+                    {crew.is_public ? (
+                      <Globe className="h-3 w-3" />
+                    ) : (
+                      <Lock className="h-3 w-3" />
+                    )}
+                    <Switch
+                      checked={crew.is_public}
+                      onCheckedChange={() => handlePublicToggle(crew)}
+                      disabled={loading}
+                    />
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
