@@ -262,7 +262,7 @@ Sidebar.displayName = "Sidebar";
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button> & {
-    children?: React.ReactNode | ((props: { state: "expanded" | "collapsed" }) => React.ReactNode);
+    children?: React.ReactNode | ((props: { state: "expanded" | "collapsed" }) => JSX.Element);
   }
 >(({ className, onClick, children, ...props }, ref) => {
   const { toggleSidebar, state } = useSidebar();
