@@ -115,9 +115,9 @@ export function CrewManagement({
                   onClick={() => onCrewSelect(crew)}
                 >
                   {selectedCrew?.id === crew.id ? (
-                    <CheckCircle2 className="h-4 w-4" />
+                    <CheckCircle className="h-4 w-4" />
                   ) : (
-                    <Check className="h-4 w-4" />
+                    <Circle className="h-4 w-4" />
                   )}
                 </Button>
               </div>
