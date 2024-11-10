@@ -8,7 +8,6 @@ import DashboardChat from "./DashboardChat";
 import { Crew } from "@/types/supabase";
 import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -123,7 +122,7 @@ export default function Dashboard() {
         <header className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center space-x-4">
             <SidebarTrigger className="block">
-              {({ state }) => 
+              {({ state }) =>
                 state === "expanded" ? (
                   <ChevronLeft className="h-6 w-6" />
                 ) : (
