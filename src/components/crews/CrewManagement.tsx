@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
-  Circle,
-  CheckCircle,
   Settings,
   PlusIcon,
   Trash2Icon,
