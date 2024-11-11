@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-type UserRole = "Normal" | "Admin" | "Participant";
+type UserRole = "Normal" | "Admin" | "Participant" | "No Role";
 type SortOrder = "asc" | "desc" | null;
 
 interface Profile {
@@ -88,15 +88,28 @@ export default function AdminPanel() {
 
       if (data && Array.isArray(data)) {
         const typedProfiles = data as Profile[];
-        setProfiles(typedProfiles);
-        const initialEditingState = typedProfiles.reduce((acc, profile) => {
-          acc[profile.id] = {
-            assigned_agent_address: profile.assigned_agent_address || "",
-            account_index: profile.account_index?.toString() || "",
-            role: profile.role,
-          };
-          return acc;
-        }, {} as { [key: string]: { assigned_agent_address: string; account_index: string; role: UserRole } });
+        const profilesWithDefaultRole = typedProfiles.map((profile) => ({
+          ...profile,
+          role: profile.role || "No Role",
+        }));
+        setProfiles(profilesWithDefaultRole);
+        const initialEditingState = profilesWithDefaultRole.reduce(
+          (acc, profile) => {
+            acc[profile.id] = {
+              assigned_agent_address: profile.assigned_agent_address || "",
+              account_index: profile.account_index?.toString() || "",
+              role: profile.role,
+            };
+            return acc;
+          },
+          {} as {
+            [key: string]: {
+              assigned_agent_address: string;
+              account_index: string;
+              role: UserRole;
+            };
+          }
+        );
         setEditingProfile(initialEditingState);
       }
     } catch (error) {
@@ -115,15 +128,20 @@ export default function AdminPanel() {
 
     try {
       setError(null);
-      const updates = {
+      const updates: Partial<Profile> = {
         assigned_agent_address:
           editingProfile[userId].assigned_agent_address || null,
         account_index:
           editingProfile[userId].account_index === ""
             ? 0
             : parseInt(editingProfile[userId].account_index, 10),
-        role: editingProfile[userId].role,
       };
+
+      // Update the role only if it's not "No Role"
+      if (editingProfile[userId].role !== "No Role") {
+        updates.role = editingProfile[userId].role;
+      }
+
       const { error } = await supabase
         .from("profiles")
         .update(updates)
@@ -243,6 +261,7 @@ export default function AdminPanel() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="All">All Roles</SelectItem>
+              <SelectItem value="No Role">No Role</SelectItem>
               <SelectItem value="Normal">Normal</SelectItem>
               <SelectItem value="Admin">Admin</SelectItem>
               <SelectItem value="Participant">Participant</SelectItem>
@@ -313,6 +332,7 @@ export default function AdminPanel() {
                         )
                       }
                     >
+                      <option value="No Role">No Role</option>
                       <option value="Normal">Normal</option>
                       <option value="Admin">Admin</option>
                       <option value="Participant">Participant</option>

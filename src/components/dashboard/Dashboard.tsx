@@ -4,17 +4,20 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { CrewManagement } from "@/components/crews/CrewManagement";
 import { CloneTradingAnalyzer } from "@/components/crews/CloneTradingAnalyzer";
+import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import DashboardChat from "./DashboardChat";
 import { Crew } from "@/types/supabase";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Settings } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import Link from "next/link";
 
 export default function Dashboard() {
   const [crews, setCrews] = useState<Crew[]>([]);
@@ -22,6 +25,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCrew, setSelectedCrew] = useState<Crew | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const fetchCrews = useCallback(async () => {
     setIsLoading(true);
@@ -101,10 +105,12 @@ export default function Dashboard() {
     [checkClonedAnalyzer]
   );
 
+  const toggleSheet = useCallback(() => {
+    setIsSheetOpen((prev) => !prev);
+  }, []);
+
   return (
     <div className="container mx-auto p-4 space-y-8">
-      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
-
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -112,21 +118,19 @@ export default function Dashboard() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Chat with your Crews</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DashboardChat selectedCrew={selectedCrew} />
-        </CardContent>
-      </Card>
-
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">Manage Crews</CardTitle>
-        </CardHeader>
-        <CardContent className="mt-4">
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetTrigger asChild>
+          <Button onClick={toggleSheet}>
+            Click to manage Crews <Settings className="mb-1" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Manage Crews</SheetTitle>
+            <SheetDescription>
+              Create, edit, or delete your crews here.
+            </SheetDescription>
+          </SheetHeader>
           {isLoading ? (
             <p className="text-muted-foreground">Loading crews...</p>
           ) : (
@@ -137,16 +141,19 @@ export default function Dashboard() {
               selectedCrew={selectedCrew}
             />
           )}
-        </CardContent>
-        <CardFooter className="flex flex-col items-start space-y-4">
-          {!isLoading && !hasClonedAnalyzer && (
-            <CloneTradingAnalyzer
-              onCloneComplete={handleCloneComplete}
-              disabled={false}
-            />
-          )}
-        </CardFooter>
-      </Card>
+        </SheetContent>
+      </Sheet>
+
+      {!isLoading && !hasClonedAnalyzer && (
+        <CloneTradingAnalyzer
+          onCloneComplete={handleCloneComplete}
+          disabled={false}
+        />
+      )}
+      <Link href="/public-crews" className="ml-3">
+        <Button variant="secondary">View Public Crews</Button>
+      </Link>
+      <DashboardChat />
     </div>
   );
 }
