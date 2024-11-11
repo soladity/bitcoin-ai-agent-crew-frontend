@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/utils/supabase/client";
+import * as Sentry from "@sentry/nextjs";
 
 export interface Message {
   role: "user" | "assistant";
@@ -64,6 +65,7 @@ export function useChat() {
       });
     } catch (error) {
       console.error("Failed to reset chat history:", error);
+      Sentry.captureException(error);
       toast({
         title: "Error",
         description: "Failed to reset chat history.",
@@ -144,6 +146,7 @@ export function useChat() {
         }
       } catch (error) {
         console.error("Failed to fetch history:", error);
+        Sentry.captureException(error);
         toast({
           title: "Error",
           description: "Failed to load chat history.",
@@ -233,15 +236,21 @@ export function useChat() {
             setIsLoading(false);
           }
         } catch (error) {
+          Sentry.captureException(error);
           console.error("Error parsing SSE data:", error);
         }
       };
 
-      eventSource.onerror = () => {
+      eventSource.onerror = (error: Event) => {
         if (isLoading) {
           setIsLoading(false);
         } else {
-          console.error("EventSource failed");
+          console.error("EventSource failed", error);
+      
+          // Capture the error in Sentry
+          Sentry.captureException(error);
+      
+          // Display a toast notification for the error
           toast({
             title: "Connection Failed",
             description: "There was a problem with the connection. Please try again.",
@@ -264,6 +273,7 @@ export function useChat() {
       });
     } catch (error) {
       console.error("Error sending message:", error);
+      Sentry.captureException(error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to send message",
