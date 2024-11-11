@@ -50,11 +50,6 @@ export default function PublicCrews() {
     fetchCrews();
   }, []);
 
-  const handleCloneComplete = () => {
-    // You can add any additional logic here after a crew has been cloned
-    console.log("Crew cloned successfully");
-  };
-
   if (loading) {
     return <div className="text-center p-4">Loading crews...</div>;
   }
@@ -173,11 +168,7 @@ export default function PublicCrews() {
                 ))}
               </ul>
               <div className="mt-4">
-                <ClonePublicCrew
-                  crew={crew}
-                  onCloneComplete={handleCloneComplete}
-                  disabled={false}
-                />
+                <ClonePublicCrew crew={crew} disabled={false} />
               </div>
             </CardContent>
           </Card>
