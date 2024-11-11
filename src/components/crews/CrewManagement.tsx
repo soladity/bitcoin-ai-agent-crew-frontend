@@ -1,10 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Circle, CheckCircle } from "lucide-react";
+import {
+  Circle,
+  CheckCircle,
+  PlusIcon,
+  Trash2Icon,
+  UserIcon,
+  Settings,
+  Globe,
+  Lock,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -13,14 +22,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  PlusIcon,
-  Trash2Icon,
-  UserIcon,
-  Settings,
-  Globe,
-  Lock,
-} from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import CrewForm from "./CrewForm";
 import { Crew, CrewManagementProps } from "@/types/supabase";
@@ -37,6 +38,25 @@ export function CrewManagement({
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchCrews = async () => {
+      const { data, error } = await supabase.from("crews").select("*");
+      if (error) {
+        console.error("Error fetching crews:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch crews. Please refresh the page.",
+          variant: "destructive",
+        });
+      } else if (data) {
+        setCrews(data);
+        onCrewUpdate(data);
+      }
+    };
+
+    fetchCrews();
+  }, [onCrewUpdate, toast]);
 
   const handleDelete = async (id: number) => {
     setLoading(true);
