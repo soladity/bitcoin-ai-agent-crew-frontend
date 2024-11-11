@@ -17,6 +17,7 @@ import DashboardChat from "./DashboardChat";
 import { Crew } from "@/types/supabase";
 import { AlertCircle, Settings } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import Link from "next/link";
 
 export default function Dashboard() {
   const [crews, setCrews] = useState<Crew[]>([]);
@@ -149,7 +150,9 @@ export default function Dashboard() {
           disabled={false}
         />
       )}
-
+      <Link href="/public-crews" className="ml-3">
+        <Button variant="secondary">View Public Crews</Button>
+      </Link>
       <DashboardChat />
     </div>
   );
