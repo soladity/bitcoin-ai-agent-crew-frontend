@@ -4,13 +4,19 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { CrewManagement } from "@/components/crews/CrewManagement";
 import { CloneTradingAnalyzer } from "@/components/crews/CloneTradingAnalyzer";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import DashboardChat from "./DashboardChat";
 import { Crew } from "@/types/supabase";
-import { AlertCircle, ArrowBigRightDash } from "lucide-react";
+import { AlertCircle, Settings } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { SidebarContent, SidebarHeader } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function Dashboard() {
@@ -19,7 +25,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCrew, setSelectedCrew] = useState<Crew | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const fetchCrews = useCallback(async () => {
     setIsLoading(true);
@@ -29,7 +35,10 @@ export default function Dashboard() {
         .select("id, name, description, created_at")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
+
       setCrews(data || []);
     } catch (err) {
       console.error("Error fetching crews:", err);
@@ -57,7 +66,10 @@ export default function Dashboard() {
         .eq("profile_id", user.id)
         .eq("name", "Trading Analyzer");
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
+
       setHasClonedAnalyzer(data && data.length > 0);
     } catch (err) {
       console.error("Error checking for cloned analyzer:", err);
@@ -69,6 +81,7 @@ export default function Dashboard() {
     const initializeDashboard = async () => {
       await Promise.all([fetchCrews(), checkClonedAnalyzer()]);
     };
+
     initializeDashboard();
   }, [fetchCrews, checkClonedAnalyzer]);
 
@@ -92,65 +105,55 @@ export default function Dashboard() {
     [checkClonedAnalyzer]
   );
 
+  const toggleSheet = useCallback(() => {
+    setIsSheetOpen((prev) => !prev);
+  }, []);
+
   return (
-    <div className="flex h-screen overflow-hidden w-full">
-      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent
-          side="left"
-          className="w-[300px] sm:w-[400px] md:w-[600px] p-0"
-        >
-          <div className="h-full flex flex-col">
-            <SidebarHeader className="p-4 border-b">
-              <h2 className="text-lg font-semibold">Select Crews to chat</h2>
-            </SidebarHeader>
-            <SidebarContent className="p-4">
-              {isLoading ? (
-                <p className="text-muted-foreground">Loading crews...</p>
-              ) : (
-                <CrewManagement
-                  initialCrews={crews}
-                  onCrewSelect={handleCrewSelect}
-                  onCrewUpdate={handleCrewsUpdated}
-                  selectedCrew={selectedCrew}
-                />
-              )}
-              {!isLoading && !hasClonedAnalyzer && (
-                <CloneTradingAnalyzer
-                  onCloneComplete={handleCloneComplete}
-                  disabled={false}
-                />
-              )}
-            </SidebarContent>
-          </div>
+    <div className="container mx-auto p-4 space-y-8">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetTrigger asChild>
+          <Button onClick={toggleSheet}>
+            Click to manage Crews <Settings className="mb-1" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Manage Crews</SheetTitle>
+            <SheetDescription>
+              Create, edit, or delete your crews here.
+            </SheetDescription>
+          </SheetHeader>
+          {isLoading ? (
+            <p className="text-muted-foreground">Loading crews...</p>
+          ) : (
+            <CrewManagement
+              initialCrews={crews}
+              onCrewSelect={handleCrewSelect}
+              onCrewUpdate={handleCrewsUpdated}
+              selectedCrew={selectedCrew}
+            />
+          )}
         </SheetContent>
       </Sheet>
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="flex items-center justify-between p-4 border-b">
-          <Button onClick={() => setSidebarOpen(true)}>
-            Click to select a crew
-          </Button>
-          <Link href="/public-crews" passHref>
-            <Button variant="secondary">
-              <span className="flex gap-2 items-center justify-center">
-                View Public Crews <ArrowBigRightDash />
-              </span>
-            </Button>
-          </Link>
-        </header>
-        <main className="flex-1 overflow-auto p-4 space-y-4">
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          <DashboardChat
-            selectedCrew={selectedCrew}
-            onOpenCrewManager={() => setSidebarOpen(true)}
-          />
-        </main>
-      </div>
+
+      {!isLoading && !hasClonedAnalyzer && (
+        <CloneTradingAnalyzer
+          onCloneComplete={handleCloneComplete}
+          disabled={false}
+        />
+      )}
+      <Link href="/public-crews" className="ml-3">
+        <Button variant="secondary">View Public Crews</Button>
+      </Link>
+      <DashboardChat />
     </div>
   );
 }

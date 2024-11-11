@@ -10,7 +10,6 @@ import {
   PlusIcon,
   Trash2Icon,
   UserIcon,
-  Settings,
   Globe,
   Lock,
 } from "lucide-react";
@@ -26,6 +25,7 @@ import { Switch } from "@/components/ui/switch";
 import CrewForm from "./CrewForm";
 import { Crew, CrewManagementProps } from "@/types/supabase";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ChatBubbleIcon } from "@radix-ui/react-icons";
 
 export function CrewManagement({
   initialCrews,
@@ -205,9 +205,10 @@ export function CrewManagement({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => router.push(`/crew/${crew.id}/manage`)}
+                    onClick={() => router.push(`/crew/${crew.id}/execute`)}
                   >
-                    <Settings className="h-3 w-3" />
+                    Chat
+                    <ChatBubbleIcon className="h-3 w-3" />
                   </Button>
                   <Button
                     variant="ghost"
