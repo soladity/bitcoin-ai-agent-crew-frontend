@@ -4,6 +4,7 @@ export interface Crew {
     name: string;
     description: string;
     created_at: string;
+    is_public?: boolean;
 }
 
 // Interface for props of the CrewManagement component
@@ -85,3 +86,33 @@ export interface CloneTask {
     description: string;
     expected_output: string;
 }
+
+
+// INTERFACE FOR PUBLIC CREWS
+
+interface PublicTask {
+    id: number;
+    description: string;
+    expected_output: string;
+    agent_id: number;
+    profile_id: string;
+  }
+  
+ interface PublicAgent {
+    id: number;
+    name: string;
+    role: string;
+    goal: string;
+    backstory: string;
+    agent_tools: string[];
+    tasks: PublicTask[];
+  }
+  
+export  interface PublicCrew {
+    id: number;
+    name: string;
+    description: string;
+    created_at: string;
+    creator_email: string;
+    agents: PublicAgent[];
+  }

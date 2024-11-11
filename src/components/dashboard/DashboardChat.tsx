@@ -14,6 +14,7 @@ import { Crew } from "@/types/supabase";
 
 interface DashboardChatProps {
   selectedCrew: Crew | null;
+  onOpenCrewManager: () => void;
 }
 
 interface StreamMessage {
@@ -61,8 +62,8 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
     const initialMessage: Message = {
       role: "assistant",
       content: selectedCrew
-        ? `# Selected: ${selectedCrew.name}\n\n${selectedCrew.description}\n\nHow can I help you today?`
-        : "Please select a crew to start chatting.",
+        ? `# Selected: ${selectedCrew.name}\n\n${selectedCrew.description}`
+        : "# Select a Crew\n\nClick the gear icon to select a crew.",
       timestamp: new Date(),
     };
     setMessages([initialMessage]);
@@ -211,7 +212,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
   return (
     <Card className="w-full">
       <CardContent className="space-y-4 p-4">
-        <div className="h-[300px] overflow-y-auto space-y-4">
+        <div className="h-[500px] overflow-y-auto space-y-4">
           {messages.map((message, index) => (
             <div
               key={index}
@@ -277,9 +278,7 @@ export default function DashboardChat({ selectedCrew }: DashboardChatProps) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={
-              selectedCrew
-                ? "Type your message..."
-                : "Select a crew to start chatting"
+              selectedCrew ? "Type your message..." : "Select a crew to chat.."
             }
             disabled={isLoading || !selectedCrew}
             className="flex-1"

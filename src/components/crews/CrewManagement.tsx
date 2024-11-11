@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Circle, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -13,23 +14,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   PlusIcon,
   Trash2Icon,
   UserIcon,
   Settings,
-  Check,
-  CheckCircle2,
+  Globe,
+  Lock,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import CrewForm from "./CrewForm";
 import { Crew, CrewManagementProps } from "@/types/supabase";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function CrewManagement({
   initialCrews,
@@ -46,35 +41,13 @@ export function CrewManagement({
   const handleDelete = async (id: number) => {
     setLoading(true);
     try {
-      // First delete all tasks associated with the crew
-      const { error: tasksError } = await supabase
-        .from("tasks")
-        .delete()
-        .eq("crew_id", id);
+      await supabase.from("tasks").delete().eq("crew_id", id);
+      await supabase.from("agents").delete().eq("crew_id", id);
+      await supabase.from("crews").delete().eq("id", id);
 
-      if (tasksError) throw tasksError;
-
-      // Then delete all agents associated with the crew
-      const { error: agentsError } = await supabase
-        .from("agents")
-        .delete()
-        .eq("crew_id", id);
-
-      if (agentsError) throw agentsError;
-
-      // Finally delete the crew itself
-      const { error: crewError } = await supabase
-        .from("crews")
-        .delete()
-        .eq("id", id);
-
-      if (crewError) throw crewError;
-
-      // Update the local state to remove the deleted crew
       const updatedCrews = crews.filter((crew) => crew.id !== id);
       setCrews(updatedCrews);
 
-      // Clear selected crew if we're deleting it
       if (selectedCrew?.id === id) {
         onCrewSelect(null);
       }
@@ -103,14 +76,54 @@ export function CrewManagement({
     onCrewUpdate(updatedCrews);
   };
 
+  const handlePublicToggle = async (crew: Crew) => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("crews")
+        .update({ is_public: !crew.is_public })
+        .eq("id", crew.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        const updatedCrews = crews.map((c) =>
+          c.id === crew.id ? { ...c, is_public: data.is_public } : c
+        );
+        setCrews(updatedCrews);
+        onCrewUpdate(updatedCrews);
+
+        toast({
+          title: "Crew updated",
+          description: `The crew is now ${
+            data.is_public
+              ? "public. Everyone can see your crew and clone it."
+              : "private. Only you can see it."
+          }.`,
+        });
+      }
+    } catch (error) {
+      console.error("Error updating crew:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update the crew. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold tracking-tight">Crews</h2>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-sm font-medium">Your Crews</h3>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm">
-              <PlusIcon className="mr-2 h-4 w-4" />
+            <Button size="sm" variant="outline">
+              <PlusIcon className="h-4 w-4 mr-2" />
               Add Crew
             </Button>
           </DialogTrigger>
@@ -125,78 +138,74 @@ export function CrewManagement({
           </DialogContent>
         </Dialog>
       </div>
-      <div className="border rounded-md">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {crews.map((crew) => (
-              <TableRow key={crew.id}>
-                <TableCell className="font-medium">
-                  <div className="flex items-center space-x-2">
-                    <UserIcon className="h-4 w-4 text-primary" />
-                    <span>{crew.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="max-w-xs truncate">
-                  {crew.description || "No description"}
-                </TableCell>
-                <TableCell>
-                  {new Date(crew.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      variant={
-                        selectedCrew?.id === crew.id ? "secondary" : "outline"
-                      }
-                      size="sm"
-                      onClick={() => onCrewSelect(crew)}
-                      className="min-w-[100px]"
-                    >
-                      {selectedCrew?.id === crew.id ? (
-                        <>
-                          <CheckCircle2 className="h-4 w-4 mr-2" />
-                          Selected
-                        </>
-                      ) : (
-                        <>
-                          <Check className="h-4 w-4 mr-2" />
-                          Select
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => router.push(`/crew/${crew.id}/manage`)}
-                    >
-                      <Settings className="h-4 w-4 mr-2" />
-                      Settings
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(crew.id)}
+      <ScrollArea className="h-[calc(100vh-12rem)]">
+        <div className="space-y-2">
+          {crews.map((crew) => (
+            <div
+              key={crew.id}
+              className="flex flex-col space-y-2 p-3 border rounded-md"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <UserIcon className="h-4 w-4 text-primary" />
+                  <span className="font-medium text-sm">{crew.name}</span>
+                </div>
+                <Button
+                  variant={selectedCrew?.id === crew.id ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => onCrewSelect(crew)}
+                >
+                  {selectedCrew?.id === crew.id ? (
+                    <CheckCircle className="h-4 w-4" />
+                  ) : (
+                    <Circle className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground line-clamp-2">
+                {crew.description || "No description"}
+              </p>
+              <div className="flex justify-between items-center text-xs text-muted-foreground">
+                <span>
+                  Created: {new Date(crew.created_at).toLocaleDateString()}
+                </span>
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-1">
+                    {crew.is_public ? (
+                      <Globe className="h-3 w-3" />
+                    ) : (
+                      <Lock className="h-3 w-3" />
+                    )}
+                    <Switch
+                      checked={crew.is_public}
+                      onCheckedChange={() => handlePublicToggle(crew)}
                       disabled={loading}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2Icon className="h-4 w-4 mr-2" />
-                      Delete
-                    </Button>
+                    />
                   </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push(`/crew/${crew.id}/manage`)}
+                  >
+                    <Settings className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(crew.id)}
+                    disabled={loading}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2Icon className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
     </div>
   );
 }
+
+export default CrewManagement;
