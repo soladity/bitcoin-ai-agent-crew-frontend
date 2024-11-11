@@ -25,7 +25,7 @@ export async function fetchTools(): Promise<Tool[]> {
   if (toolsCache) return toolsCache;
 
   try {
-    const response = await fetch('https://core.aibtc.dev/tools');
+    const response = await fetch('https://core.aibtc.dev/crew/tools');
     const data = await response.json() as Record<string, string>;
     
     const tools: Tool[] = Object.entries(data).map(([id, description]) => {
