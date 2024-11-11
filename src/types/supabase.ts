@@ -10,9 +10,7 @@ export interface Crew {
 // Interface for props of the CrewManagement component
 export interface CrewManagementProps {
     initialCrews: Crew[]
-    onCrewSelect: (crew: Crew | null) => void
     onCrewUpdate: (updatedCrews: Crew[]) => void
-    selectedCrew: Crew | null
   }
 
 // Interface for props of the CrewForm component

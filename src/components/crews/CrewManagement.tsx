@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
-  Circle,
-  CheckCircle,
+  Settings,
   PlusIcon,
   Trash2Icon,
   UserIcon,
@@ -29,9 +28,7 @@ import { ChatBubbleIcon } from "@radix-ui/react-icons";
 
 export function CrewManagement({
   initialCrews,
-  onCrewSelect,
   onCrewUpdate,
-  selectedCrew,
 }: CrewManagementProps) {
   const [crews, setCrews] = useState<Crew[]>(initialCrews);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -67,10 +64,6 @@ export function CrewManagement({
 
       const updatedCrews = crews.filter((crew) => crew.id !== id);
       setCrews(updatedCrews);
-
-      if (selectedCrew?.id === id) {
-        onCrewSelect(null);
-      }
 
       onCrewUpdate(updatedCrews);
       toast({
@@ -171,15 +164,10 @@ export function CrewManagement({
                   <span className="font-medium text-sm">{crew.name}</span>
                 </div>
                 <Button
-                  variant={selectedCrew?.id === crew.id ? "secondary" : "ghost"}
                   size="sm"
-                  onClick={() => onCrewSelect(crew)}
+                  onClick={() => router.push(`/crew/${crew.id}/manage`)}
                 >
-                  {selectedCrew?.id === crew.id ? (
-                    <CheckCircle className="h-4 w-4" />
-                  ) : (
-                    <Circle className="h-4 w-4" />
-                  )}
+                  <Settings className="h-3 w-3" />
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground line-clamp-2">
