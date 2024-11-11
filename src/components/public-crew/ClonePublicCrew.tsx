@@ -10,15 +10,10 @@ import type { PublicCrew } from "@/types/supabase";
 
 interface ClonePublicCrewProps {
   crew: PublicCrew;
-  onCloneComplete: () => void;
   disabled: boolean;
 }
 
-export function ClonePublicCrew({
-  crew,
-  onCloneComplete,
-  disabled,
-}: ClonePublicCrewProps) {
+export function ClonePublicCrew({ crew, disabled }: ClonePublicCrewProps) {
   const [isCloning, setIsCloning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasCloned, setHasCloned] = useState(false);
@@ -91,7 +86,6 @@ export function ClonePublicCrew({
       }
 
       setHasCloned(true);
-      onCloneComplete();
       toast({
         title: "Success",
         description: `You've successfully cloned the "${crew.name}" crew. You can find it in your crews list.`,
