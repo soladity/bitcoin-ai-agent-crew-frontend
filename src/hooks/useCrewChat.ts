@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/utils/supabase/client";
+import * as Sentry from "@sentry/nextjs";
 
 export interface Message {
   role: "user" | "assistant";
@@ -37,6 +38,7 @@ export function useCrewChat() {
       });
     } catch (error) {
       console.error("Failed to reset chat history:", error);
+      Sentry.captureException(error);
       toast({
         title: "Error",
         description: "Failed to reset chat history.",
@@ -123,21 +125,36 @@ export function useCrewChat() {
             setIsLoading(false);
           }
         } catch (error) {
+          Sentry.captureException(error);
           console.error("Error parsing SSE data:", error);
         }
       };
 
-      eventSource.onerror = () => {
-        if (isLoading) {
-          setIsLoading(false);
-        } else {
-          console.error("EventSource failed");
-          toast({
-            title: "Connection Failed",
-            description: "There was a problem with the connection. Please try again.",
-            variant: "destructive",
-          });
-        }
+      eventSource.addEventListener("error", (event: MessageEvent) => {
+        const errorData = JSON.parse(event.data);
+        console.error("Received server error:", errorData.message);
+      
+        toast({
+          title: "Server Error",
+          description: errorData.message,
+          variant: "destructive",
+        });
+      
+        Sentry.captureException(new Error(errorData.message));
+        eventSource.close();
+        setIsLoading(false);
+      });
+
+      eventSource.onerror = (error: Event) => {
+        console.error("EventSource encountered a generic error:", error);
+        toast({
+          title: "Connection Error",
+          description: "A connection error occurred. Please try again.",
+          variant: "destructive",
+        });
+
+        Sentry.captureException(error);
+        setIsLoading(false);
       };
 
       eventSource.addEventListener("finish", () => {
@@ -153,6 +170,7 @@ export function useCrewChat() {
         setMessages((prev) => [...prev, assistantMessage]);
       });
     } catch (error) {
+      Sentry.captureException(error);
       console.error("Error sending message:", error);
       toast({
         title: "Error",
