@@ -24,7 +24,6 @@ export default function Dashboard() {
   const [hasClonedAnalyzer, setHasClonedAnalyzer] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedCrew, setSelectedCrew] = useState<Crew | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const fetchCrews = useCallback(async () => {
@@ -85,10 +84,6 @@ export default function Dashboard() {
     initializeDashboard();
   }, [fetchCrews, checkClonedAnalyzer]);
 
-  const handleCrewSelect = useCallback((crew: Crew | null) => {
-    setSelectedCrew(crew);
-  }, []);
-
   const handleCloneComplete = useCallback(() => {
     setHasClonedAnalyzer(true);
     fetchCrews();
@@ -97,9 +92,6 @@ export default function Dashboard() {
   const handleCrewsUpdated = useCallback(
     (updatedCrews: Crew[]) => {
       setCrews(updatedCrews);
-      if (updatedCrews.length === 0) {
-        setSelectedCrew(null);
-      }
       checkClonedAnalyzer();
     },
     [checkClonedAnalyzer]
@@ -136,9 +128,7 @@ export default function Dashboard() {
           ) : (
             <CrewManagement
               initialCrews={crews}
-              onCrewSelect={handleCrewSelect}
               onCrewUpdate={handleCrewsUpdated}
-              selectedCrew={selectedCrew}
             />
           )}
         </SheetContent>
