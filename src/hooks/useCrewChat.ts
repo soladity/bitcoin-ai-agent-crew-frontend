@@ -130,22 +130,31 @@ export function useCrewChat() {
         }
       };
 
+      eventSource.addEventListener("error", (event: MessageEvent) => {
+        const errorData = JSON.parse(event.data);
+        console.error("Received server error:", errorData.message);
+      
+        toast({
+          title: "Server Error",
+          description: errorData.message,
+          variant: "destructive",
+        });
+      
+        Sentry.captureException(new Error(errorData.message));
+        eventSource.close();
+        setIsLoading(false);
+      });
+
       eventSource.onerror = (error: Event) => {
-        if (isLoading) {
-          setIsLoading(false);
-        } else {
-          console.error("EventSource failed", error);
-      
-          // Capture the error in Sentry
-          Sentry.captureException(error);
-      
-          // Display a toast notification for the error
-          toast({
-            title: "Connection Failed",
-            description: "There was a problem with the connection. Please try again.",
-            variant: "destructive",
-          });
-        }
+        console.error("EventSource encountered a generic error:", error);
+        toast({
+          title: "Connection Error",
+          description: "A connection error occurred. Please try again.",
+          variant: "destructive",
+        });
+
+        Sentry.captureException(error);
+        setIsLoading(false);
       };
 
       eventSource.addEventListener("finish", () => {
