@@ -58,11 +58,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
           message.role === "user"
             ? "bg-primary text-primary-foreground"
             : message.type === "task"
-            ? "bg-blue-100 dark:bg-blue-900"
+            ? "bg-gray-900"
             : message.type === "result"
-            ? "bg-green-100 dark:bg-green-900"
+            ? "bg-secondary"
             : message.type === "step"
-            ? "bg-red-100 dark:bg-red-900"
+            ? "bg-gray-900"
             : "bg-muted"
         )}
       >
