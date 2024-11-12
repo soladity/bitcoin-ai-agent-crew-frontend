@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Link from "next/link";
 
 type UserRole = "Normal" | "Admin" | "Participant" | "No Role";
 type SortOrder = "asc" | "desc" | null;
@@ -256,6 +257,9 @@ export default function AdminPanel() {
             value={roleFilter}
             onValueChange={(value) => setRoleFilter(value as UserRole | "All")}
           >
+            <Link href="/admin/metrics">
+              <Button>See metrics</Button>
+            </Link>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by role" />
             </SelectTrigger>
