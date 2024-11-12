@@ -46,8 +46,12 @@ export default function AdminMetrics() {
         }
         const data: CrewMetrics = await response.json();
         setMetrics(data);
-      } catch (err) {
+      } catch (error: unknown) {
         setError("Failed to fetch metrics. Please try again later.");
+        console.error(
+          "Error fetching metrics:",
+          error instanceof Error ? error.message : String(error)
+        );
       } finally {
         setLoading(false);
       }
@@ -92,7 +96,6 @@ export default function AdminMetrics() {
       <p className="text-4xl font-bold">
         Total Crews so far: {metrics.total_crews}
       </p>
-
       <Card>
         <CardHeader>
           <CardTitle>Crews Created by Date</CardTitle>
