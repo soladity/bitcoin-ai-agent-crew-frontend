@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useMemo } from "react";
 import { Loader2, Search, Trophy, User } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -17,44 +16,65 @@ import { Input } from "@/components/ui/input";
 import { useLeaderboardData } from "@/hooks/useLeaderBoardData";
 import { useUserData } from "@/hooks/useUserData";
 
+function BalanceCell({
+  balance,
+  isLoading,
+}: {
+  balance: number | null;
+  isLoading: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <div className="flex justify-end">
+        <Loader2 className="h-4 w-4 animate-spin" />
+      </div>
+    );
+  }
+  if (balance === null) {
+    return <span className="text-muted-foreground">-</span>;
+  }
+  return <span className="font-bold">{balance.toFixed(2)} STX</span>;
+}
+
+function RankDisplay({
+  rank,
+  isTopRank,
+}: {
+  rank: number;
+  isTopRank: boolean;
+}) {
+  if (isTopRank) {
+    return <Trophy className="h-5 w-5 text-yellow-500" />;
+  }
+  return <span className="font-medium">{rank}</span>;
+}
+
 export default function LeaderBoard() {
-  const { data: profiles, isLoading, error } = useLeaderboardData();
+  const { data: leaderboard, isLoading, error } = useLeaderboardData();
   const { data: userData } = useUserData();
   const [searchTerm, setSearchTerm] = useState<string>("");
 
-  const sortedProfiles = useMemo(() => {
-    if (!profiles) return [];
-    return [...profiles].sort((a, b) => {
-      const balanceA = a.agentBalance || 0;
-      const balanceB = b.agentBalance || 0;
-      return balanceB - balanceA;
-    });
-  }, [profiles]);
-
-  const filteredProfiles = useMemo(() => {
-    return sortedProfiles.filter((profile) => {
+  const filteredLeaderboard = useMemo(() => {
+    return (leaderboard ?? []).filter((profile) => {
       const stacksAddress = profile.email.split("@")[0].toLowerCase();
       return stacksAddress.includes(searchTerm.toLowerCase());
     });
-  }, [searchTerm, sortedProfiles]);
+  }, [searchTerm, leaderboard]);
 
   const authenticatedUserProfile = useMemo(() => {
-    if (!sortedProfiles || !userData) return null;
-    return sortedProfiles.find(
+    if (!leaderboard || !userData) return null;
+    return leaderboard.find(
       (profile) =>
         profile.email.split("@")[0].toLowerCase() ===
         userData.stxAddress.toLowerCase()
     );
-  }, [sortedProfiles, userData]);
+  }, [leaderboard, userData]);
 
-  const authenticatedUserRank = useMemo(() => {
-    if (!authenticatedUserProfile) return null;
-    return (
-      sortedProfiles.findIndex(
-        (profile) => profile.email === authenticatedUserProfile.email
-      ) + 1
-    );
-  }, [sortedProfiles, authenticatedUserProfile]);
+  // Find the highest balance to determine the top rank
+  const highestBalance = useMemo(() => {
+    if (!leaderboard?.length) return 0;
+    return Math.max(...leaderboard.map((p) => p.balance ?? 0));
+  }, [leaderboard]);
 
   if (isLoading) {
     return (
@@ -100,7 +120,9 @@ export default function LeaderBoard() {
                   <User className="h-5 w-5" />
                   <span className="font-bold">Your Position</span>
                 </div>
-                <Badge variant="secondary">Rank: {authenticatedUserRank}</Badge>
+                <Badge variant="secondary">
+                  Rank: {authenticatedUserProfile.rank}
+                </Badge>
               </div>
               <Table>
                 <TableHeader>
@@ -122,12 +144,11 @@ export default function LeaderBoard() {
                         <Badge variant="outline">No agent assigned</Badge>
                       )}
                     </TableCell>
-                    <TableCell className="text-right font-bold">
-                      {authenticatedUserProfile.agentBalance !== undefined
-                        ? `${authenticatedUserProfile.agentBalance.toFixed(
-                            2
-                          )} STX`
-                        : "-"}
+                    <TableCell className="text-right">
+                      <BalanceCell
+                        balance={authenticatedUserProfile.balance}
+                        isLoading={authenticatedUserProfile.isLoadingBalance}
+                      />
                     </TableCell>
                   </TableRow>
                 </TableBody>
@@ -145,7 +166,7 @@ export default function LeaderBoard() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredProfiles.map((profile, index) => (
+            {filteredLeaderboard.map((profile) => (
               <TableRow
                 key={profile.email}
                 className={
@@ -154,20 +175,13 @@ export default function LeaderBoard() {
                     : undefined
                 }
               >
-                <TableCell className="font-medium">
-                  {index < 3 ? (
-                    <Trophy
-                      className={`h-5 w-5 ${
-                        index === 0
-                          ? "text-yellow-500"
-                          : index === 1
-                          ? "text-gray-400"
-                          : "text-amber-600"
-                      }`}
-                    />
-                  ) : (
-                    `${index + 1}`
-                  )}
+                <TableCell>
+                  <RankDisplay
+                    rank={profile.rank}
+                    isTopRank={
+                      profile.balance === highestBalance && profile.balance > 0
+                    }
+                  />
                 </TableCell>
                 <TableCell>
                   <span className="font-mono">
@@ -179,17 +193,18 @@ export default function LeaderBoard() {
                     <Badge variant="outline">No agent assigned</Badge>
                   )}
                 </TableCell>
-                <TableCell className="text-right font-bold">
-                  {profile.agentBalance !== undefined
-                    ? `${profile.agentBalance.toFixed(2)} STX`
-                    : "-"}
+                <TableCell className="text-right">
+                  <BalanceCell
+                    balance={profile.balance}
+                    isLoading={profile.isLoadingBalance}
+                  />
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
         <div className="mt-6 text-sm text-muted-foreground text-center">
-          Total participants: {filteredProfiles.length}
+          Total participants: {filteredLeaderboard.length}
         </div>
       </CardContent>
     </Card>
