@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://sprint.aibtc.dev'),
+  metadataBase: new URL("https://sprint.aibtc.dev"),
   title: {
     default: "AIBTC Champions Sprint",
     template: "%s | AIBTC Champions Sprint",
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/aibtcdev-champions-sprint-trading-series-800px.png",
+        url: "logos/aibtcdev-champions-sprint-trading-series-800px.png",
         width: 800,
         height: 800,
         alt: "AIBTC Champions Sprint",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/aibtcdev-champions-sprint-trading-series-800px.png"],
+    images: ["logos/aibtcdev-champions-sprint-trading-series-800px.png"],
   },
 };
 
