@@ -1,131 +1,154 @@
 import { useQuery, useQueries } from "@tanstack/react-query";
 import { supabase } from "@/utils/supabase/client";
+import { useMemo } from "react";
+import { BalanceResponse, TokenPrice, Profile, ProfileWithBalance } from "@/types/supabase";
 
-interface Profile {
-  email: string;
-  assigned_agent_address: string | null;
+function normalizeContractId(contractId: string): string {
+  return contractId.split("::")[0];
 }
 
-interface ProfileWithBalance extends Profile {
-  balance: number | null;
-  rank: number;
-  isLoadingBalance: boolean;
+// Fetch balance for a given address
+async function fetchAgentBalance(address: string): Promise<BalanceResponse> {
+  try {
+    const balanceResponse = await fetch(`/fetch?address=${address}`);
+    if (!balanceResponse.ok) throw new Error(`Failed to fetch balance data: ${balanceResponse.statusText}`);
+    return await balanceResponse.json();
+  } catch (error) {
+    console.error(`Error fetching balance for ${address}:`, error);
+    throw error;
+  }
+}
+
+// Fetch token prices
+async function fetchTokenPrices(): Promise<TokenPrice[]> {
+  try {
+    const response = await fetch('https://cache.aibtc.dev/stx-city/tokens/tradable-full-details-tokens');
+    if (!response.ok) throw new Error(`Failed to fetch token prices: ${response.statusText}`);
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching token prices:", error);
+    throw error;
+  }
+}
+
+// Calculate the total portfolio value
+function calculatePortfolioValue(balances: BalanceResponse, tokenPrices: TokenPrice[]): number {
+  let totalValue = 0;
+
+  // STX token calculation
+  const stxBalance = parseInt(balances.stx.balance) / 1_000_000;
+  const stxPrice = tokenPrices.find((token) => token.symbol === 'STX')?.metrics.price_usd || 0;
+  totalValue += stxBalance * stxPrice;
+
+  // Calculate value for each fungible token
+  for (const [contractId, tokenData] of Object.entries(balances.fungible_tokens)) {
+    const normalizedContractId = normalizeContractId(contractId);
+    const balance = parseInt(tokenData.balance);
+
+    const tokenInfo = tokenPrices.find(
+      (token) => token.contract_id && normalizeContractId(token.contract_id) === normalizedContractId
+    );
+
+    if (tokenInfo && tokenInfo.metrics.price_usd) {
+      // Adjust balance based on token decimals
+      const adjustedBalance = balance / Math.pow(10, tokenInfo.decimals);
+      const tokenValue = adjustedBalance * tokenInfo.metrics.price_usd;
+      totalValue += tokenValue;
+    } else {
+      console.warn(`No price found for token ${contractId}`);
+    }
+  }
+
+  return totalValue;
 }
 
 async function fetchLeaderboardData(): Promise<Profile[]> {
   try {
     const [participantResponse, adminResponse] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("email, assigned_agent_address")
-        .eq("role", "Participant"),
-      supabase
-        .from("profiles")
-        .select("email, assigned_agent_address")
-        .eq("role", "Admin")
+      supabase.from("profiles").select("email, assigned_agent_address").eq("role", "Participant"),
+      supabase.from("profiles").select("email, assigned_agent_address").eq("role", "Admin")
     ]);
 
     if (participantResponse.error) throw participantResponse.error;
     if (adminResponse.error) throw adminResponse.error;
 
-    const combinedData: Profile[] = [
+    return [
       ...(participantResponse.data ?? []),
       ...(adminResponse.data ?? [])
     ].map((profile) => ({
       email: profile.email,
       assigned_agent_address: profile.assigned_agent_address?.toUpperCase() ?? null,
     }));
-
-    return combinedData;
   } catch (error) {
     console.error('Error fetching leaderboard data:', error);
     throw error;
   }
 }
 
-async function fetchAgentBalance(address: string): Promise<number | null> {
-  try {
-    const response = await fetch(`/fetch?address=${address}`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch balance: ${response.statusText}`);
-    }
-    const balanceData = await response.json();
-    return balanceData.stx?.balance 
-      ? parseInt(balanceData.stx.balance) / 1000000 
-      : 0;
-  } catch (error) {
-    console.error(`Error fetching balance for ${address}:`, error);
-    return null;
-  }
-}
-
 export function useLeaderboardData() {
-  // Fetch profiles
-  const { 
-    data: profiles, 
-    error: profilesError,
-    isLoading: isLoadingProfiles,
-    ...rest 
-  } = useQuery<Profile[], Error>({
-    queryKey: ["leaderboardData"],
-    queryFn: fetchLeaderboardData,
-    refetchOnWindowFocus: false,
+  const tokenPricesQuery = useQuery<TokenPrice[], Error>({
+    queryKey: ["tokenPrices"],
+    queryFn: fetchTokenPrices,
+    staleTime: 300000,
   });
 
-  // Fetch balances for each profile with an assigned agent
+  const profilesQuery = useQuery<Profile[], Error>({
+    queryKey: ["profiles"],
+    queryFn: fetchLeaderboardData,
+    staleTime: 30000,
+  });
+
   const balanceQueries = useQueries({
-    queries: (profiles ?? []).map((profile) => ({
-      queryKey: ["agentBalance", profile.assigned_agent_address],
-      queryFn: () => 
-        profile.assigned_agent_address 
-          ? fetchAgentBalance(profile.assigned_agent_address)
-          : Promise.resolve(null),
-      enabled: !!profile.assigned_agent_address,
+    queries: (profilesQuery.data ?? []).map((profile) => ({
+      queryKey: ["balance", profile.assigned_agent_address],
+      queryFn: async () => {
+        if (!profile.assigned_agent_address) return { portfolioValue: 0 };
+
+        const balances = await fetchAgentBalance(profile.assigned_agent_address);
+        const portfolioValue = calculatePortfolioValue(balances, tokenPricesQuery.data || []);
+        return { portfolioValue };
+      },
+      enabled: !!profile.assigned_agent_address && tokenPricesQuery.isSuccess,
       staleTime: 30000,
       retry: 2,
     })),
   });
 
-  // Combine profiles with their balances and loading states
-  const leaderboardWithBalances: ProfileWithBalance[] = (profiles ?? []).map((profile, index) => ({
-    ...profile,
-    balance: balanceQueries[index].data ?? null,
-    isLoadingBalance: balanceQueries[index].isLoading && !!profile.assigned_agent_address,
-    rank: 0, // Initial rank, will be updated in sorting
-  }));
+  const combinedData: ProfileWithBalance[] = useMemo(() => {
+    if (!profilesQuery.data) return [];
 
-  // Sort profiles by balance (null balances at the end)
-  const sortedLeaderboard = [...leaderboardWithBalances].sort((a, b) => {
-    // If both balances are null, maintain original order
-    if (a.balance === null && b.balance === null) return 0;
-    // Push null balances to the end
-    if (a.balance === null) return 1;
-    if (b.balance === null) return -1;
-    // Sort by balance in descending order
-    return b.balance - a.balance;
-  });
+    const profiles = profilesQuery.data.map((profile, index) => ({
+      ...profile,
+      portfolioValue: balanceQueries[index]?.data?.portfolioValue ?? 0,
+      isLoadingBalance: balanceQueries[index]?.isLoading ?? false,
+      rank: 0,
+    }));
 
-  // Assign ranks (tied balances get the same rank)
-  const rankedLeaderboard = sortedLeaderboard.map((profile, index, array) => {
-    if (index === 0) {
-      return { ...profile, rank: 1 };
-    }
+    const sortedProfiles = [...profiles].sort((a, b) => b.portfolioValue - a.portfolioValue);
 
-    const prevProfile = array[index - 1];
-    // If current balance equals previous balance, assign same rank
-    // Otherwise, assign current position + 1 as rank
-    const rank = profile.balance === prevProfile.balance 
-      ? prevProfile.rank 
-      : index + 1;
+    let currentRank = 0;
+    let currentValue = Infinity;
+    let increment = 0;
 
-    return { ...profile, rank };
-  });
+    return sortedProfiles.map((profile) => {
+      if (profile.portfolioValue < currentValue) {
+        currentRank += 1 + increment;
+        increment = 0;
+        currentValue = profile.portfolioValue;
+      } else {
+        increment++;
+      }
+
+      return {
+        ...profile,
+        rank: currentRank,
+      };
+    });
+  }, [profilesQuery.data, balanceQueries]);
 
   return {
-    data: rankedLeaderboard,
-    error: profilesError,
-    isLoading: isLoadingProfiles,
-    isLoadingBalances: balanceQueries.some((query) => query.isLoading),
-    ...rest,
+    data: combinedData,
+    isLoading: profilesQuery.isLoading || tokenPricesQuery.isLoading,
+    error: profilesQuery.error || tokenPricesQuery.error,
   };
 }
