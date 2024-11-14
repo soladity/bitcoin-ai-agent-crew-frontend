@@ -114,3 +114,37 @@ export  interface PublicCrew {
     creator_email: string;
     agents: PublicAgent[];
   }
+
+  export interface Profile {
+    email: string;
+    assigned_agent_address: string | null;
+  }
+  
+  export interface ProfileWithBalance extends Profile {
+    portfolioValue: number;
+    rank: number;
+    isLoadingBalance: boolean;
+    balances?: BalanceResponse; // Optional because it may be undefined until loaded
+    tokenPrices?: Record<string, number>; // Map contract ID to token price
+  }
+  
+  
+  export interface BalanceResponse {
+    stx: {
+      balance: string;
+    };
+    fungible_tokens: {
+      [key: string]: {
+        balance: string;
+      };
+    };
+  }
+  
+  export interface TokenPrice {
+    symbol?: string;
+    contract_id?: string;
+    metrics: {
+      price_usd: number;
+    };
+    decimals:number;
+  }
