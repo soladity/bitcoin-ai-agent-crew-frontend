@@ -102,9 +102,7 @@ export default function RootLayout({
       <body
         className={`${rocGroteskRegular.variable} ${rocGroteskWide.variable} ${rocGroteskExtraWide.variable} antialiased`}
       >
-        <Providers>
-          <ApplicationLayout>{children}</ApplicationLayout>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
