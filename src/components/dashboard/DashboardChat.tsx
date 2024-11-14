@@ -16,13 +16,14 @@ export default function DashboardChat() {
   } = useChat();
 
   return (
-    <div className="border p-4 rounded-lg">
-      <div className="h-[65vh] overflow-y-auto space-y-4">
+    <div className="flex flex-col flex-1 h-full overflow-hidden">
+      {/* Scrollable message area */}
+      <div className="flex-1 overflow-y-auto space-y-4 px-4 py-2">
         {messages.map((message, index) => (
           <MessageBubble key={index} message={message} />
         ))}
         {isLoading && (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-pulse">
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-2/3" />
@@ -31,6 +32,7 @@ export default function DashboardChat() {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Fixed input form at the bottom */}
       <ChatInput
         input={input}
         setInput={setInput}

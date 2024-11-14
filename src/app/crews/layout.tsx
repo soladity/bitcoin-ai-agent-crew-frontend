@@ -15,9 +15,9 @@ export default function CrewLayout({
   return (
     <>
       <div>
-        <Nav />
+        {/* <Nav /> */}
         {children}
-        <Footer />
+        {/* <Footer /> */}
       </div>
     </>
   );

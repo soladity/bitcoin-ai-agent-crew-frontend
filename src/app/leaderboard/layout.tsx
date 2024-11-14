@@ -15,9 +15,9 @@ export default function DashboardLayout({
   return (
     <>
       <div>
-        <Nav />
+        {/* <Nav /> */}
         <div className="min-h-screen">{children}</div>
-        <Footer />
+        {/* <Footer /> */}
       </div>
     </>
   );

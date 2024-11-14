@@ -16,10 +16,10 @@ export default function DashboardLayout({
   return (
     <>
       <div>
-        <Nav />
+        {/* <Nav /> */}
         {children}
-        <Footer />
-        <Toaster />
+        {/* <Footer /> */}
+        {/* <Toaster /> */}
       </div>
     </>
   );

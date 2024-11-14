@@ -165,7 +165,7 @@ export function CrewManagement({
                 </div>
                 <Button
                   size="sm"
-                  onClick={() => router.push(`/crew/${crew.id}/manage`)}
+                  onClick={() => router.push(`/crews/${crew.id}/manage`)}
                 >
                   <Settings className="h-3 w-3" />
                 </Button>
@@ -193,7 +193,7 @@ export function CrewManagement({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => router.push(`/crew/${crew.id}/execute`)}
+                    onClick={() => router.push(`/crews/${crew.id}/execute`)}
                   >
                     Chat
                     <ChatBubbleIcon className="h-3 w-3" />
