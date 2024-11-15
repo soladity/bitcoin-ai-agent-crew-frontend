@@ -3,6 +3,3 @@ name = "aibtcdev-frontend"
 compatibility_date = "2024-11-09"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
-
-account_id = "6f54e90da6d1b280fe00a153cb394c68"
-routes = [{ pattern = "sprint-faster.aibtc.dev", custom_domain = true }]
