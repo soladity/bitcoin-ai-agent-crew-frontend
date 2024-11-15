@@ -6,6 +6,8 @@ import { supabase } from "@/utils/supabase/client";
 import ExecutionPanel from "@/components/dashboard/Execution";
 import { Crew } from "@/types/supabase";
 
+export const runtime = "edge";
+
 export default function CrewExecution() {
   const params = useParams();
   const id = params.id as string;

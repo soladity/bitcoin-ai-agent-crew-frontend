@@ -8,6 +8,8 @@ import TaskManagement from "@/components/tasks/TaskManagement";
 import { Card, CardContent } from "@/components/ui/card";
 import { Agent, Crew, Task } from "@/types/supabase";
 
+export const runtime = "edge";
+
 export default function CrewDetails() {
   const params = useParams();
   const id = params.id as string;
