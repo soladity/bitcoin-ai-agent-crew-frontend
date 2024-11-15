@@ -90,7 +90,7 @@ export default function PublicStatsDashboard() {
         <Card className="w-full">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              Total Crew Executions so far
+              Total Crew Executions
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -102,7 +102,7 @@ export default function PublicStatsDashboard() {
         <Card className="w-full">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              Main Chat Executions so far
+              Main Chat Executions
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -114,7 +114,7 @@ export default function PublicStatsDashboard() {
         <Card className="w-full">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              Individual Crew Jobs so far
+              Individual Crew Jobs
             </CardTitle>
           </CardHeader>
           <CardContent>
