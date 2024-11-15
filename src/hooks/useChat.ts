@@ -136,7 +136,7 @@ export function useChat() {
         const initialMessage: Message = {
           role: "assistant",
           type: null,
-          content: "How can I help you today?",
+          content: "Welcome back-let's see what your ai can pull off today.",
           timestamp: new Date(),
         };
         if (formattedJobs.length > 0) {
