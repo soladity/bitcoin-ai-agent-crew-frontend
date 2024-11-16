@@ -1,20 +1,20 @@
 "use client";
 
 import * as React from "react";
-import { Avatar } from "@/components/avatar";
+import { Avatar } from "@/components/catalyst/avatar";
 import {
   Dropdown,
   DropdownButton,
   DropdownItem,
   DropdownLabel,
   DropdownMenu,
-} from "@/components/dropdown";
+} from "@/components/catalyst/dropdown";
 import {
   Navbar,
   NavbarItem,
   NavbarSection,
   NavbarSpacer,
-} from "@/components/navbar";
+} from "@/components/catalyst/navbar";
 import {
   Sidebar,
   SidebarBody,
@@ -24,14 +24,16 @@ import {
   SidebarLabel,
   SidebarSection,
   SidebarSpacer,
-} from "@/components/sidebar";
-import { SidebarLayout } from "@/components/sidebar-layout";
+} from "@/components/catalyst/sidebar";
+import { SidebarLayout } from "@/components/catalyst/sidebar-layout";
 import {
   ArrowRightStartOnRectangleIcon,
   ChevronUpIcon,
   WrenchScrewdriverIcon,
   ChartBarIcon,
   UserGroupIcon,
+  ChartPieIcon,
+  ChatBubbleBottomCenterTextIcon,
 } from "@heroicons/react/16/solid";
 import {
   QuestionMarkCircleIcon,
@@ -124,9 +126,13 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
 
           <SidebarBody>
             <SidebarSection>
-              <SidebarItem href="/dashboard" current={pathname === "/"}>
+              {/* <SidebarItem href="/dashboard" current={pathname === "/"}>
                 <DashboardIcon />
                 <SidebarLabel>Dashboard</SidebarLabel>
+              </SidebarItem> */}
+              <SidebarItem href="/chat" current={pathname === "/chat"}>
+                <ChatBubbleBottomCenterTextIcon />
+                <SidebarLabel>Chat</SidebarLabel>
               </SidebarItem>
               <SidebarItem
                 href="/leaderboard"
@@ -141,6 +147,13 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
               >
                 <UserGroupIcon />
                 <SidebarLabel>Crews</SidebarLabel>
+              </SidebarItem>
+              <SidebarItem
+                href="/public-stats"
+                current={pathname.startsWith("/public-stats")}
+              >
+                <ChartPieIcon />
+                <SidebarLabel>Stats</SidebarLabel>
               </SidebarItem>
             </SidebarSection>
 

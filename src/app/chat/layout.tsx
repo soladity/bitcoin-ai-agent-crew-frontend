@@ -3,10 +3,10 @@ import { Metadata } from "next";
 import { ApplicationLayout } from "../application-layout";
 
 export const metadata: Metadata = {
-  title: "Dashboard",
+  title: "Chat",
 };
 
-export default function DashboardLayout({
+export default function ChatLayout({
   children,
 }: {
   children: React.ReactNode;
