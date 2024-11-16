@@ -34,6 +34,7 @@ import {
   UserGroupIcon,
   ChartPieIcon,
   ChatBubbleBottomCenterTextIcon,
+  ShareIcon,
 } from "@heroicons/react/16/solid";
 import {
   QuestionMarkCircleIcon,
@@ -149,6 +150,13 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
                 <SidebarLabel>Crews</SidebarLabel>
               </SidebarItem>
               <SidebarItem
+                href="/public-crews"
+                current={pathname.startsWith("/public-crews")}
+              >
+                <ShareIcon />
+                <SidebarLabel>Shared Crews</SidebarLabel>
+              </SidebarItem>
+              <SidebarItem
                 href="/public-stats"
                 current={pathname.startsWith("/public-stats")}
               >
@@ -160,14 +168,14 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
             <SidebarSpacer />
 
             <SidebarSection>
-              <SidebarItem href="#">
+              {/* <SidebarItem href="#">
                 <QuestionMarkCircleIcon />
                 <SidebarLabel>Support</SidebarLabel>
               </SidebarItem>
               <SidebarItem href="#">
                 <SparklesIcon />
                 <SidebarLabel>Changelog</SidebarLabel>
-              </SidebarItem>
+              </SidebarItem> */}
               <SidebarItem>
                 <Wallet />
                 <SidebarLabel className="flex flex-col">

@@ -25,6 +25,14 @@ import CrewForm from "./CrewForm";
 import { Crew, CrewManagementProps } from "@/types/supabase";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatBubbleIcon } from "@radix-ui/react-icons";
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableHeader,
+} from "@/components/catalyst/table";
 
 export function CrewManagement({
   initialCrews,
@@ -152,32 +160,30 @@ export function CrewManagement({
         </Dialog>
       </div>
       <ScrollArea className="h-[calc(100vh-12rem)]">
-        <div className="space-y-2">
-          {crews.map((crew) => (
-            <div
-              key={crew.id}
-              className="flex flex-col space-y-2 p-3 border rounded-md"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <UserIcon className="h-4 w-4 text-primary" />
-                  <span className="font-medium text-sm">{crew.name}</span>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={() => router.push(`/crews/${crew.id}/manage`)}
-                >
-                  <Settings className="h-3 w-3" />
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground line-clamp-2">
-                {crew.description || "No description"}
-              </p>
-              <div className="flex justify-between items-center text-xs text-muted-foreground">
-                <span>
-                  Created: {new Date(crew.created_at).toLocaleDateString()}
-                </span>
-                <div className="flex items-center space-x-2">
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableHeader>Name</TableHeader>
+              <TableHeader>Description</TableHeader>
+              <TableHeader>Created</TableHeader>
+              <TableHeader>Public</TableHeader>
+              <TableHeader>Actions</TableHeader>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {crews.map((crew) => (
+              <TableRow key={crew.id}>
+                <TableCell>
+                  <div className="flex items-center">
+                    <UserIcon className="h-4 w-4 text-primary mr-2" />
+                    <span className="font-medium text-sm">{crew.name}</span>
+                  </div>
+                </TableCell>
+                <TableCell>{crew.description || "No description"}</TableCell>
+                <TableCell>
+                  {new Date(crew.created_at).toLocaleDateString()}
+                </TableCell>
+                <TableCell>
                   <div className="flex items-center space-x-1">
                     {crew.is_public ? (
                       <Globe className="h-3 w-3" />
@@ -190,6 +196,14 @@ export function CrewManagement({
                       disabled={loading}
                     />
                   </div>
+                </TableCell>
+                <TableCell>
+                  <Button
+                    size="sm"
+                    onClick={() => router.push(`/crews/${crew.id}/manage`)}
+                  >
+                    <Settings className="h-3 w-3" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -207,11 +221,11 @@ export function CrewManagement({
                   >
                     <Trash2Icon className="h-3 w-3" />
                   </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </ScrollArea>
     </div>
   );

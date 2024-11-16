@@ -84,9 +84,6 @@ const page = () => {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      <Link href="/public-crews" className="ml-3">
-        <Button variant="secondary">View Public Crews</Button>
-      </Link>
       <CrewManagement initialCrews={crews} onCrewUpdate={handleCrewsUpdated} />
     </div>
   );
