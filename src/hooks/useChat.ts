@@ -109,10 +109,13 @@ export function useChat() {
         );
 
         if (!detailedConversationResponse.ok) {
-          throw new Error(`HTTP error! status: ${detailedConversationResponse.status}`);
+          throw new Error(
+            `HTTP error! status: ${detailedConversationResponse.status}`
+          );
         }
 
-        const detailedConversationData = await detailedConversationResponse.json();
+        const detailedConversationData =
+          await detailedConversationResponse.json();
 
         const formattedJobs = detailedConversationData.jobs.map((job: Job) => ({
           id: job.id,
@@ -164,7 +167,9 @@ export function useChat() {
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session) {
         setAuthToken(session.access_token);
       }
@@ -173,124 +178,133 @@ export function useChat() {
     getSession();
   }, []);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = {
-      role: "user",
-      type: null, 
-      content: input,
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setIsLoading(true);
-
-    try {
-      const tokenResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/chat?conversation_id=${conversationId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
-          },
-          body: JSON.stringify(input),
-        }
-      );
-
-      if (!tokenResponse.ok) {
-        throw new Error(`HTTP error! status: ${tokenResponse.status}`);
-      }
-
-      const { job_id } = await tokenResponse.json();
-
-      const eventSource = new EventSource(
-        `${process.env.NEXT_PUBLIC_API_URL}/chat/${job_id}/stream`
-      );
-
-      eventSource.onmessage = (event) => {
-        try {
-          if (!event.data || event.data.trim() === "") return;
-
-          const data = JSON.parse(event.data);
-          if (!data || typeof data !== "object") return;
-
-          switch (data.type) {
-            case "step":
-            case "task":
-            case "result":
-              setMessages((prev) => [
-                ...prev,
-                { role: "assistant", type: data.type, content: data.content, timestamp: new Date(data.timestamp) },
-              ]);
-              break;
-            default:
-              console.warn("Unknown message type:", data.type);
-          }
-
-          if (data.type === "result") {
-            eventSource.close();
-            setIsLoading(false);
-          }
-        } catch (error) {
-          Sentry.captureException(error);
-          console.error("Error parsing SSE data:", error);
-        }
+      const userMessage: Message = {
+        role: "user",
+        type: null,
+        content: input,
+        timestamp: new Date(),
       };
 
-      eventSource.addEventListener("error", (event: MessageEvent) => {
-        const errorData = JSON.parse(event.data);
-        console.error("Received server error:", errorData.message);
-      
-        toast({
-          title: "Server Error",
-          description: errorData.message,
-          variant: "destructive",
-        });
-      
-        Sentry.captureException(new Error(errorData.message));
-        eventSource.close();
-        setIsLoading(false);
-      });
+      setMessages((prev) => [...prev, userMessage]);
+      setInput("");
+      setIsLoading(true);
 
-      eventSource.onerror = (error: Event) => {
-        console.error("EventSource encountered a generic error:", error);
-        toast({
-          title: "Connection Error",
-          description: "A connection error occurred. Please try again.",
-          variant: "destructive",
-        });
+      try {
+        const tokenResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/chat?conversation_id=${conversationId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify(input),
+          }
+        );
 
-        Sentry.captureException(error);
-        setIsLoading(false);
-      };
+        if (!tokenResponse.ok) {
+          throw new Error(`HTTP error! status: ${tokenResponse.status}`);
+        }
 
-      eventSource.addEventListener("finish", () => {
-        eventSource.close();
-        setIsLoading(false);
+        const { job_id } = await tokenResponse.json();
 
-        const assistantMessage: Message = {
-          role: "assistant",
-          type: null,
-          content: "Task completed",
-          timestamp: new Date(),
+        const eventSource = new EventSource(
+          `${process.env.NEXT_PUBLIC_API_URL}/chat/${job_id}/stream`
+        );
+
+        eventSource.onmessage = (event) => {
+          try {
+            if (!event.data || event.data.trim() === "") return;
+
+            const data = JSON.parse(event.data);
+            if (!data || typeof data !== "object") return;
+
+            switch (data.type) {
+              case "step":
+              case "task":
+              case "result":
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    role: "assistant",
+                    type: data.type,
+                    content: data.content,
+                    timestamp: new Date(data.timestamp),
+                  },
+                ]);
+                break;
+              default:
+                console.warn("Unknown message type:", data.type);
+            }
+
+            if (data.type === "result") {
+              eventSource.close();
+              setIsLoading(false);
+            }
+          } catch (error) {
+            Sentry.captureException(error);
+            console.error("Error parsing SSE data:", error);
+          }
         };
-        setMessages((prev) => [...prev, assistantMessage]);
-      });
-    } catch (error) {
-      console.error("Error sending message:", error);
-      Sentry.captureException(error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send message",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-    }
-  }, [authToken, conversationId, input, isLoading, toast]);
+
+        eventSource.addEventListener("error", (event: MessageEvent) => {
+          const errorData = JSON.parse(event.data);
+          console.error("Received server error:", errorData.message);
+
+          toast({
+            title: "Server Error",
+            description: errorData.message,
+            variant: "destructive",
+          });
+
+          Sentry.captureException(new Error(errorData.message));
+          eventSource.close();
+          setIsLoading(false);
+        });
+
+        eventSource.onerror = (error: Event) => {
+          console.error("EventSource encountered a generic error:", error);
+          toast({
+            title: "Connection Error",
+            description: "A connection error occurred. Please try again.",
+            variant: "destructive",
+          });
+
+          Sentry.captureException(error);
+          setIsLoading(false);
+        };
+
+        eventSource.addEventListener("finish", () => {
+          eventSource.close();
+          setIsLoading(false);
+
+          const assistantMessage: Message = {
+            role: "assistant",
+            type: null,
+            content: "Task completed",
+            timestamp: new Date(),
+          };
+          setMessages((prev) => [...prev, assistantMessage]);
+        });
+      } catch (error) {
+        console.error("Error sending message:", error);
+        Sentry.captureException(error);
+        toast({
+          title: "Error",
+          description:
+            error instanceof Error ? error.message : "Failed to send message",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+      }
+    },
+    [authToken, conversationId, input, isLoading, toast]
+  );
 
   return {
     messages,
