@@ -21,13 +21,13 @@ export default function CrewLayout({
     <div className="container mx-auto p-4 space-y-4">
       <div className="flex flex-start items-center">
         <div className="flex gap-2">
-          <Link href={`/crew/${id}/manage`}>
+          <Link href={`/crews/${id}/manage`}>
             <Button variant={isManage ? "default" : "outline"}>
               <Settings className="w-4 h-4 mr-2" />
               Manage
             </Button>
           </Link>
-          <Link href={`/crew/${id}/execute`}>
+          <Link href={`/crews/${id}/execute`}>
             <Button variant={isExecute ? "default" : "outline"}>
               <Play className="w-4 h-4 mr-2" />
               Execute

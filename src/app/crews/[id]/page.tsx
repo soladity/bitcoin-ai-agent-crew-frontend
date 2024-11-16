@@ -9,7 +9,7 @@ export default function CrewRedirect() {
   const id = params.id as string;
 
   useEffect(() => {
-    router.push(`/crew/${id}/manage`);
+    router.push(`/crews/${id}/manage`);
   }, [id, router]);
 
   return <div>Redirecting to crew manager...</div>;
