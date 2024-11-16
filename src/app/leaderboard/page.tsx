@@ -1,6 +1,7 @@
 "use client";
+
 import React, { useState, useMemo } from "react";
-import { Loader2, Search, Trophy, User } from "lucide-react";
+import { Loader2, Search, User } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
@@ -13,14 +14,15 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { useLeaderboardData } from "@/hooks/useLeaderBoardData";
 import { useUserData } from "@/hooks/useUserData";
+import { useLeaderboardData } from "@/hooks/useLeaderBoardData";
+import { ProfileWithBalance } from "@/types/supabase";
 
-function BalanceCell({
-  balance,
+function PortfolioValueCell({
+  value,
   isLoading,
 }: {
-  balance: number | null;
+  value: number;
   isLoading: boolean;
 }) {
   if (isLoading) {
@@ -30,23 +32,7 @@ function BalanceCell({
       </div>
     );
   }
-  if (balance === null) {
-    return <span className="text-muted-foreground">-</span>;
-  }
-  return <span className="font-bold">{balance.toFixed(2)} STX</span>;
-}
-
-function RankDisplay({
-  rank,
-  isTopRank,
-}: {
-  rank: number;
-  isTopRank: boolean;
-}) {
-  if (isTopRank) {
-    return <Trophy className="h-5 w-5 text-yellow-500" />;
-  }
-  return <span className="font-medium">{rank}</span>;
+  return <span className="font-bold">${value.toFixed(4)}</span>;
 }
 
 export default function LeaderBoard() {
@@ -69,12 +55,6 @@ export default function LeaderBoard() {
         userData.stxAddress.toLowerCase()
     );
   }, [leaderboard, userData]);
-
-  // Find the highest balance to determine the top rank
-  const highestBalance = useMemo(() => {
-    if (!leaderboard?.length) return 0;
-    return Math.max(...leaderboard.map((p) => p.balance ?? 0));
-  }, [leaderboard]);
 
   if (isLoading) {
     return (
@@ -129,7 +109,9 @@ export default function LeaderBoard() {
                   <TableRow>
                     <TableHead>Participant</TableHead>
                     <TableHead>Agent Address</TableHead>
-                    <TableHead className="text-right">Agent Balance</TableHead>
+                    <TableHead className="text-right">
+                      Portfolio Value
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -145,8 +127,8 @@ export default function LeaderBoard() {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <BalanceCell
-                        balance={authenticatedUserProfile.balance}
+                      <PortfolioValueCell
+                        value={authenticatedUserProfile.portfolioValue}
                         isLoading={authenticatedUserProfile.isLoadingBalance}
                       />
                     </TableCell>
@@ -162,11 +144,11 @@ export default function LeaderBoard() {
               <TableHead className="w-[50px]">Rank</TableHead>
               <TableHead>Participant</TableHead>
               <TableHead>Agent Address</TableHead>
-              <TableHead className="text-right">Agent Balance</TableHead>
+              <TableHead className="text-right">Portfolio Value</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredLeaderboard.map((profile) => (
+            {filteredLeaderboard.map((profile: ProfileWithBalance) => (
               <TableRow
                 key={profile.email}
                 className={
@@ -176,12 +158,7 @@ export default function LeaderBoard() {
                 }
               >
                 <TableCell>
-                  <RankDisplay
-                    rank={profile.rank}
-                    isTopRank={
-                      profile.balance === highestBalance && profile.balance > 0
-                    }
-                  />
+                  <span className="font-medium">{profile.rank}</span>
                 </TableCell>
                 <TableCell>
                   <span className="font-mono">
@@ -194,8 +171,8 @@ export default function LeaderBoard() {
                   )}
                 </TableCell>
                 <TableCell className="text-right">
-                  <BalanceCell
-                    balance={profile.balance}
+                  <PortfolioValueCell
+                    value={profile.portfolioValue}
                     isLoading={profile.isLoadingBalance}
                   />
                 </TableCell>
