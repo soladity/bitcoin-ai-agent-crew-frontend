@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { ApplicationLayout } from "./application-layout";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://sprint.aibtc.dev"),

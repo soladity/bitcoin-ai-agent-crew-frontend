@@ -36,21 +36,17 @@ import {
   ChatBubbleBottomCenterTextIcon,
   ShareIcon,
 } from "@heroicons/react/16/solid";
-import {
-  QuestionMarkCircleIcon,
-  SparklesIcon,
-} from "@heroicons/react/20/solid";
 import { usePathname } from "next/navigation";
 import { useUserData } from "@/hooks/useUserData";
 import { Wallet } from "lucide-react";
 import SignOut from "@/components/auth/SignOut";
-import { DashboardIcon } from "@radix-ui/react-icons";
 
 function AccountDropdownMenu({
   anchor,
   userData,
 }: {
   anchor: "top start" | "bottom end";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   userData: any;
 }) {
   return (
@@ -70,7 +66,7 @@ function AccountDropdownMenu({
 }
 
 export function ApplicationLayout({ children }: { children: React.ReactNode }) {
-  let pathname = usePathname();
+  const pathname = usePathname();
   const { data: userData, isLoading } = useUserData();
 
   const displayAddress = React.useMemo(() => {
