@@ -14,13 +14,5 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <>
-      <div>
-        <ApplicationLayout>{children}</ApplicationLayout>
-        {/* <Footer /> */}
-        {/* <Toaster /> */}
-      </div>
-    </>
-  );
+  return <ApplicationLayout>{children}</ApplicationLayout>;
 }
