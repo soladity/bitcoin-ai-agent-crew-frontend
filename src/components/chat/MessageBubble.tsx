@@ -35,7 +35,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
         </Accordion>
       );
     } else if (message.type === "result") {
-      return <div className="text-sm">{message.content}</div>;
+      return (
+        <ReactMarkdown remarkPlugins={[remarkGfm]} className="text-sm">
+          {message.content}
+        </ReactMarkdown>
+      );
     } else {
       return (
         <ReactMarkdown remarkPlugins={[remarkGfm]} className="text-sm">
