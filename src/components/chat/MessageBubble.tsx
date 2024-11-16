@@ -35,7 +35,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
         </Accordion>
       );
     } else if (message.type === "result") {
-      return <div className="text-sm">{message.content}</div>;
+      return (
+        <ReactMarkdown remarkPlugins={[remarkGfm]} className="text-sm">
+          {message.content}
+        </ReactMarkdown>
+      );
     } else {
       return (
         <ReactMarkdown remarkPlugins={[remarkGfm]} className="text-sm">
@@ -54,7 +58,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     >
       <div
         className={cn(
-          "max-w-[70%] p-4 rounded-lg shadow-sm",
+          "max-w-[70%] p-4 rounded-lg shadow-sm break-words",
           message.role === "user"
             ? "bg-primary text-primary-foreground"
             : message.type === "task"

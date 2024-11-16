@@ -3,10 +3,10 @@ import { Metadata } from "next";
 import { ApplicationLayout } from "../application-layout";
 
 export const metadata: Metadata = {
-  title: "Public Crews",
+  title: "Crews",
 };
 
-export default function DashboardLayout({
+export default function CrewLayout({
   children,
 }: {
   children: React.ReactNode;

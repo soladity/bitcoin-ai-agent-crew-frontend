@@ -1,11 +1,11 @@
 import React from "react";
-import Dashboard from "@/components/dashboard/Dashboard";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import Chat from "@/components/chat/Chat";
 
 const page = () => {
   return (
     <SidebarProvider>
-      <Dashboard />
+      <Chat />
     </SidebarProvider>
   );
 };
