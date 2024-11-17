@@ -1,24 +1,25 @@
-name: Deploy
+name: Deploy to Cloudflare
 
 on:
   push:
     branches: [feat/cloudflare]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-
+    name: Deploy
     steps:
-      - uses: actions/checkout@v4
-
+      - name: Checkout Code
+        uses: actions/checkout@v4
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: "21"
           cache: "npm"
-
-      - name:
-        run: npm run pages:deploy
+      - name: Install deps
+        run: npm ci
+      - name: Build
+        run: npm run build
         env:
           HIRO_API_KEY: ${{ secrets.HIRO_API_KEY }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
@@ -26,4 +27,8 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
           NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      - name: Deploy with Wrangler
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: pages deploy .next
