@@ -196,7 +196,7 @@ export function useChat() {
 
       try {
         const tokenResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/chat?conversation_id=${conversationId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/chat/?conversation_id=${conversationId}`,
           {
             method: "POST",
             headers: {
