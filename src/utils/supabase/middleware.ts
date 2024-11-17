@@ -64,6 +64,11 @@ export const updateSession = async (request: NextRequest) => {
       return NextResponse.redirect(new URL("/", request.url));
     }
 
+    // Add chat to protected route
+    if (request.nextUrl.pathname.startsWith("/chat") && (userError || !user)) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+
     if (request.nextUrl.pathname.startsWith("/public-crew") && (userError || !user)) {
       return NextResponse.redirect(new URL("/", request.url));
     }
