@@ -6,7 +6,7 @@ const createClient = () => {
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error("Missing supabase url or supabase anon key in env vars");
   }
-  createBrowserClient(supabaseUrl, supabaseAnonKey);
+  return createBrowserClient(supabaseUrl, supabaseAnonKey);
 };
 
 export const supabase = createClient();
