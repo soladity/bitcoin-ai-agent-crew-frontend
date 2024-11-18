@@ -1,8 +1,12 @@
 import { createBrowserClient } from "@supabase/ssr";
 
-const createClient = () =>
-  createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+const createClient = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Missing supabase url or supabase anon key in env vars");
+  }
+  createBrowserClient(supabaseUrl, supabaseAnonKey);
+};
+
 export const supabase = createClient();
