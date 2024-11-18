@@ -1,6 +1,5 @@
 import React from "react";
 import { Metadata } from "next";
-import { Nav } from "@/components/reusables/Navbar";
 import { Footer } from "@/components/reusables/Footer";
 
 export const metadata: Metadata = {
@@ -15,7 +14,6 @@ export default function CrewLayout({
   return (
     <>
       <div>
-        <Nav />
         {children}
         <Footer />
       </div>
