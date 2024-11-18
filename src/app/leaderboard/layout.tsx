@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "LeaderBoard",
 };
 
-export default function DashboardLayout({
+export default function LeaderBoardLayout({
   children,
 }: {
   children: React.ReactNode;
