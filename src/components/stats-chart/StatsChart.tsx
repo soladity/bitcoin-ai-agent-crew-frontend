@@ -88,7 +88,7 @@ export default function PublicStatsDashboard() {
                 key={address}
                 className="flex items-center space-x-4 text-sm"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#0533D1] to-[#FF4F03] flex items-center justify-center">
                   {i + 1}
                 </div>
                 <div className="font-mono text-gray-400">
