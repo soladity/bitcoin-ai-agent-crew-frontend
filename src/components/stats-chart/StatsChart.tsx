@@ -48,42 +48,35 @@ export default function PublicStatsDashboard() {
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-4xl mx-auto space-y-12">
         {/* Hero Section */}
-        <div className="text-center space-y-4">
-          <h1 className="text-5xl font-bold tracking-tight">
-            {totalJobs.toLocaleString()}
-          </h1>
-          <p className="text-xl text-gray-400">
-            AI Tasks Completed and Counting
-          </p>
-        </div>
+        <div className="text-center space-y-8">
+          <div>
+            <h1 className="text-5xl font-bold tracking-tight">
+              {totalJobs.toLocaleString()}
+            </h1>
+            <p className="text-xl text-gray-400 mt-4">
+              Total Crews Executed
+            </p>
+          </div>
 
-        {/* Impact Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Card className="bg-gray-900 border-none">
-            <CardContent className="pt-6">
-              <div className="space-y-2">
-                <div className="text-3xl font-bold">{crewPercentage}%</div>
-                <p className="text-gray-400">Tasks Run by Crews</p>
-                <p className="text-sm text-gray-500">
-                  Teams are building autonomous AI workflows
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gray-900 border-none">
-            <CardContent className="pt-6">
-              <div className="space-y-2">
-                <div className="text-3xl font-bold">
-                  {data.top_crew_names[0]}
-                </div>
-                <p className="text-gray-400">Most Popular Crew</p>
-                <p className="text-sm text-gray-500">
-                  Leading the way in AI automation
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Progress Bar */}
+          <div className="max-w-2xl mx-auto space-y-4">
+            <div className="flex justify-between text-sm text-gray-400">
+              <span>Chat Tasks: {data.main_chat_jobs.toLocaleString()}</span>
+              <span>Crew Tasks: {data.individual_crew_jobs.toLocaleString()}</span>
+            </div>
+            <div className="h-4 bg-gray-800 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
+                style={{ 
+                  width: `${(data.individual_crew_jobs / totalJobs) * 100}%`,
+                  transition: 'width 1s ease-in-out'
+                }}
+              />
+            </div>
+            <div className="text-sm text-gray-500 text-center">
+              Distribution of AI Tasks Between Chat and Crews
+            </div>
+          </div>
         </div>
 
         {/* Active Users Section */}
