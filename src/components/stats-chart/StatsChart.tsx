@@ -66,7 +66,7 @@ export default function PublicStatsDashboard() {
             </div>
             <div className="h-4 bg-gray-800 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
+                className="h-full bg-gradient-to-r from-[#0533D1] to-[#FF4F03]"
                 style={{ 
                   width: `${(data.individual_crew_jobs / totalJobs) * 100}%`,
                   transition: 'width 1s ease-in-out'
