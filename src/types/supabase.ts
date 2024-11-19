@@ -17,6 +17,15 @@ export interface CrewManagementProps {
 export interface CrewFormProps {
     onCrewCreated: (newCrew: Crew) => void; // Callback for when a new crew is created
     onClose: () => void; // Callback for when the form is closed
+    editingCrew?:Crew;
+}
+
+export interface CornEntry {
+  id: number;
+  profile_id: string;
+  crew_id: number;
+  enabled: boolean;
+  input: string;
 }
 
 // Interface representing an agent
