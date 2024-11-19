@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface PublicStats {
@@ -42,7 +41,6 @@ export default function PublicStatsDashboard() {
   }
 
   const totalJobs = data.total_jobs;
-  const crewPercentage = Math.round((data.individual_crew_jobs / totalJobs) * 100);
   
   return (
     <div className="min-h-screen bg-black text-white p-8">
