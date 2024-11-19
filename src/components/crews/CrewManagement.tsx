@@ -25,7 +25,11 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import CrewForm from "./CrewForm";
-import { CrewWithCron, CrewManagementProps } from "@/types/supabase";
+import {
+  CrewWithCron,
+  CrewManagementProps,
+  RawCrewData,
+} from "@/types/supabase";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatBubbleIcon } from "@radix-ui/react-icons";
 import {
@@ -72,15 +76,17 @@ export function CrewManagement({
 
         if (crewsError) throw crewsError;
 
-        const processedCrews: CrewWithCron[] = crewsData.map((crew: any) => ({
-          id: crew.id,
-          name: crew.name,
-          description: crew.description,
-          created_at: crew.created_at,
-          is_public: crew.is_public,
-          profile_id: crew.profile_id,
-          cron: crew.crons?.[0] || null,
-        }));
+        const processedCrews: CrewWithCron[] = crewsData.map(
+          (crew: RawCrewData) => ({
+            id: crew.id,
+            name: crew.name,
+            description: crew.description,
+            created_at: crew.created_at,
+            is_public: crew.is_public,
+            profile_id: crew.profile_id,
+            cron: crew.crons?.[0] || null,
+          })
+        );
 
         setCrews(processedCrews);
         onCrewUpdate(processedCrews);

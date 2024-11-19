@@ -33,6 +33,21 @@ export interface CrewManagementProps {
   onCrewUpdate: (crews: CrewWithCron[]) => void;
 }
 
+export interface RawCrewData {
+  id: number;
+  name: string;
+  description: string;
+  created_at: string;
+  is_public: boolean;
+  profile_id: string;
+  crons?: Array<{
+    id: number;
+    enabled: boolean;
+    input: string;
+    created_at: string;
+  }>;
+}
+
 // Interface representing an agent
 export interface Agent {
     id: number;
