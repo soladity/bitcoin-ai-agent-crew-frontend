@@ -8,9 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
-import { CrewFormProps, Crew, CronEntry } from "@/types/supabase";
+import { CrewFormProps } from "@/types/supabase";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function CrewForm({
   onCrewCreated,
