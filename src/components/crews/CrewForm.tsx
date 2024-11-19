@@ -8,11 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
-import { CrewFormProps, Crew, CornEntry } from "@/types/supabase";
+import { CrewFormProps, Crew, CronEntry } from "@/types/supabase";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Trash2 } from "lucide-react";
 
-export default function CornCrewForm({
+export default function CrewForm({
   onCrewCreated,
   onClose,
   editingCrew,
@@ -22,29 +22,18 @@ export default function CornCrewForm({
     editingCrew?.description || ""
   );
   const [isPublic, setIsPublic] = useState(editingCrew?.is_public || false);
-  const [addToCorn, setAddToCorn] = useState(false);
-  const [cornInput, setCornInput] = useState("");
+  const [hasCron, setHasCron] = useState(false);
+  const [cronInput, setCronInput] = useState("");
+  const [cronEnabled, setCronEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [cornEntries, setCornEntries] = useState<CornEntry[]>([]);
 
   useEffect(() => {
-    if (editingCrew) {
-      fetchCornEntries(editingCrew.id);
+    if (editingCrew?.cron) {
+      setHasCron(true);
+      setCronInput(editingCrew.cron.input);
+      setCronEnabled(editingCrew.cron.enabled);
     }
   }, [editingCrew]);
-
-  const fetchCornEntries = async (crewId: number) => {
-    const { data, error } = await supabase
-      .from("corn")
-      .select("*")
-      .eq("crew_id", crewId);
-
-    if (error) {
-      console.error("Error fetching corn entries:", error);
-    } else {
-      setCornEntries(data || []);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,63 +50,85 @@ export default function CornCrewForm({
         throw new Error("No authenticated user found");
       }
 
-      let crewData;
-      if (editingCrew) {
-        const { data, error } = await supabase
-          .from("crews")
-          .update({
-            name: crewName,
-            description: crewDescription,
-            is_public: isPublic,
-          })
-          .eq("id", editingCrew.id)
-          .select()
-          .single();
-
-        if (error) throw error;
-        crewData = data;
-      } else {
-        const { data, error } = await supabase
-          .from("crews")
-          .insert({
+      // Create or update crew
+      const crewOperation = editingCrew
+        ? supabase
+            .from("crews")
+            .update({
+              name: crewName,
+              description: crewDescription,
+              is_public: isPublic,
+            })
+            .eq("id", editingCrew.id)
+        : supabase.from("crews").insert({
             name: crewName,
             description: crewDescription,
             profile_id: user.id,
             is_public: isPublic,
-          })
-          .select()
-          .single();
+          });
 
-        if (error) throw error;
-        crewData = data;
+      const { data: crewData, error: crewError } = await crewOperation
+        .select()
+        .single();
+      if (crewError) throw crewError;
+
+      // Handle cron entry
+      if (hasCron) {
+        if (editingCrew?.cron?.id) {
+          // Update existing cron
+          const { error: cronError } = await supabase
+            .from("crons")
+            .update({
+              input: cronInput,
+              enabled: cronEnabled,
+            })
+            .eq("id", editingCrew.cron.id);
+          if (cronError) throw cronError;
+        } else {
+          // Create new cron
+          const { error: cronError } = await supabase.from("crons").insert({
+            profile_id: user.id,
+            crew_id: crewData.id,
+            enabled: cronEnabled,
+            input: cronInput,
+          });
+          if (cronError) throw cronError;
+        }
+      } else if (editingCrew?.cron?.id) {
+        // Remove existing cron if hasCron is false
+        const { error: cronError } = await supabase
+          .from("crons")
+          .delete()
+          .eq("id", editingCrew.cron.id);
+        if (cronError) throw cronError;
       }
 
-      if (addToCorn && cornInput) {
-        const { error: cornError } = await supabase.from("corn").insert({
-          profile_id: user.id,
-          crew_id: crewData.id,
-          enabled: true,
-          input: cornInput,
-        });
+      // Fetch the updated crew with cron data
+      const { data: updatedCrewData, error: fetchError } = await supabase
+        .from("crews")
+        .select(
+          `
+          *,
+          crons (
+            id,
+            enabled,
+            input
+          )
+        `
+        )
+        .eq("id", crewData.id)
+        .single();
 
-        if (cornError) throw cornError;
-      }
+      if (fetchError) throw fetchError;
 
-      const newCrew: Crew = {
-        id: crewData.id,
-        name: crewData.name,
-        description: crewData.description,
-        created_at: crewData.created_at,
-        is_public: crewData.is_public,
+      const newCrew = {
+        ...updatedCrewData,
+        cron: updatedCrewData.crons?.[0] || null,
       };
 
-      setCrewName("");
-      setCrewDescription("");
-      setIsPublic(false);
-      setAddToCorn(false);
-      setCornInput("");
-      onClose();
       onCrewCreated(newCrew);
+      onClose();
+
       toast({
         title: editingCrew ? "Crew updated" : "Crew created",
         description: editingCrew
@@ -135,59 +146,6 @@ export default function CornCrewForm({
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleUpdateCorn = async (cornId: number, enabled: boolean) => {
-    try {
-      const { error } = await supabase
-        .from("corn")
-        .update({ enabled })
-        .eq("id", cornId);
-
-      if (error) throw error;
-
-      setCornEntries(
-        cornEntries.map((entry) =>
-          entry.id === cornId ? { ...entry, enabled } : entry
-        )
-      );
-
-      toast({
-        title: "Corn entry updated",
-        description: `The corn entry has been ${
-          enabled ? "enabled" : "disabled"
-        }.`,
-      });
-    } catch (error) {
-      console.error("Error updating corn entry:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update the corn entry. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleDeleteCorn = async (cornId: number) => {
-    try {
-      const { error } = await supabase.from("corn").delete().eq("id", cornId);
-
-      if (error) throw error;
-
-      setCornEntries(cornEntries.filter((entry) => entry.id !== cornId));
-
-      toast({
-        title: "Corn entry deleted",
-        description: "The corn entry has been successfully deleted.",
-      });
-    } catch (error) {
-      console.error("Error deleting corn entry:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete the corn entry. Please try again.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -221,53 +179,43 @@ export default function CornCrewForm({
         />
         <Label htmlFor="is-public">Make crew public</Label>
       </div>
-      {!editingCrew && (
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="add-to-corn"
-            checked={addToCorn}
-            onCheckedChange={(checked) => setAddToCorn(checked as boolean)}
-          />
-          <Label htmlFor="add-to-corn">Add to Corn</Label>
-        </div>
-      )}
-      {(addToCorn || editingCrew) && (
-        <div>
-          <Label htmlFor="cornInput">Corn Input</Label>
-          <Input
-            id="cornInput"
-            value={cornInput}
-            onChange={(e) => setCornInput(e.target.value)}
-            placeholder="Enter corn input"
-          />
-        </div>
-      )}
-      {editingCrew && cornEntries.length > 0 && (
-        <div>
-          <Label>Existing Corn Entries</Label>
-          <ul className="space-y-2 mt-2">
-            {cornEntries.map((entry) => (
-              <li key={entry.id} className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    checked={entry.enabled}
-                    onCheckedChange={(checked) =>
-                      handleUpdateCorn(entry.id, checked)
-                    }
-                  />
-                  <span>{entry.input}</span>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDeleteCorn(entry.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </li>
-            ))}
-          </ul>
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="has-cron"
+          checked={hasCron}
+          onCheckedChange={(checked) => setHasCron(checked as boolean)}
+        />
+        <Label htmlFor="has-cron">Enable Cron</Label>
+      </div>
+      {hasCron && (
+        <div className="space-y-2">
+          <div>
+            <Label htmlFor="cronInput">Cron Input</Label>
+            <Input
+              id="cronInput"
+              value={cronInput}
+              onChange={(e) => setCronInput(e.target.value)}
+              placeholder="Enter cron input"
+              required
+            />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="cron-enabled"
+              checked={cronEnabled}
+              onCheckedChange={setCronEnabled}
+            />
+            <Label htmlFor="cron-enabled">Enable Cron Job</Label>
+          </div>
+          {/* {cronId && (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleRemoveCron}
+            >
+              Remove Cron Entry
+            </Button>
+          )}   */}
         </div>
       )}
       <Button type="submit" disabled={loading}>
