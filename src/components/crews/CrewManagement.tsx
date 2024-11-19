@@ -106,6 +106,7 @@ export function CrewManagement({
   const handleDelete = async (id: number) => {
     setDeleteLoading(id);
     try {
+      await supabase.from("jobs").delete().eq("crew_id", id);
       await supabase.from("tasks").delete().eq("crew_id", id);
       await supabase.from("agents").delete().eq("crew_id", id);
       await supabase.from("crons").delete().eq("crew_id", id);
