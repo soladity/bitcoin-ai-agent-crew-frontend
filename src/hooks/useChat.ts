@@ -143,7 +143,8 @@ export function useChat() {
           timestamp: new Date(),
         };
         if (formattedJobs.length > 0) {
-          setMessages([initialMessage, ...formattedJobs[0].messages]);
+          const allMessages = formattedJobs.flatMap((job: { messages: any; }) => job.messages);
+          setMessages([initialMessage, ...allMessages]);
         } else {
           setMessages([initialMessage]);
         }
