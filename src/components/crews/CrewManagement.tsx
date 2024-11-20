@@ -30,7 +30,6 @@ import {
   CrewManagementProps,
   RawCrewData,
 } from "@/types/supabase";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatBubbleIcon } from "@radix-ui/react-icons";
 import {
   Table,
@@ -47,7 +46,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Heading } from "../catalyst/heading";
-import { Divider } from "../catalyst/divider";
 
 export function CrewManagement({
   initialCrews,
