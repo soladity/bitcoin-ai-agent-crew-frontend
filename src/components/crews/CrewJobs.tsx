@@ -7,13 +7,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-interface Message {
-  type?: "step" | "task" | "result" | "user";
-  role: "user" | "assistant";
-  content: string;
-  timestamp: string;
-}
-
 interface Job {
   id: number;
   crew_id: number;
