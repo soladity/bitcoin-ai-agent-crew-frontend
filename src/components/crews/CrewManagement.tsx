@@ -14,6 +14,7 @@ import {
   Edit,
   Clock,
   Loader2,
+  FileText,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -336,6 +337,14 @@ export function CrewManagement({
                     }}
                   >
                     <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => router.push(`/crews/${crew.id}/jobs`)}
+                  >
+                    <FileText className="h-4 w-4" />
+                    <span className="sr-only">See Logs/Jobs</span>
                   </Button>
                   <Button
                     variant="ghost"
