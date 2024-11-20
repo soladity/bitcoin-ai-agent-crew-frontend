@@ -143,6 +143,7 @@ export function useChat() {
           timestamp: new Date(),
         };
         if (formattedJobs.length > 0) {
+          // eslint-disable-next-line  @typescript-eslint/no-explicit-any
           const allMessages = formattedJobs.flatMap((job: { messages: any; }) => job.messages);
           setMessages([initialMessage, ...allMessages]);
         } else {
