@@ -19,6 +19,7 @@ interface Job {
   id: number;
   crew_id: number;
   messages: string[];
+  created_at: string;
 }
 
 interface JobsViewProps {
@@ -52,7 +53,7 @@ export default function JobsView({ crewId }: JobsViewProps) {
 
         const { data, error } = await supabase
           .from("jobs")
-          .select("id, crew_id, messages")
+          .select("id, crew_id, messages, created_at")
           .eq("crew_id", crewId)
           .order("id", { ascending: false });
 
@@ -121,7 +122,12 @@ export default function JobsView({ crewId }: JobsViewProps) {
           {filteredJobs.map((job) => (
             <Card key={job.id} className="w-full">
               <CardHeader>
-                <CardTitle>Job #{job.id}</CardTitle>
+                <CardTitle>
+                  Job #{job.id} <br />
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(job.created_at).toLocaleString()}
+                  </span>
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {job.messages
