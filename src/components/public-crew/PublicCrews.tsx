@@ -23,6 +23,7 @@ import { Users, User, CheckSquare, PenTool } from "lucide-react";
 import type { PublicCrew } from "@/types/supabase";
 import { ClonePublicCrew } from "./ClonePublicCrew";
 import { Heading } from "../catalyst/heading";
+import { Loader } from "../reusables/Loader";
 
 export default function PublicCrews() {
   const [crews, setCrews] = useState<PublicCrew[]>([]);
@@ -52,7 +53,7 @@ export default function PublicCrews() {
   }, []);
 
   if (loading) {
-    return <div className="text-center p-4">Loading crews...</div>;
+    return <Loader />;
   }
 
   if (error) {

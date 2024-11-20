@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Loader2, Search, User } from "lucide-react";
+import { Search, User } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { useUserData } from "@/hooks/useUserData";
 import { useLeaderboardData } from "@/hooks/useLeaderBoardData";
 import { ProfileWithBalance } from "@/types/supabase";
+import { Loader } from "@/components/reusables/Loader";
 
 function PortfolioValueCell({
   value,
@@ -26,11 +27,7 @@ function PortfolioValueCell({
   isLoading: boolean;
 }) {
   if (isLoading) {
-    return (
-      <div className="flex justify-end">
-        <Loader2 className="h-4 w-4 animate-spin" />
-      </div>
-    );
+    return <Loader />;
   }
   return <span className="font-bold">${value.toFixed(4)}</span>;
 }
@@ -57,11 +54,7 @@ export default function LeaderBoard() {
   }, [leaderboard, userData]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error) {
