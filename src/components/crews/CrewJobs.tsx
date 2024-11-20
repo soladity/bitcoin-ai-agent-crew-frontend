@@ -1,24 +1,23 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
-import {
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableHeader,
-} from "@/components/ui/table";
-import { Heading } from "../catalyst/heading";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+interface Message {
+  type?: "step" | "task" | "result" | "user";
+  role: "user" | "assistant";
+  content: string;
+  timestamp: string;
+}
 
 interface Job {
   id: number;
   crew_id: number;
-  messages: any[];
+  messages: string[];
 }
 
 interface JobsViewProps {
@@ -37,7 +36,6 @@ export default function JobsView({ crewId }: JobsViewProps) {
           data: { user },
           error: userError,
         } = await supabase.auth.getUser();
-
         if (userError) throw userError;
 
         if (!user) {
@@ -54,10 +52,9 @@ export default function JobsView({ crewId }: JobsViewProps) {
           .from("jobs")
           .select("id, crew_id, messages")
           .eq("crew_id", crewId)
-          .order("id", { ascending: false });
+          .order("id", { ascending: true });
 
         if (error) throw error;
-
         setJobs(data || []);
       } catch (error) {
         console.error("Error fetching jobs:", error);
@@ -74,45 +71,66 @@ export default function JobsView({ crewId }: JobsViewProps) {
     fetchJobs();
   }, [crewId, toast]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[200px]">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+  const parseMessage = (messageStr: string) => {
+    try {
+      return JSON.parse(messageStr);
+    } catch (e) {
+      console.error("Error parsing message:", e);
+      return null;
+    }
+  };
 
   return (
-    <div className="container mx-auto p-4">
-      <Heading className="mb-6">Job History for Crew {crewId}</Heading>
+    <div className="container mx-auto p-4 space-y-4">
+      <h1 className="text-2xl font-bold">Job History (Crew {crewId})</h1>
 
-      {jobs.length === 0 ? (
-        <Card>
-          <CardContent className="flex items-center justify-center h-32">
-            <p className="text-center text-gray-500">
-              No jobs available for this crew.
-            </p>
-          </CardContent>
-        </Card>
+      {loading ? (
+        <div className="space-y-4">
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+        </div>
+      ) : jobs.length === 0 ? (
+        <p className="text-gray-500">No jobs available for this crew.</p>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Job ID</TableHead>
-              <TableHead>Messages</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {jobs.map((job) => (
-              <TableRow key={job.id}>
-                <TableCell>{job.id}</TableCell>
-                <TableCell>
-                  <div className="max-h-40 overflow-y-auto">{job.messages}</div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        jobs.map((job) => (
+          <Card key={job.id} className="w-full">
+            <CardHeader>
+              <CardTitle>Job #{job.id}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {job.messages
+                .map(parseMessage)
+                .filter(Boolean)
+                .map((message, index) => (
+                  <div
+                    key={index}
+                    className={`p-3 rounded-lg ${
+                      message.type === "step"
+                        ? "bg-primary text-primary-foreground"
+                        : message.type === "task"
+                        ? "bg-gray-900"
+                        : message.type === "result"
+                        ? "bg-secondary"
+                        : "bg-muted"
+                    }`}
+                  >
+                    <div className="text-sm font-medium mb-1">
+                      {message.type?.toUpperCase()}
+                    </div>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      className="text-sm prose prose-sm"
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                    <div className="text-xs mt-1">
+                      {new Date(message.timestamp).toLocaleString()}
+                    </div>
+                  </div>
+                ))}
+            </CardContent>
+          </Card>
+        ))
       )}
     </div>
   );
