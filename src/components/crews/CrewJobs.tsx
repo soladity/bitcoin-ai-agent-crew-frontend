@@ -1,11 +1,19 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+
+interface Message {
+  type?: "step" | "task" | "result" | "user";
+  role: "user" | "assistant";
+  content: string;
+  timestamp: string;
+}
 
 interface Job {
   id: number;
@@ -20,8 +28,8 @@ interface JobsViewProps {
 export default function JobsView({ crewId }: JobsViewProps) {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
-  const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -46,7 +54,7 @@ export default function JobsView({ crewId }: JobsViewProps) {
           .from("jobs")
           .select("id, crew_id, messages")
           .eq("crew_id", crewId)
-          .order("id", { ascending: true });
+          .order("id", { ascending: false });
 
         if (error) throw error;
         setJobs(data || []);
@@ -65,13 +73,6 @@ export default function JobsView({ crewId }: JobsViewProps) {
     fetchJobs();
   }, [crewId, toast]);
 
-  // Scroll to bottom when jobs change or loading completes
-  useEffect(() => {
-    if (!loading && bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [jobs, loading]);
-
   const parseMessage = (messageStr: string) => {
     try {
       return JSON.parse(messageStr);
@@ -81,20 +82,43 @@ export default function JobsView({ crewId }: JobsViewProps) {
     }
   };
 
+  const filteredJobs = useMemo(() => {
+    if (!searchTerm) return jobs;
+
+    return jobs.filter((job) => {
+      const parsedMessages = job.messages
+        .map(parseMessage)
+        .filter(Boolean) as Message[];
+
+      return parsedMessages.some((message) =>
+        message.content.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    });
+  }, [jobs, searchTerm]);
+
   return (
     <div className="container mx-auto p-4 space-y-4">
-      <h1 className="text-2xl font-bold">Job History (Crew {crewId})</h1>
+      <div className="sticky top-0 z-10 pt-2 pb-4 backdrop-blur-md">
+        <h1 className="text-2xl font-bold mb-2">Job History (Crew {crewId})</h1>
+        <Input
+          type="text"
+          placeholder="Search jobs..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full"
+        />
+      </div>
 
       {loading ? (
         <div className="space-y-4">
           <Skeleton className="h-20 w-full" />
           <Skeleton className="h-20 w-full" />
         </div>
-      ) : jobs.length === 0 ? (
-        <p>No jobs available for this crew.</p>
+      ) : filteredJobs.length === 0 ? (
+        <p>No jobs found matching your search.</p>
       ) : (
         <div className="space-y-4">
-          {jobs.map((job) => (
+          {filteredJobs.map((job) => (
             <Card key={job.id} className="w-full">
               <CardHeader>
                 <CardTitle>Job #{job.id}</CardTitle>
@@ -103,6 +127,13 @@ export default function JobsView({ crewId }: JobsViewProps) {
                 {job.messages
                   .map(parseMessage)
                   .filter(Boolean)
+                  .filter(
+                    (message) =>
+                      !searchTerm ||
+                      message.content
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase())
+                  )
                   .map((message, index) => (
                     <div
                       key={index}
@@ -133,8 +164,6 @@ export default function JobsView({ crewId }: JobsViewProps) {
               </CardContent>
             </Card>
           ))}
-          {/* Invisible div to scroll to */}
-          <div ref={bottomRef} />
         </div>
       )}
     </div>
