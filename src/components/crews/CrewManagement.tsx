@@ -344,7 +344,7 @@ export function CrewManagement({
                     onClick={() => router.push(`/crews/${crew.id}/jobs`)}
                   >
                     <FileText className="h-4 w-4" />
-                    <span>Check jobs</span>
+                    <span>View jobs</span>
                   </Button>
                   <Button
                     variant="ghost"
