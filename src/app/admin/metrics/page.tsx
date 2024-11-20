@@ -22,6 +22,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { Loader } from "@/components/reusables/Loader";
 
 interface CrewMetrics {
   total_crews: number;
@@ -61,11 +62,7 @@ export default function AdminMetrics() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        Loading...
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error) {

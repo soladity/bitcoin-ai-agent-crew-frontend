@@ -34,12 +34,13 @@ import {
   UserGroupIcon,
   ChartPieIcon,
   ChatBubbleBottomCenterTextIcon,
-  ShareIcon,
+  BuildingStorefrontIcon,
 } from "@heroicons/react/16/solid";
 import { usePathname } from "next/navigation";
 import { useUserData } from "@/hooks/useUserData";
 import { Wallet } from "lucide-react";
 import SignOut from "@/components/auth/SignOut";
+import Image from "next/image";
 
 function AccountDropdownMenu({
   anchor,
@@ -116,7 +117,14 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
             <Dropdown>
               <DropdownButton as={SidebarItem}>
                 <Avatar src="/logos/aibtcdev-avatar-250px.png" />
-                <SidebarLabel>AIBTCDEV</SidebarLabel>
+                <SidebarLabel>
+                  <Image
+                    src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
+                    alt=""
+                    width={400}
+                    height={20}
+                  />
+                </SidebarLabel>
               </DropdownButton>
             </Dropdown>
           </SidebarHeader>
@@ -149,8 +157,8 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
                 href="/public-crews"
                 current={pathname.startsWith("/public-crews")}
               >
-                <ShareIcon />
-                <SidebarLabel>Shared Crews</SidebarLabel>
+                <BuildingStorefrontIcon />
+                <SidebarLabel>Marketplace</SidebarLabel>
               </SidebarItem>
               <SidebarItem
                 href="/public-stats"
@@ -192,12 +200,7 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
             <Dropdown>
               <DropdownButton as={SidebarItem}>
                 <span className="flex min-w-0 items-center gap-3">
-                  <Avatar
-                    src="/logos/aibtcdev-avatar-250px.png"
-                    className="size-10"
-                    square
-                    alt=""
-                  />
+                  <Avatar initials="P" className="size-10" square alt="" />
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-medium text-zinc-950 dark:text-white">
                       {isLoading ? "Loading..." : displayAddress}

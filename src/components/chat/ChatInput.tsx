@@ -34,7 +34,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       {isLoading ? (
         <div className="flex items-center">
           <Loader2 className="h-4 w-4 animate-spin" />
-          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" />
           Thinking...
         </div>
       ) : (

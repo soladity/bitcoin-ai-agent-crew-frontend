@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
+import { Loader } from "@/components/reusables/Loader";
 
 type UserRole = "Normal" | "Admin" | "Participant" | "No Role";
 type SortOrder = "asc" | "desc" | null;
@@ -217,11 +218,7 @@ export default function AdminPanel() {
   const sortedAndFilteredProfiles = sortProfiles(filteredProfiles);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <Loader />;
   }
 
   if (!isAdmin) {

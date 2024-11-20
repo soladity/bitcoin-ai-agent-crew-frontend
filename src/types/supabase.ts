@@ -1,22 +1,51 @@
-// Interface for a crew 
-export interface Crew {
-    id: number;
-    name: string;
-    description: string;
-    created_at: string;
-    is_public?: boolean;
+// types/supabase.ts
+
+export interface CronEntry {
+  id?: number;
+  profile_id?: string;
+  crew_id?: number;
+  enabled: boolean;
+  input: string;
+  created_at?: string;
 }
 
-// Interface for props of the CrewManagement component
-export interface CrewManagementProps {
-    initialCrews: Crew[]
-    onCrewUpdate: (updatedCrews: Crew[]) => void
-  }
+export interface Crew {
+  id: number;
+  name: string;
+  description: string;
+  created_at: string;
+  is_public?: boolean;
+  profile_id?: string;
+}
 
-// Interface for props of the CrewForm component
+export interface CrewWithCron extends Crew {
+  cron?: CronEntry | null;
+}
+
 export interface CrewFormProps {
-    onCrewCreated: (newCrew: Crew) => void; // Callback for when a new crew is created
-    onClose: () => void; // Callback for when the form is closed
+  onCrewCreated: (crew: CrewWithCron) => void;
+  onClose: () => void;
+  editingCrew?: CrewWithCron | null;
+}
+
+export interface CrewManagementProps {
+  initialCrews: CrewWithCron[];
+  onCrewUpdate: (crews: CrewWithCron[]) => void;
+}
+
+export interface RawCrewData {
+  id: number;
+  name: string;
+  description: string;
+  created_at: string;
+  is_public: boolean;
+  profile_id: string;
+  crons?: Array<{
+    id: number;
+    enabled: boolean;
+    input: string;
+    created_at: string;
+  }>;
 }
 
 // Interface representing an agent

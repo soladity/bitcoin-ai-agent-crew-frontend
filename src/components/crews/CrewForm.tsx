@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,13 +8,32 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
-import { CrewFormProps, Crew } from "@/types/supabase";
+import { CrewFormProps } from "@/types/supabase";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2 } from "lucide-react";
 
-export default function CrewForm({ onCrewCreated, onClose }: CrewFormProps) {
-  const [crewName, setCrewName] = useState("");
-  const [crewDescription, setCrewDescription] = useState("");
-  const [isPublic, setIsPublic] = useState(false);
+export default function CrewForm({
+  onCrewCreated,
+  onClose,
+  editingCrew,
+}: CrewFormProps) {
+  const [crewName, setCrewName] = useState(editingCrew?.name || "");
+  const [crewDescription, setCrewDescription] = useState(
+    editingCrew?.description || ""
+  );
+  const [isPublic, setIsPublic] = useState(editingCrew?.is_public || false);
+  const [hasCron, setHasCron] = useState(false);
+  const [cronInput, setCronInput] = useState("");
+  const [cronEnabled, setCronEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (editingCrew?.cron) {
+      setHasCron(true);
+      setCronInput(editingCrew.cron.input);
+      setCronEnabled(editingCrew.cron.enabled);
+    }
+  }, [editingCrew]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,41 +50,98 @@ export default function CrewForm({ onCrewCreated, onClose }: CrewFormProps) {
         throw new Error("No authenticated user found");
       }
 
-      const { data, error } = await supabase
-        .from("crews")
-        .insert({
-          name: crewName,
-          description: crewDescription,
-          profile_id: user.id,
-          is_public: isPublic,
-        })
+      // Create or update crew
+      const crewOperation = editingCrew
+        ? supabase
+            .from("crews")
+            .update({
+              name: crewName,
+              description: crewDescription,
+              is_public: isPublic,
+            })
+            .eq("id", editingCrew.id)
+        : supabase.from("crews").insert({
+            name: crewName,
+            description: crewDescription,
+            profile_id: user.id,
+            is_public: isPublic,
+          });
+
+      const { data: crewData, error: crewError } = await crewOperation
         .select()
         .single();
+      if (crewError) throw crewError;
 
-      if (error) throw error;
+      // Handle cron entry
+      if (hasCron) {
+        if (editingCrew?.cron?.id) {
+          // Update existing cron
+          const { error: cronError } = await supabase
+            .from("crons")
+            .update({
+              input: cronInput,
+              enabled: cronEnabled,
+            })
+            .eq("id", editingCrew.cron.id);
+          if (cronError) throw cronError;
+        } else {
+          // Create new cron
+          const { error: cronError } = await supabase.from("crons").insert({
+            profile_id: user.id,
+            crew_id: crewData.id,
+            enabled: cronEnabled,
+            input: cronInput,
+          });
+          if (cronError) throw cronError;
+        }
+      } else if (editingCrew?.cron?.id) {
+        // Remove existing cron if hasCron is false
+        const { error: cronError } = await supabase
+          .from("crons")
+          .delete()
+          .eq("id", editingCrew.cron.id);
+        if (cronError) throw cronError;
+      }
 
-      const newCrew: Crew = {
-        id: data.id,
-        name: data.name,
-        description: data.description,
-        created_at: data.created_at,
-        is_public: data.is_public,
+      // Fetch the updated crew with cron data
+      const { data: updatedCrewData, error: fetchError } = await supabase
+        .from("crews")
+        .select(
+          `
+          *,
+          crons (
+            id,
+            enabled,
+            input
+          )
+        `
+        )
+        .eq("id", crewData.id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const newCrew = {
+        ...updatedCrewData,
+        cron: updatedCrewData.crons?.[0] || null,
       };
 
-      setCrewName("");
-      setCrewDescription("");
-      setIsPublic(false);
-      onClose();
       onCrewCreated(newCrew);
+      onClose();
+
       toast({
-        title: "Crew created",
-        description: "The new crew has been successfully created.",
+        title: editingCrew ? "Crew updated" : "Crew created",
+        description: editingCrew
+          ? "The crew has been successfully updated."
+          : "The new crew has been successfully created.",
       });
     } catch (error) {
-      console.error("Error creating crew:", error);
+      console.error("Error creating/updating crew:", error);
       toast({
         title: "Error",
-        description: "Failed to create the crew. Please try again.",
+        description: `Failed to ${
+          editingCrew ? "update" : "create"
+        } the crew. Please try again.`,
         variant: "destructive",
       });
     } finally {
@@ -103,8 +179,56 @@ export default function CrewForm({ onCrewCreated, onClose }: CrewFormProps) {
         />
         <Label htmlFor="is-public">Make crew public</Label>
       </div>
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="has-cron"
+          checked={hasCron}
+          onCheckedChange={(checked) => setHasCron(checked as boolean)}
+        />
+        <Label htmlFor="has-cron">Enable Cron</Label>
+      </div>
+      {hasCron && (
+        <div className="space-y-2">
+          <div>
+            <Label htmlFor="cronInput">Cron Input</Label>
+            <Input
+              id="cronInput"
+              value={cronInput}
+              onChange={(e) => setCronInput(e.target.value)}
+              placeholder="Enter cron input"
+              required
+            />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="cron-enabled"
+              checked={cronEnabled}
+              onCheckedChange={setCronEnabled}
+            />
+            <Label htmlFor="cron-enabled">Enable Cron Job</Label>
+          </div>
+          {/* {cronId && (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleRemoveCron}
+            >
+              Remove Cron Entry
+            </Button>
+          )}   */}
+        </div>
+      )}
       <Button type="submit" disabled={loading}>
-        {loading ? "Creating..." : "Create Crew"}
+        {loading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {editingCrew ? "Updating..." : "Creating..."}
+          </>
+        ) : editingCrew ? (
+          "Update Crew"
+        ) : (
+          "Create Crew"
+        )}
       </Button>
     </form>
   );
