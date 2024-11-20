@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +28,7 @@ export default function JobsView({ crewId }: JobsViewProps) {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -71,6 +72,13 @@ export default function JobsView({ crewId }: JobsViewProps) {
     fetchJobs();
   }, [crewId, toast]);
 
+  // Scroll to bottom when jobs change or loading completes
+  useEffect(() => {
+    if (!loading && bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [jobs, loading]);
+
   const parseMessage = (messageStr: string) => {
     try {
       return JSON.parse(messageStr);
@@ -90,47 +98,51 @@ export default function JobsView({ crewId }: JobsViewProps) {
           <Skeleton className="h-20 w-full" />
         </div>
       ) : jobs.length === 0 ? (
-        <p className="text-gray-500">No jobs available for this crew.</p>
+        <p>No jobs available for this crew.</p>
       ) : (
-        jobs.map((job) => (
-          <Card key={job.id} className="w-full">
-            <CardHeader>
-              <CardTitle>Job #{job.id}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {job.messages
-                .map(parseMessage)
-                .filter(Boolean)
-                .map((message, index) => (
-                  <div
-                    key={index}
-                    className={`p-3 rounded-lg ${
-                      message.type === "step"
-                        ? "bg-primary text-primary-foreground"
-                        : message.type === "task"
-                        ? "bg-gray-900"
-                        : message.type === "result"
-                        ? "bg-secondary"
-                        : "bg-muted"
-                    }`}
-                  >
-                    <div className="text-sm font-medium mb-1">
-                      {message.type?.toUpperCase()}
-                    </div>
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      className="text-sm prose prose-sm"
+        <div className="space-y-4">
+          {jobs.map((job) => (
+            <Card key={job.id} className="w-full">
+              <CardHeader>
+                <CardTitle>Job #{job.id}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {job.messages
+                  .map(parseMessage)
+                  .filter(Boolean)
+                  .map((message, index) => (
+                    <div
+                      key={index}
+                      className={`p-3 rounded-lg ${
+                        message.type === "step"
+                          ? "bg-primary text-primary-foreground"
+                          : message.type === "task"
+                          ? "bg-gray-900"
+                          : message.type === "result"
+                          ? "bg-secondary"
+                          : "bg-muted"
+                      }`}
                     >
-                      {message.content}
-                    </ReactMarkdown>
-                    <div className="text-xs mt-1">
-                      {new Date(message.timestamp).toLocaleString()}
+                      <div className="text-sm font-medium mb-1">
+                        {message.type?.toUpperCase()}
+                      </div>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        className="text-sm prose prose-sm"
+                      >
+                        {message.content}
+                      </ReactMarkdown>
+                      <div className="text-xs mt-1">
+                        {new Date(message.timestamp).toLocaleString()}
+                      </div>
                     </div>
-                  </div>
-                ))}
-            </CardContent>
-          </Card>
-        ))
+                  ))}
+              </CardContent>
+            </Card>
+          ))}
+          {/* Invisible div to scroll to */}
+          <div ref={bottomRef} />
+        </div>
       )}
     </div>
   );
