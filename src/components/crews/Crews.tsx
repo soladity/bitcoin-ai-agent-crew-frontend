@@ -74,7 +74,7 @@ export default function Crews() {
   );
 
   return (
-    <div>
+    <>
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -83,6 +83,6 @@ export default function Crews() {
         </Alert>
       )}
       <CrewManagement initialCrews={crews} onCrewUpdate={handleCrewsUpdated} />
-    </div>
+    </>
   );
 }

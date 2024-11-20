@@ -46,6 +46,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Heading } from "../catalyst/heading";
+import { Divider } from "../catalyst/divider";
 
 export function CrewManagement({
   initialCrews,
@@ -221,20 +223,18 @@ export function CrewManagement({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-sm font-medium">Your Crews</h3>
+    <div className="container mx-auto p-4">
+      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b border-zinc-950/10 pb-6 dark:border-white/10">
+        <Heading>Your Crews</Heading>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setEditingCrew(null)}
-            >
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Add Crew
-            </Button>
-          </DialogTrigger>
+          <div className="flex gap-4">
+            <DialogTrigger asChild>
+              <Button onClick={() => setEditingCrew(null)}>
+                <PlusIcon className="h-4 w-4 mr-2" /> Add Crew
+              </Button>
+            </DialogTrigger>
+          </div>
+
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>
@@ -253,114 +253,111 @@ export function CrewManagement({
         </Dialog>
       </div>
 
-      <ScrollArea className="h-[calc(100vh-12rem)]">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableHeader>Name</TableHeader>
-              <TableHeader>Description</TableHeader>
-              <TableHeader>Created</TableHeader>
-              <TableHeader>Public</TableHeader>
-              <TableHeader>Run autonomusly</TableHeader>
-              <TableHeader className="text-right">Actions</TableHeader>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {crews.map((crew) => (
-              <TableRow key={crew.id}>
-                <TableCell>
-                  <div className="flex items-center">
-                    <UserIcon className="h-4 w-4 text-primary mr-2" />
-                    <span className="font-medium text-sm">{crew.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="max-w-[200px] truncate">
-                  {crew.description || "No description"}
-                </TableCell>
-                <TableCell>
-                  {new Date(crew.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center space-x-2">
-                    {crew.is_public ? (
-                      <Globe className="h-4 w-4" />
-                    ) : (
-                      <Lock className="h-4 w-4" />
-                    )}
-                    <Switch
-                      checked={crew.is_public}
-                      onCheckedChange={() => handlePublicToggle(crew)}
-                      disabled={loading}
-                    />
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {crew.cron && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex items-center space-x-2">
-                            <Clock className="h-4 w-4" />
-                            <Switch
-                              checked={crew.cron.enabled}
-                              onCheckedChange={() => handleCronToggle(crew)}
-                              disabled={loading}
-                            />
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Cron: {crew.cron.input}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+      <Table className="min-w-full divide-y divide-gray-200">
+        <TableHead className="hidden md:table-header-group">
+          <TableRow>
+            <TableHeader>Name</TableHeader>
+            <TableHeader>Description</TableHeader>
+            <TableHeader>Created</TableHeader>
+            <TableHeader>Public</TableHeader>
+            <TableHeader>Run autonomously</TableHeader>
+            <TableHeader className="text-right">Actions</TableHeader>
+          </TableRow>
+        </TableHead>
+        <TableBody className="block md:table-row-group">
+          {crews.map((crew) => (
+            <TableRow key={crew.id} className="block md:table-row mb-4 md:mb-0">
+              <TableCell className="flex md:table-cell flex-col md:flex-row items-start md:items-center">
+                <span className="font-bold md:hidden">Name:</span>
+                <div className="flex items-center">
+                  <UserIcon className="h-4 w-4 text-primary mr-2" />
+                  <span className="font-medium text-sm">{crew.name}</span>
+                </div>
+              </TableCell>
+              <TableCell className="flex md:table-cell flex-col md:flex-row items-start md:items-center max-w-auto truncate">
+                {crew.description || "No description"}
+              </TableCell>
+              <TableCell className="flex md:table-cell flex-col md:flex-row items-start md:items-center">
+                {new Date(crew.created_at).toLocaleDateString()}
+              </TableCell>
+              <TableCell className="flex md:table-cell flex-col md:flex-row items-start md:items-center">
+                <div className="flex items-center space-x-2">
+                  {crew.is_public ? (
+                    <Globe className="h-4 w-4" />
+                  ) : (
+                    <Lock className="h-4 w-4" />
                   )}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end space-x-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => router.push(`/crews/${crew.id}/manage`)}
-                    >
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => router.push(`/crews/${crew.id}/execute`)}
-                    >
-                      <ChatBubbleIcon className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setEditingCrew(crew);
-                        setIsDialogOpen(true);
-                      }}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(crew.id)}
-                      disabled={deleteLoading === crew.id}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      {deleteLoading === crew.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2Icon className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </ScrollArea>
+                  <Switch
+                    checked={crew.is_public}
+                    onCheckedChange={() => handlePublicToggle(crew)}
+                    disabled={loading}
+                  />
+                </div>
+              </TableCell>
+              <TableCell className="flex md:table-cell flex-col md:flex-row items-start md:items-center">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center space-x-2">
+                        <Clock className="h-4 w-4" />
+                        <Switch
+                          checked={crew.cron ? crew.cron.enabled : false}
+                          onCheckedChange={() => handleCronToggle(crew)}
+                          disabled={loading}
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Cron: {crew.cron ? crew.cron.input : "No cron"}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </TableCell>
+              <TableCell className="flex md:table-cell flex-col md:flex-row items-start md:items-center text-right">
+                <div className="flex justify-end space-x-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => router.push(`/crews/${crew.id}/manage`)}
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push(`/crews/${crew.id}/execute`)}
+                  >
+                    <ChatBubbleIcon className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setEditingCrew(crew);
+                      setIsDialogOpen(true);
+                    }}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(crew.id)}
+                    disabled={deleteLoading === crew.id}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    {deleteLoading === crew.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2Icon className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }

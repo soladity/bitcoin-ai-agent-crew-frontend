@@ -22,6 +22,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, User, CheckSquare, PenTool } from "lucide-react";
 import type { PublicCrew } from "@/types/supabase";
 import { ClonePublicCrew } from "./ClonePublicCrew";
+import { Heading } from "../catalyst/heading";
 
 export default function PublicCrews() {
   const [crews, setCrews] = useState<PublicCrew[]>([]);
@@ -61,7 +62,11 @@ export default function PublicCrews() {
   if (crews.length === 0) {
     return (
       <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-6">Public Crews</h1>
+        <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b border-zinc-950/10 pb-6 dark:border-white/10">
+          <Heading>Marketplace</Heading>
+          <div className="flex gap-4"></div>
+        </div>
+
         <Card>
           <CardContent className="flex items-center justify-center h-40">
             <p className="text-lg text-muted-foreground">
@@ -75,7 +80,10 @@ export default function PublicCrews() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Public Crews</h1>
+      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b border-zinc-950/10 pb-6 dark:border-white/10">
+        <Heading>Marketplace</Heading>
+        <div className="flex gap-4"></div>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {crews.map((crew) => (
           <Card key={crew.id}>

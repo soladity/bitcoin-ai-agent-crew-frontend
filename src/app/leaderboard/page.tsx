@@ -73,7 +73,7 @@ export default function LeaderBoard() {
   }
 
   return (
-    <Card className="w-full mx-auto my-8">
+    <Card className="w-full mx-auto">
       <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <CardTitle className="text-2xl font-bold">
           Participant Leaderboard
