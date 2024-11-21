@@ -5,16 +5,10 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
-  Settings,
   PlusIcon,
-  Trash2Icon,
-  UserIcon,
   Globe,
   Lock,
-  Edit,
   Clock,
-  Loader2,
-  FileText,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -24,14 +18,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
 import CrewForm from "./CrewForm";
 import {
   CrewWithCron,
   CrewManagementProps,
   RawCrewData,
 } from "@/types/supabase";
-import { ChatBubbleIcon } from "@radix-ui/react-icons";
 import {
   Table,
   TableHead,
@@ -54,8 +46,6 @@ export function CrewManagement({
 }: CrewManagementProps) {
   const [crews, setCrews] = useState<CrewWithCron[]>(initialCrews);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState<number | null>(null);
   const [editingCrew, setEditingCrew] = useState<CrewWithCron | null>(null);
   const { toast } = useToast();
   const router = useRouter();
@@ -85,7 +75,7 @@ export function CrewManagement({
             created_at: crew.created_at,
             is_public: crew.is_public,
             profile_id: crew.profile_id,
-            cron: crew.crons?.[0] || null,
+            crons: crew.crons?.[0] || null,
           })
         );
 
@@ -104,38 +94,6 @@ export function CrewManagement({
     fetchCrewsWithCrons();
   }, [onCrewUpdate, toast]);
 
-  const handleDelete = async (id: number) => {
-    setDeleteLoading(id);
-    try {
-      await supabase.from("jobs").delete().eq("crew_id", id);
-      await supabase.from("tasks").delete().eq("crew_id", id);
-      await supabase.from("agents").delete().eq("crew_id", id);
-      await supabase.from("crons").delete().eq("crew_id", id);
-      const { error } = await supabase.from("crews").delete().eq("id", id);
-
-      if (error) throw error;
-
-      const updatedCrews = crews.filter((crew) => crew.id !== id);
-      setCrews(updatedCrews);
-      onCrewUpdate(updatedCrews);
-
-      toast({
-        title: "Crew deleted",
-        description:
-          "The crew and all its associated data has been successfully deleted.",
-      });
-    } catch (error) {
-      console.error("Error deleting crew:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete the crew. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setDeleteLoading(null);
-    }
-  };
-
   const handleCrewCreated = (newCrew: CrewWithCron) => {
     const updatedCrews = editingCrew
       ? crews.map((c) => (c.id === newCrew.id ? newCrew : c))
@@ -143,82 +101,6 @@ export function CrewManagement({
     setCrews(updatedCrews);
     onCrewUpdate(updatedCrews);
     setEditingCrew(null);
-  };
-
-  const handleCronToggle = async (crew: CrewWithCron) => {
-    if (!crew.cron?.id) return;
-
-    try {
-      const newEnabled = !crew.cron.enabled;
-      const { error } = await supabase
-        .from("crons")
-        .update({ enabled: newEnabled })
-        .eq("id", crew.cron.id);
-
-      if (error) throw error;
-
-      const updatedCrews = crews.map((c) =>
-        c.id === crew.id
-          ? {
-              ...c,
-              cron: c.cron ? { ...c.cron, enabled: newEnabled } : null,
-            }
-          : c
-      );
-
-      setCrews(updatedCrews);
-      onCrewUpdate(updatedCrews);
-
-      toast({
-        title: "Cron status updated",
-        description: `Cron job has been ${
-          newEnabled ? "enabled" : "disabled"
-        }.`,
-      });
-    } catch (error) {
-      console.error("Error updating cron status:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update cron status. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handlePublicToggle = async (crew: CrewWithCron) => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("crews")
-        .update({ is_public: !crew.is_public })
-        .eq("id", crew.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const updatedCrews = crews.map((c) =>
-        c.id === crew.id ? { ...c, is_public: !c.is_public } : c
-      );
-      setCrews(updatedCrews);
-      onCrewUpdate(updatedCrews);
-
-      toast({
-        title: "Visibility updated",
-        description: `The crew is now ${
-          data.is_public ? "public" : "private"
-        }.`,
-      });
-    } catch (error) {
-      console.error("Error updating visibility:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update crew visibility. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -236,129 +118,63 @@ export function CrewManagement({
 
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>
-                {editingCrew ? "Edit Crew" : "Create New Crew"}
-              </DialogTitle>
+              <DialogTitle>Create New Crew</DialogTitle>
             </DialogHeader>
             <CrewForm
               onCrewCreated={handleCrewCreated}
-              onClose={() => {
-                setIsDialogOpen(false);
-                setEditingCrew(null);
-              }}
-              editingCrew={editingCrew}
+              onClose={() => setIsDialogOpen(false)}
             />
           </DialogContent>
         </Dialog>
       </div>
 
       <Table className="min-w-full divide-y divide-gray-200">
-        <TableHead className="hidden md:table-header-group">
+        <TableHead>
           <TableRow>
             <TableHeader>Name</TableHeader>
             <TableHeader>Description</TableHeader>
-            <TableHeader>Created</TableHeader>
-            <TableHeader>Public</TableHeader>
-            <TableHeader>Run autonomously</TableHeader>
-            <TableHeader className="text-right">Actions</TableHeader>
+            <TableHeader className="w-24">Status</TableHeader>
           </TableRow>
         </TableHead>
-        <TableBody className="block md:table-row-group">
+        <TableBody>
           {crews.map((crew) => (
-            <TableRow key={crew.id} className="block md:table-row mb-4 md:mb-0">
-              <TableCell className="flex md:table-cell flex-col md:flex-row items-start md:items-center">
-                <span className="font-bold md:hidden">Name:</span>
-                <div className="flex items-center">
-                  <UserIcon className="h-4 w-4 text-primary mr-2" />
-                  <span className="font-medium text-sm">{crew.name}</span>
-                </div>
+            <TableRow 
+              key={crew.id} 
+              className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+              onClick={() => router.push(`/crews/${crew.id}/manage`)}
+            >
+              <TableCell>
+                <div className="font-medium">{crew.name}</div>
               </TableCell>
-              <TableCell className="flex md:table-cell flex-col md:flex-row items-start md:items-center max-w-auto truncate">
+              <TableCell className="max-w-md truncate">
                 {crew.description || "No description"}
               </TableCell>
-              <TableCell className="flex md:table-cell flex-col md:flex-row items-start md:items-center">
-                {new Date(crew.created_at).toLocaleDateString()}
-              </TableCell>
-              <TableCell className="flex md:table-cell flex-col md:flex-row items-start md:items-center">
+              <TableCell>
                 <div className="flex items-center space-x-2">
-                  {crew.is_public ? (
-                    <Globe className="h-4 w-4" />
-                  ) : (
-                    <Lock className="h-4 w-4" />
-                  )}
-                  <Switch
-                    checked={crew.is_public}
-                    onCheckedChange={() => handlePublicToggle(crew)}
-                    disabled={loading}
-                  />
-                </div>
-              </TableCell>
-              <TableCell className="flex md:table-cell flex-col md:flex-row items-start md:items-center">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4" />
-                        <Switch
-                          checked={crew.cron ? crew.cron.enabled : false}
-                          onCheckedChange={() => handleCronToggle(crew)}
-                          disabled={loading}
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Cron: {crew.cron ? crew.cron.input : "No cron"}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </TableCell>
-              <TableCell className="flex md:table-cell flex-col md:flex-row items-start md:items-center text-right">
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => router.push(`/crews/${crew.id}/manage`)}
-                  >
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => router.push(`/crews/${crew.id}/execute`)}
-                  >
-                    <ChatBubbleIcon className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setEditingCrew(crew);
-                      setIsDialogOpen(true);
-                    }}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => router.push(`/crews/${crew.id}/jobs`)}
-                  >
-                    <FileText className="h-4 w-4" />
-                    <span>View jobs</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(crew.id)}
-                    disabled={deleteLoading === crew.id}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    {deleteLoading === crew.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2Icon className="h-4 w-4" />
-                    )}
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        {crew.is_public ? (
+                          <Globe className="h-4 w-4 text-gray-500" />
+                        ) : (
+                          <Lock className="h-4 w-4 text-gray-500" />
+                        )}
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {crew.is_public ? "Public" : "Private"}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Clock className={`h-4 w-4 ${crew.cron?.enabled ? 'text-green-500' : 'text-gray-500'}`} />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {crew.cron?.enabled ? "Cron Enabled" : "Cron Disabled"}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </TableCell>
             </TableRow>
