@@ -3,6 +3,8 @@
 import { useParams } from "next/navigation";
 import JobsView from "@/components/crews/CrewJobs";
 
+export const runtime = 'edge';
+
 export default function JobsPage() {
   const params = useParams();
   console.log(params);
