@@ -9,6 +9,7 @@ import {
   Globe,
   Lock,
   Clock,
+  Settings2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -31,7 +32,7 @@ import {
   TableRow,
   TableCell,
   TableHeader,
-} from "@/components/catalyst/table";
+} from "@/components/ui/table";
 import {
   Tooltip,
   TooltipContent,
@@ -75,7 +76,7 @@ export function CrewManagement({
             created_at: crew.created_at,
             is_public: crew.is_public,
             profile_id: crew.profile_id,
-            crons: crew.crons?.[0] || null,
+            cron: crew.crons?.[0] || null,
           })
         );
 
@@ -105,17 +106,14 @@ export function CrewManagement({
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-b border-zinc-950/10 pb-6 dark:border-white/10">
+      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-zinc-950/10 pb-6 dark:border-white/10">
         <Heading>Your Crews</Heading>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <div className="flex gap-4">
-            <DialogTrigger asChild>
-              <Button onClick={() => setEditingCrew(null)}>
-                <PlusIcon className="h-4 w-4 mr-2" /> Add Crew
-              </Button>
-            </DialogTrigger>
-          </div>
-
+          <DialogTrigger asChild>
+            <Button onClick={() => setEditingCrew(null)}>
+              <PlusIcon className="h-4 w-4 mr-2" /> Add Crew
+            </Button>
+          </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Create New Crew</DialogTitle>
@@ -128,59 +126,111 @@ export function CrewManagement({
         </Dialog>
       </div>
 
-      <Table className="min-w-full divide-y divide-gray-200">
-        <TableHead>
-          <TableRow>
-            <TableHeader>Name</TableHeader>
-            <TableHeader>Description</TableHeader>
-            <TableHeader className="w-24">Status</TableHeader>
-          </TableRow>
-        </TableHead>
-        <TableBody>
+      <div className="mt-6">
+        {/* Desktop view */}
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px]">Name</TableHead>
+                <TableHead className="w-full">Description</TableHead>
+                <TableHead className="w-[100px] text-center">Status</TableHead>
+                <TableHead className="w-[80px] text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {crews.map((crew) => (
+                <TableRow key={crew.id}>
+                  <TableCell className="font-medium">
+                    {crew.name}
+                  </TableCell>
+                  <TableCell className="max-w-md truncate">
+                    {crew.description || "No description"}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            {crew.is_public ? (
+                              <Globe className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <Lock className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{crew.is_public ? "Public" : "Private"}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      {crew.cron?.enabled && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Cron Enabled</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => router.push(`/crews/${crew.id}/manage`)}
+                    >
+                      <Settings2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Mobile view */}
+        <div className="grid grid-cols-1 gap-4 md:hidden">
           {crews.map((crew) => (
-            <TableRow 
-              key={crew.id} 
-              className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-              onClick={() => router.push(`/crews/${crew.id}/manage`)}
+            <div
+              key={crew.id}
+              className="rounded-lg border bg-card text-card-foreground shadow-sm"
             >
-              <TableCell>
-                <div className="font-medium">{crew.name}</div>
-              </TableCell>
-              <TableCell className="max-w-md truncate">
-                {crew.description || "No description"}
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center space-x-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        {crew.is_public ? (
-                          <Globe className="h-4 w-4 text-gray-500" />
-                        ) : (
-                          <Lock className="h-4 w-4 text-gray-500" />
-                        )}
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {crew.is_public ? "Public" : "Private"}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Clock className={`h-4 w-4 ${crew.cron?.enabled ? 'text-green-500' : 'text-gray-500'}`} />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {crew.cron?.enabled ? "Cron Enabled" : "Cron Disabled"}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold">{crew.name}</h3>
+                  <div className="flex items-center gap-2">
+                    {crew.is_public ? (
+                      <Globe className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Lock className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    {crew.cron?.enabled && (
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
                 </div>
-              </TableCell>
-            </TableRow>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {crew.description || "No description"}
+                </p>
+                <div className="flex justify-end">
+                  <Button
+                    size="sm"
+                    onClick={() => router.push(`/crews/${crew.id}/manage`)}
+                    className="w-full"
+                  >
+                    <Settings2 className="h-4 w-4 mr-2" />
+                    Manage Crew
+                  </Button>
+                </div>
+              </div>
+            </div>
           ))}
-        </TableBody>
-      </Table>
+        </div>
+      </div>
     </div>
   );
 }
