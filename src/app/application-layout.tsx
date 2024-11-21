@@ -41,6 +41,7 @@ import { useUserData } from "@/hooks/useUserData";
 import { Wallet } from "lucide-react";
 import SignOut from "@/components/auth/SignOut";
 import Image from "next/image";
+import { DashboardIcon } from "@radix-ui/react-icons";
 
 function AccountDropdownMenu({
   anchor,
@@ -131,20 +132,13 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
 
           <SidebarBody>
             <SidebarSection>
-              {/* <SidebarItem href="/dashboard" current={pathname === "/"}>
+              <SidebarItem href="/dashboard" current={pathname === "/"}>
                 <DashboardIcon />
                 <SidebarLabel>Dashboard</SidebarLabel>
-              </SidebarItem> */}
+              </SidebarItem>
               <SidebarItem href="/chat" current={pathname === "/chat"}>
                 <ChatBubbleBottomCenterTextIcon />
                 <SidebarLabel>Chat</SidebarLabel>
-              </SidebarItem>
-              <SidebarItem
-                href="/leaderboard"
-                current={pathname.startsWith("/leaderboard")}
-              >
-                <ChartBarIcon />
-                <SidebarLabel>Leaderboard</SidebarLabel>
               </SidebarItem>
               <SidebarItem
                 href="/crews"
@@ -154,15 +148,22 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
                 <SidebarLabel>Crews</SidebarLabel>
               </SidebarItem>
               <SidebarItem
-                href="/public-crews"
-                current={pathname.startsWith("/public-crews")}
+                href="/marketplace"
+                current={pathname.startsWith("/marketplace")}
               >
                 <BuildingStorefrontIcon />
                 <SidebarLabel>Marketplace</SidebarLabel>
               </SidebarItem>
               <SidebarItem
-                href="/public-stats"
-                current={pathname.startsWith("/public-stats")}
+                href="/leaderboard"
+                current={pathname.startsWith("/leaderboard")}
+              >
+                <ChartBarIcon />
+                <SidebarLabel>Leaderboard</SidebarLabel>
+              </SidebarItem>
+              <SidebarItem
+                href="/stats"
+                current={pathname.startsWith("/stats")}
               >
                 <ChartPieIcon />
                 <SidebarLabel>Stats</SidebarLabel>

@@ -2,10 +2,10 @@ import React from "react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Public Crews",
+  title: "Marketplace",
 };
 
-export default function DashboardLayout({
+export default function Marketplace({
   children,
 }: {
   children: React.ReactNode;

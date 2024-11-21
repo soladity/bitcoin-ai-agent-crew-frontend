@@ -170,8 +170,8 @@ export default function AgentManagement({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold tracking-tight mt-3">Agents</h2>
+      <div className="flex justify-between items-center mt-4">
+        <h2 className="text-3xl font-bold tracking-tight">Agents</h2>
         <Dialog
           open={isDialogOpen}
           onOpenChange={(open) => {
@@ -180,7 +180,7 @@ export default function AgentManagement({
           }}
         >
           <DialogTrigger asChild>
-            <Button>
+            <Button >
               <PlusIcon className="mr-2 h-4 w-4" />
               Add Agent
             </Button>

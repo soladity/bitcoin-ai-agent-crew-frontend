@@ -43,7 +43,7 @@ export default function PublicStatsDashboard() {
   const totalJobs = data.total_jobs;
   
   return (
-    <div className="min-h-screen bg-black text-white p-8">
+    <div className="min-h-screen p-8">
       <div className="max-w-4xl mx-auto space-y-12">
         {/* Hero Section */}
         <div className="text-center space-y-8">
