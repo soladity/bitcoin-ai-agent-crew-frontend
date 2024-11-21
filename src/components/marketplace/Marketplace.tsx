@@ -19,7 +19,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Users, User, CheckSquare, PenTool } from "lucide-react";
+import { Users, User, CheckSquare } from "lucide-react";
 import type { PublicCrew } from "@/types/supabase";
 import { ClonePublicCrew } from "./ClonePublicCrew";
 import { Heading } from "../catalyst/heading";
@@ -71,7 +71,7 @@ export default function Marketplace() {
                 <CardTitle className="text-xl font-bold">{crew.name}</CardTitle>
                 <Badge variant="secondary" className="ml-2">
                   <Users className="w-3 h-3 mr-1" />
-                  {crew.members?.length || 0}
+                  {crew.clones || 0}
                 </Badge>
               </div>
               <CardDescription>{crew.description}</CardDescription>

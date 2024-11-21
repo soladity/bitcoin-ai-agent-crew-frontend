@@ -141,6 +141,7 @@ export  interface PublicCrew {
     description: string;
     created_at: string;
     creator_email: string;
+    clones: number
     agents: PublicAgent[];
   }
 
