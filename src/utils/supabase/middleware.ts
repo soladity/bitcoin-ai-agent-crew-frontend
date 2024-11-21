@@ -59,7 +59,7 @@ export const updateSession = async (request: NextRequest) => {
 
       if (profileError || !profileData || profileData.role !== "Admin") {
         // If not admin, redirect to dashboard
-        return NextResponse.redirect(new URL("/dashboard", request.url));
+        return NextResponse.redirect(new URL("/chat", request.url));
       }
     }
 
@@ -81,7 +81,7 @@ export const updateSession = async (request: NextRequest) => {
     }
 
     if (request.nextUrl.pathname === "/" && !userError) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(new URL("/chat", request.url));
     }
 
     return response;

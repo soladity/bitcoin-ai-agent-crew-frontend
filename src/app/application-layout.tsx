@@ -132,10 +132,10 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
 
           <SidebarBody>
             <SidebarSection>
-              <SidebarItem href="/dashboard" current={pathname === "/"}>
+              {/* <SidebarItem href="/dashboard" current={pathname === "/"}>
                 <DashboardIcon />
                 <SidebarLabel>Dashboard</SidebarLabel>
-              </SidebarItem>
+              </SidebarItem> */}
               <SidebarItem href="/chat" current={pathname === "/chat"}>
                 <ChatBubbleBottomCenterTextIcon />
                 <SidebarLabel>Chat</SidebarLabel>
