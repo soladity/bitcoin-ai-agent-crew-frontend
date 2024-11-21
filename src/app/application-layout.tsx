@@ -41,7 +41,6 @@ import { useUserData } from "@/hooks/useUserData";
 import { Wallet } from "lucide-react";
 import SignOut from "@/components/auth/SignOut";
 import Image from "next/image";
-import { DashboardIcon } from "@radix-ui/react-icons";
 
 function AccountDropdownMenu({
   anchor,
