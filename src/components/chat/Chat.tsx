@@ -18,9 +18,9 @@ export default function Chat() {
   } = useChat();
 
   return (
-    <div className="w-screen md:h-[98vh] h-[91vh]">
-      <div className="flex h-full">
-        <div className="flex flex-col flex-1 h-auto overflow-hidden">
+    <div className="flex flex-col h-[100dvh] w-screen">
+      <div className="flex flex-1 min-h-0">
+        <div className="flex flex-col flex-1 h-full overflow-hidden">
           <div className="flex-1 overflow-y-auto space-y-4 px-4 py-2">
             {messages.map((message, index) => (
               <MessageBubble key={index} message={message} />
@@ -35,13 +35,15 @@ export default function Chat() {
             <div ref={messagesEndRef} />
           </div>
 
-          <ChatInput
-            input={input}
-            setInput={setInput}
-            isLoading={isLoading}
-            onSubmit={handleSubmit}
-            onReset={handleResetHistory}
-          />
+          <div className="sticky bottom-0 bg-background">
+            <ChatInput
+              input={input}
+              setInput={setInput}
+              isLoading={isLoading}
+              onSubmit={handleSubmit}
+              onReset={handleResetHistory}
+            />
+          </div>
         </div>
       </div>
     </div>

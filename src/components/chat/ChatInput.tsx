@@ -18,13 +18,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   onSubmit,
   onReset,
 }) => (
-  <form onSubmit={onSubmit} className="flex items-center gap-2 p-4 ">
+  <form onSubmit={onSubmit} className="flex items-center gap-2 p-4 bg-background">
     <Input
       value={input}
       onChange={(e) => setInput(e.target.value)}
       placeholder="Type your message..."
       disabled={isLoading}
       className="flex-1 h-11 rounded-md border px-3 text-base focus:outline-none focus:ring-2 focus:ring-primary"
+      style={{ WebkitAppearance: "none" }}
     />
     <Button
       type="submit"
