@@ -4,9 +4,7 @@ import Chat from "@/components/chat/Chat";
 
 const page = () => {
   return (
-    <SidebarProvider>
       <Chat />
-    </SidebarProvider>
   );
 };
 

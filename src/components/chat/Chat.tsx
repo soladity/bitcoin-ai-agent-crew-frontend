@@ -45,7 +45,7 @@ export default function Chat() {
   }, []);
 
   return (
-    <div className="flex flex-col h-[100dvh] w-screen relative overflow-x-hidden">
+    <div className="flex flex-col h-[100dvh] w-full relative overflow-x-hidden">
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden pb-20">
         <div className="space-y-4 px-4 py-2">
           {messages.map((message, index) => (
@@ -62,7 +62,7 @@ export default function Chat() {
         </div>
       </div>
 
-      <div className={`fixed bottom-0 left-0 right-0 transition-colors duration-200 ${!isAtBottom ? 'bg-zinc-900' : ''}`}>
+      <div className={`fixed bottom-0 inset-x-0 md:right-0 md:left-[16rem] transition-colors duration-200 md:rounded ${!isAtBottom ? 'bg-zinc-900' : ''}`}>
         <ChatInput
           input={input}
           setInput={setInput}
