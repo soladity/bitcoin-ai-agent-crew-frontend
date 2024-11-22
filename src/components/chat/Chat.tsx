@@ -20,6 +20,16 @@ export default function Chat() {
   const [isAtBottom, setIsAtBottom] = React.useState(true);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
+  const scrollToBottom = React.useCallback(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, []);
+
+  React.useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading, scrollToBottom]);
+
   React.useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
     if (!scrollContainer) return;
