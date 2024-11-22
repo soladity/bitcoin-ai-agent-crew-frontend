@@ -35,7 +35,7 @@ export default function Chat() {
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="sticky bottom-0 bg-background">
+          <div className="sticky bottom-0">
             <ChatInput
               input={input}
               setInput={setInput}

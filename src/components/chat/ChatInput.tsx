@@ -18,7 +18,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   onSubmit,
   onReset,
 }) => (
-  <form onSubmit={onSubmit} className="flex items-center gap-2 p-4 bg-background">
+  <form onSubmit={onSubmit} className="flex items-center gap-2 p-4">
     <Input
       value={input}
       onChange={(e) => setInput(e.target.value)}
