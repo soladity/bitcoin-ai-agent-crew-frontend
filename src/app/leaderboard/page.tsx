@@ -33,7 +33,12 @@ function PortfolioValueCell({
 }
 
 export default function LeaderBoard() {
-  const { data: leaderboard, isLoading, error } = useLeaderboardData();
+  const {
+    data: leaderboard,
+    isLoading,
+    totalAgentBalance,
+    error,
+  } = useLeaderboardData();
   const { data: userData } = useUserData();
   const [searchTerm, setSearchTerm] = useState<string>("");
 
@@ -71,6 +76,9 @@ export default function LeaderBoard() {
         <CardTitle className="text-2xl font-bold">
           Participant Leaderboard
         </CardTitle>
+        <div className="text-sm text-muted-foreground mt-2">
+          Total Agent Balance: ${totalAgentBalance.toFixed(2)}
+        </div>
         <div className="flex items-center gap-4 w-full sm:w-auto">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
