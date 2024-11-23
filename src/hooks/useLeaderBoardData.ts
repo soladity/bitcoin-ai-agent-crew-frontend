@@ -146,8 +146,15 @@ export function useLeaderboardData() {
     });
   }, [profilesQuery.data, balanceQueries]);
 
+  const totalAgentBalance = useMemo(() => {
+    const total = combinedData.reduce((sum, profile) => sum + profile.portfolioValue, 0);
+    console.log(`Total Agent Balance: $${total.toFixed(2)}`);
+    return total;
+  }, [combinedData]);
+
   return {
     data: combinedData,
+    totalAgentBalance,
     isLoading: profilesQuery.isLoading || tokenPricesQuery.isLoading,
     error: profilesQuery.error || tokenPricesQuery.error,
   };
