@@ -58,6 +58,10 @@ function AccountDropdownMenu({
           <DropdownLabel>Admin</DropdownLabel>
         </DropdownItem>
       )}
+      <DropdownItem href="/profile">
+        <Avatar initials="P" className="size-4" />
+        <DropdownLabel>Profile Settings</DropdownLabel>
+      </DropdownItem>
       <DropdownItem>
         <ArrowRightStartOnRectangleIcon />
         <SignOut />

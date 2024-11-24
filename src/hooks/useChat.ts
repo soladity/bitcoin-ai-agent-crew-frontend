@@ -29,6 +29,15 @@ export function useChat() {
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const currentJobRef = useRef<{
+    steps: Message[];
+    tasks: Message[];
+    results: Message[];
+  }>({
+    steps: [],
+    tasks: [],
+    results: [],
+  });
 
   const scrollToBottom = useCallback(() => {
     const container = messagesEndRef.current?.parentElement;
@@ -41,7 +50,8 @@ export function useChat() {
     if (!authToken) return;
 
     try {
-      const response = await fetch(
+      // Delete current conversation
+      const deleteResponse = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/chat/conversations/${conversationId}`,
         {
           method: "DELETE",
@@ -52,12 +62,38 @@ export function useChat() {
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!deleteResponse.ok) {
+        throw new Error(`HTTP error! status: ${deleteResponse.status}`);
       }
 
-      setMessages([]);
-      setConversationId(null);
+      // Create a new conversation
+      const newConversationResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/chat/conversations`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+
+      if (!newConversationResponse.ok) {
+        throw new Error(`HTTP error! status: ${newConversationResponse.status}`);
+      }
+
+      const newConversation = await newConversationResponse.json();
+      setConversationId(newConversation.id);
+
+      // Reset messages with just the welcome message
+      const initialMessage: Message = {
+        role: "assistant",
+        type: null,
+        content: "Welcome back! Let's see what your ai can pull off today.",
+        timestamp: new Date(),
+      };
+      setMessages([initialMessage]);
+
       toast({
         title: "Success",
         description: "Chat history has been reset.",
@@ -196,6 +232,13 @@ export function useChat() {
       setInput("");
       setIsLoading(true);
 
+      // Reset the current job's message groups
+      currentJobRef.current = {
+        steps: [],
+        tasks: [],
+        results: [],
+      };
+
       try {
         const tokenResponse = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/chat/?conversation_id=${conversationId}`,
@@ -226,23 +269,43 @@ export function useChat() {
             const data = JSON.parse(event.data);
             if (!data || typeof data !== "object") return;
 
+            const newMessage: Message = {
+              role: "assistant",
+              type: data.type,
+              content: data.content,
+              timestamp: new Date(data.timestamp),
+            };
+
             switch (data.type) {
               case "step":
+                currentJobRef.current.steps.push(newMessage);
+                break;
               case "task":
+                currentJobRef.current.tasks.push(newMessage);
+                break;
               case "result":
-                setMessages((prev) => [
-                  ...prev,
-                  {
-                    role: "assistant",
-                    type: data.type,
-                    content: data.content,
-                    timestamp: new Date(data.timestamp),
-                  },
-                ]);
+                currentJobRef.current.results.push(newMessage);
                 break;
               default:
                 console.warn("Unknown message type:", data.type);
             }
+
+            // Update messages with all current groups
+            setMessages((prev) => {
+              const withoutCurrentJob = prev.filter(
+                (msg) =>
+                  msg.role !== "assistant" ||
+                  !msg.type ||
+                  msg.timestamp < userMessage.timestamp
+              );
+
+              return [
+                ...withoutCurrentJob,
+                ...currentJobRef.current.steps,
+                ...currentJobRef.current.tasks,
+                ...currentJobRef.current.results,
+              ];
+            });
 
             if (data.type === "result") {
               eventSource.close();
