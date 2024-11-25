@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/catalyst/badge";
 import { Loader2 } from "lucide-react";
 
 interface Profile {
@@ -22,12 +22,13 @@ interface Profile {
 }
 
 interface TelegramUser {
+  id: string | null;
   telegram_user_id: string | null;
-  telegram_chat_id: string | null;
   username: string | null;
   first_name: string | null;
   last_name: string | null;
   is_registered: boolean;
+  profile_id: string | null;
 }
 
 const formatEmail = (email: string): string => {
@@ -109,7 +110,7 @@ export default function ProfilePage() {
   };
 
   const startTelegramBot = async () => {
-    window.open(`https://t.me/aitbtcdevbot?start=${profile?.id}`);
+    window.open(`https://t.me/aitbtcdevbot?start=${telegramUser?.id}`);
   };
 
   if (loading) {
@@ -154,7 +155,7 @@ export default function ProfilePage() {
             <div>
               <label className="text-sm font-medium">Role</label>
               <div>
-                <Badge>{profile?.role || "Normal User"}</Badge>
+                <Badge color="blue">{profile?.role || "Normal User"}</Badge>
               </div>
             </div>
           </CardContent>
@@ -167,9 +168,12 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Discord Username</label>
-              <div className="bg-background p-2 rounded-md">
-                {profile?.discord_username || "Not connected"}
+              <label className="text-sm font-medium">Discord</label>
+              <div className="bg-background p-2 rounded-md space-y-2">
+                <Badge color={profile?.discord_username ? "green" : "red"}>
+                  {profile?.discord_username ? "Connected" : "Not Connected"}
+                </Badge>
+                {profile?.discord_username && <p> {profile.discord_username}</p>}
               </div>
             </div>
 
@@ -177,21 +181,16 @@ export default function ProfilePage() {
               <label className="text-sm font-medium">Telegram</label>
               {telegramUser ? (
                 <div className="bg-background p-2 rounded-md space-y-2">
-                  <p>
-                    Status:{" "}
-                    {telegramUser.is_registered
-                      ? "Connected"
-                      : "Pending Registration"}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <Badge 
+                      color={telegramUser.is_registered ? "green" : "yellow"}
+                    >
+                      {telegramUser.is_registered ? "Connected" : "Pending Registration"}
+                    </Badge>
+                  </div>
                   {telegramUser.is_registered && (
                     <>
-                      <p>Username: {telegramUser.username || "N/A"}</p>
-                      <p>
-                        Name:{" "}
-                        {[telegramUser.first_name, telegramUser.last_name]
-                          .filter(Boolean)
-                          .join(" ") || "N/A"}
-                      </p>
+                      <p>{telegramUser.username || "N/A"}</p>
                     </>
                   )}
                   {!telegramUser.is_registered && (
