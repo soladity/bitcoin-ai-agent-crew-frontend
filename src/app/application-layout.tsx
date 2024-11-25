@@ -200,7 +200,7 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
             </SidebarSection>
           </SidebarBody>
 
-          <SidebarFooter className="max-lg:hidden p-4">
+          <SidebarFooter className=" p-4">
             <Dropdown>
               <DropdownButton as={SidebarItem}>
                 <span className="flex min-w-0 items-center gap-3">
