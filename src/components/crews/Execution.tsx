@@ -22,6 +22,7 @@ export default function ExecutionPanel({ crewId }: ExecutionPanelProps) {
     messagesEndRef,
     handleResetHistory,
     setCrewId,
+    isConnected,
   } = useCrewChat();
 
   const memoizedSetCrewId = useCallback(
@@ -56,6 +57,7 @@ export default function ExecutionPanel({ crewId }: ExecutionPanelProps) {
           input={input}
           setInput={setInput}
           isLoading={isLoading}
+          isConnected={isConnected}
           onSubmit={handleSubmit}
           onReset={handleResetHistory}
         />

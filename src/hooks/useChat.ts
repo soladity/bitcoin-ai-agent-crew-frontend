@@ -13,17 +13,6 @@ export interface Message {
   result?: string;
 }
 
-interface Job {
-  id: number;
-  created_at: string;
-  conversation_id: string;
-  crew_id: number;
-  profile_id: string;
-  input: string;
-  result: string;
-  messages: string[];
-}
-
 export function useChat() {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -31,6 +20,8 @@ export function useChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [ws, setWs] = useState<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentJobRef = useRef<{
     steps: Message[];
@@ -41,7 +32,6 @@ export function useChat() {
     tasks: [],
     results: [],
   });
-  const [ws, setWs] = useState<WebSocket | null>(null);
 
   const scrollToBottom = useCallback(() => {
     const container = messagesEndRef.current?.parentElement;
@@ -117,7 +107,13 @@ export function useChat() {
       };
 
       // Reset messages and set new conversation ID
-      setMessages([]);
+      const initialMessage: Message = {
+        role: "assistant",
+        type: null,
+        content: "Welcome back! Let's see what your ai can pull off today.",
+        timestamp: new Date(),
+      };
+      setMessages([initialMessage]);
       setConversationId(newConversation.id);
 
       // Note: loading state will be reset when new WebSocket connects in the useEffect
@@ -157,67 +153,13 @@ export function useChat() {
         const conversationData = await conversationRequest.json();
         setConversationId(conversationData.id);
 
-        const detailedConversationResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/chat/conversations/${conversationData.id}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${authToken}`,
-            },
-          }
-        );
-
-        if (!detailedConversationResponse.ok) {
-          throw new Error(
-            `HTTP error! status: ${detailedConversationResponse.status}`
-          );
-        }
-
-        const detailedConversationData =
-          await detailedConversationResponse.json();
-
-        const formattedJobs = detailedConversationData.jobs.map((job: Job) => ({
-          id: job.id,
-          created_at: job.created_at,
-          conversation_id: job.conversation_id,
-          crew_id: job.crew_id,
-          profile_id: job.profile_id,
-          input: job.input,
-          result: job.result,
-          messages: job.messages
-            .map((msg: string) => {
-              const parsedMsg = JSON.parse(msg);
-              // Skip step messages with empty thoughts
-              if (parsedMsg.type === "step" && (!parsedMsg.thought || parsedMsg.thought.trim() === "")) {
-                return null;
-              }
-              return {
-                role: parsedMsg.role as "user" | "assistant",
-                type: parsedMsg.type as "task" | "step" | "result" | null,
-                content: parsedMsg.type === "step" ? parsedMsg.thought : parsedMsg.content,
-                timestamp: new Date(parsedMsg.timestamp),
-                ...(parsedMsg.tool && { tool: parsedMsg.tool }),
-                ...(parsedMsg.tool_input && { tool_input: parsedMsg.tool_input }),
-                ...(parsedMsg.result && { result: parsedMsg.result })
-              } as Message;
-            })
-            .filter((msg: Message | null): msg is Message => msg !== null && msg.type !== "task"),
-        }));
-
         const initialMessage: Message = {
           role: "assistant",
           type: null,
           content: "Welcome back! Let's see what your ai can pull off today.",
           timestamp: new Date(),
         };
-        if (formattedJobs.length > 0) {
-          // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-          const allMessages = formattedJobs.flatMap((job: { messages: any; }) => job.messages);
-          setMessages([initialMessage, ...allMessages]);
-        } else {
-          setMessages([initialMessage]);
-        }
+        setMessages([initialMessage]);
       } catch (error) {
         console.error("Failed to fetch history:", error);
         Sentry.captureException(error);
@@ -259,7 +201,8 @@ export function useChat() {
 
     newWs.onopen = () => {
       console.log('WebSocket connection established');
-      setIsLoading(false); // Ensure loading state is reset when WebSocket is ready
+      setIsConnected(true);
+      setIsLoading(false);
     };
 
     newWs.onmessage = (event) => {
@@ -400,6 +343,7 @@ export function useChat() {
 
     newWs.onclose = () => {
       console.log("WebSocket connection closed");
+      setIsConnected(false);
       setWs(null);
     };
 
@@ -455,5 +399,6 @@ export function useChat() {
     handleSubmit,
     handleResetHistory,
     messagesEndRef,
+    isConnected,
   };
 }

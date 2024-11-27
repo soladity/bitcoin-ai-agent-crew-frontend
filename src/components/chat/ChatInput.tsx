@@ -10,6 +10,7 @@ interface ChatInputProps {
   input: string;
   setInput: React.Dispatch<React.SetStateAction<string>>;
   isLoading: boolean;
+  isConnected: boolean;
   onSubmit: (e: React.FormEvent) => void;
   onReset: () => void;
   onScrollToBottom?: () => void;
@@ -20,12 +21,19 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   input,
   setInput,
   isLoading,
+  isConnected,
   onSubmit,
   onReset,
   onScrollToBottom,
   isScrollButtonDisabled = false,
 }) => (
-  <form onSubmit={onSubmit} className="flex items-center gap-2 p-4">
+  <form onSubmit={onSubmit} className="flex items-center gap-4 p-4">
+    <span className="relative flex h-3 w-3">
+      {isConnected ? (
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+      ) : null}
+      <span className={`relative inline-flex rounded-full h-3 w-3 ${isConnected ? 'bg-sky-500' : 'bg-gray-400'}`}></span>
+    </span>
     <Button
       onClick={onReset}
       type="button"

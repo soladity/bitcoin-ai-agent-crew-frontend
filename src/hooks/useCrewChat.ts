@@ -17,6 +17,7 @@ export function useCrewChat() {
   const [crewId, setCrewId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [authToken, setAuthToken] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [ws, setWs] = useState<WebSocket | null>(null);
   const currentJobRef = useRef<{
@@ -106,6 +107,7 @@ export function useCrewChat() {
 
     newWs.onopen = () => {
       console.log('WebSocket connection established');
+      setIsConnected(true);
       setIsLoading(false);
     };
 
@@ -211,9 +213,9 @@ export function useCrewChat() {
     };
 
     newWs.onclose = () => {
-      console.log('WebSocket connection closed');
+      console.log("WebSocket connection closed");
+      setIsConnected(false);
       setWs(null);
-      setIsLoading(false);
     };
 
     setWs(newWs);
@@ -267,7 +269,7 @@ export function useCrewChat() {
     handleSubmit,
     handleResetHistory,
     messagesEndRef,
-    crewId,
     setCrewId,
+    isConnected,
   };
 }

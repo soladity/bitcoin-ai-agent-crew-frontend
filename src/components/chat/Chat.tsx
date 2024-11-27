@@ -15,6 +15,7 @@ export default function Chat() {
     handleSubmit,
     handleResetHistory,
     messagesEndRef,
+    isConnected,
   } = useChat();
 
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -114,6 +115,7 @@ export default function Chat() {
           input={input}
           setInput={setInput}
           isLoading={isLoading}
+          isConnected={isConnected}
           onSubmit={handleSubmit}
           onReset={handleResetHistory}
           onScrollToBottom={scrollToBottom}
