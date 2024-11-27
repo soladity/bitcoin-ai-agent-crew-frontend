@@ -1,7 +1,10 @@
+"use client";
+
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { ChevronDoubleDownIcon, ArrowUpCircleIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 interface ChatInputProps {
   input: string;
@@ -9,6 +12,8 @@ interface ChatInputProps {
   isLoading: boolean;
   onSubmit: (e: React.FormEvent) => void;
   onReset: () => void;
+  onScrollToBottom?: () => void;
+  isScrollButtonDisabled?: boolean;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -17,8 +22,18 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   isLoading,
   onSubmit,
   onReset,
+  onScrollToBottom,
+  isScrollButtonDisabled = false,
 }) => (
   <form onSubmit={onSubmit} className="flex items-center gap-2 p-4">
+    <Button
+      onClick={onReset}
+      type="button"
+      variant="destructive"
+      className="h-10 w-10 p-0 rounded-md text-white font-medium hover:bg-red-600/90 focus:ring-2 focus:ring-offset-2"
+    >
+      <TrashIcon className="h-8 w-8" />
+    </Button>
     <Input
       value={input}
       onChange={(e) => setInput(e.target.value)}
@@ -30,23 +45,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     <Button
       type="submit"
       disabled={isLoading}
-      className="h-10 px-4 rounded-md bg-primary text-white font-medium hover:bg-primary/90 focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+      className="h-10 w-10 p-0 rounded-md bg-primary text-white font-medium hover:bg-primary/90 focus:ring-2 focus:ring-offset-2 focus:ring-primary"
     >
       {isLoading ? (
-        <div className="flex items-center">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Thinking...
-        </div>
+        <Loader2 className="h-8 w-8 animate-spin" />
       ) : (
-        "Enter"
+        <ArrowUpCircleIcon className="h-8 w-8" />
       )}
     </Button>
     <Button
-      onClick={onReset}
-      variant="destructive"
-      className="h-10 px-4 rounded-md text-white font-medium hover:bg-red-600 focus:ring-2 focus:ring-offset-2"
+      type="button"
+      onClick={onScrollToBottom}
+      disabled={isScrollButtonDisabled}
+      className="h-10 w-10 p-0 rounded-md bg-primary text-white font-medium hover:bg-primary/90 focus:ring-2 focus:ring-offset-2 focus:ring-primary"
     >
-      Reset
+      <ChevronDoubleDownIcon className="h-8 w-8" />
     </Button>
   </form>
 );

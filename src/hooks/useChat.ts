@@ -197,12 +197,12 @@ export function useChat() {
                 type: parsedMsg.type as "task" | "step" | "result" | null,
                 content: parsedMsg.type === "step" ? parsedMsg.thought : parsedMsg.content,
                 timestamp: new Date(parsedMsg.timestamp),
-                tool: parsedMsg.tool,
-                tool_input: parsedMsg.tool_input,
-                result: parsedMsg.result,
-              };
+                ...(parsedMsg.tool && { tool: parsedMsg.tool }),
+                ...(parsedMsg.tool_input && { tool_input: parsedMsg.tool_input }),
+                ...(parsedMsg.result && { result: parsedMsg.result })
+              } as Message;
             })
-            .filter((msg): msg is Message => msg !== null && msg.type !== "task"),
+            .filter((msg: Message | null): msg is Message => msg !== null && msg.type !== "task"),
         }));
 
         const initialMessage: Message = {
@@ -294,7 +294,7 @@ export function useChat() {
               console.log('Processed message:', processedMsg);
               return processedMsg;
             })
-            .filter((msg): msg is Message => msg !== null && msg.type !== "task");
+            .filter((msg: Message | null): msg is Message => msg !== null && msg.type !== "task");
             console.log('Final history messages:', historyMessages);
             // Sort messages by timestamp
             historyMessages.sort((a: { timestamp: { getTime: () => number; }; }, b: { timestamp: { getTime: () => number; }; }) => a.timestamp.getTime() - b.timestamp.getTime());

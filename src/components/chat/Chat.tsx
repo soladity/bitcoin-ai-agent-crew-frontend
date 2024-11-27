@@ -1,10 +1,10 @@
 "use client";
 
-import React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useChat } from "@/hooks/useChat";
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import { ChatInput } from "@/components/chat/ChatInput";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Bot } from "lucide-react";
 
 export default function Chat() {
   const {
@@ -17,65 +17,107 @@ export default function Chat() {
     messagesEndRef,
   } = useChat();
 
-  const [isAtBottom, setIsAtBottom] = React.useState(true);
-  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = React.useCallback(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop =
-        scrollContainerRef.current.scrollHeight;
+  const scrollToBottom = useCallback(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, []);
+  }, [messagesEndRef]);
 
-  React.useEffect(() => {
+  // Auto-scroll when new messages arrive
+  useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading, scrollToBottom]);
 
-  React.useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
+  // Handle scroll events to show/hide button
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
 
     const handleScroll = () => {
-      const { scrollHeight, scrollTop, clientHeight } = scrollContainer;
-      const isBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 10;
-      setIsAtBottom(isBottom);
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      console.log({
+        scrollTop,
+        scrollHeight,
+        clientHeight,
+        distanceFromBottom,
+      });
+      setShowScrollButton(distanceFromBottom > 100);
     };
 
-    scrollContainer.addEventListener("scroll", handleScroll);
-    return () => scrollContainer.removeEventListener("scroll", handleScroll);
+    // Initial check
+    handleScroll();
+
+    // Add scroll event listener
+    container.addEventListener("scroll", handleScroll);
+
+    // Add resize event listener to window
+    window.addEventListener("resize", handleScroll);
+
+    // Add mutation observer to detect content changes
+    const observer = new MutationObserver(handleScroll);
+    observer.observe(container, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+      observer.disconnect();
+    };
   }, []);
 
   return (
-    <div className="flex flex-col md:h-[98dvh] h-[90vh] w-full relative overflow-x-hidden">
+    <div className="relative flex flex-col h-[calc(100dvh-2rem)] overflow-hidden">
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto overflow-x-hidden pb-20"
+        className="flex-1 overflow-y-auto scroll-smooth relative"
+        style={{ 
+          height: "calc(100vh - 8rem)",
+          maxHeight: "calc(100vh - 8rem)" 
+        }}
       >
         <div className="space-y-4 px-4 py-2">
           {messages.map((message, index) => (
             <MessageBubble key={index} message={message} />
           ))}
           {isLoading && (
-            <div className="space-y-4 animate-pulse">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
+            <div className="flex mb-4 justify-start">
+              <div className="flex flex-col max-w-[80%] p-4 rounded-2xl bg-gradient-to-br from-blue-600/90 to-blue-700/90 text-white animate-pulse">
+                <div className="flex items-center gap-2 mb-2">
+                  <Bot className="w-4 h-4 text-blue-300" />
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 rounded-full bg-blue-300/80 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-2 h-2 rounded-full bg-blue-300/80 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-2 h-2 rounded-full bg-blue-300/80 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-blue-300/20 rounded w-24 animate-pulse" />
+                  <div className="h-4 bg-blue-300/20 rounded w-32 animate-pulse" />
+                  <div className="h-4 bg-blue-300/20 rounded w-20 animate-pulse" />
+                </div>
+              </div>
             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
       </div>
 
-      <div
-        className={`fixed bottom-0 inset-x-0 md:right-0 md:left-[16rem] md:mr-5 transition-colors duration-200 md:rounded ${!isAtBottom ? "bg-zinc-900" : ""
-          }`}
-      >
+      <div className="fixed bottom-0 inset-x-0 mx-4 lg:mx-0 lg:left-[17rem] lg:right-4 mb-0 md:mb-4">
         <ChatInput
           input={input}
           setInput={setInput}
           isLoading={isLoading}
           onSubmit={handleSubmit}
           onReset={handleResetHistory}
+          onScrollToBottom={scrollToBottom}
+          isScrollButtonDisabled={!showScrollButton}
         />
       </div>
     </div>
