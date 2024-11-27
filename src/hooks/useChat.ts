@@ -38,6 +38,7 @@ export function useChat() {
     tasks: [],
     results: [],
   });
+  const [ws, setWs] = useState<WebSocket | null>(null);
 
   const scrollToBottom = useCallback(() => {
     const container = messagesEndRef.current?.parentElement;
@@ -50,6 +51,27 @@ export function useChat() {
     if (!authToken) return;
 
     try {
+      setIsLoading(true); // Set loading state during reset
+
+      // Close existing WebSocket connection if any
+      if (ws) {
+        // Create a promise that resolves when the WebSocket is closed
+        await new Promise<void>((resolve) => {
+          const closeHandler = () => {
+            console.log("WebSocket closed during reset");
+            resolve();
+          };
+          
+          if (ws.readyState === WebSocket.CLOSED) {
+            resolve();
+          } else {
+            ws.addEventListener('close', closeHandler, { once: true });
+            ws.close();
+          }
+        });
+        setWs(null);
+      }
+
       // Delete current conversation
       const deleteResponse = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/chat/conversations/${conversationId}`,
@@ -83,32 +105,31 @@ export function useChat() {
       }
 
       const newConversation = await newConversationResponse.json();
-      setConversationId(newConversation.id);
-
-      // Reset messages with just the welcome message
-      const initialMessage: Message = {
-        role: "assistant",
-        type: null,
-        content: "Welcome back! Let's see what your ai can pull off today.",
-        timestamp: new Date(),
+      
+      // Reset current job state
+      currentJobRef.current = {
+        steps: [],
+        tasks: [],
+        results: [],
       };
-      setMessages([initialMessage]);
 
-      toast({
-        title: "Success",
-        description: "Chat history has been reset.",
-        variant: "default",
-      });
+      // Reset messages and set new conversation ID
+      setMessages([]);
+      setConversationId(newConversation.id);
+      
+      // Note: loading state will be reset when new WebSocket connects in the useEffect
+
     } catch (error) {
-      console.error("Failed to reset chat history:", error);
+      console.error("Error resetting history:", error);
       Sentry.captureException(error);
       toast({
         title: "Error",
-        description: "Failed to reset chat history.",
+        description: "Failed to reset chat history",
         variant: "destructive",
       });
+      setIsLoading(false); // Reset loading state on error
     }
-  }, [authToken, conversationId, toast]);
+  }, [authToken, conversationId, ws, toast]);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -216,10 +237,158 @@ export function useChat() {
     getSession();
   }, []);
 
+  useEffect(() => {
+    if (!conversationId || !authToken) return;
+
+    const wsUrl = new URL(`${process.env.NEXT_PUBLIC_API_URL?.replace('http', 'ws')}/chat/conversation/${conversationId}/ws`);
+    wsUrl.searchParams.append('token', authToken);
+    
+    const newWs = new WebSocket(wsUrl.toString());
+
+    newWs.onopen = () => {
+      console.log('WebSocket connection established');
+      setIsLoading(false); // Ensure loading state is reset when WebSocket is ready
+    };
+
+    newWs.onmessage = (event) => {
+      try {
+        if (!event.data || event.data.trim() === "") return;
+
+        const data = JSON.parse(event.data);
+        if (!data || typeof data !== "object") return;
+
+        switch (data.type) {
+          case 'history':
+            console.log('Raw history data:', data);
+            // Set initial conversation history
+            const historyMessages = data.messages.map((msg: any) => {
+              console.log('Processing history message:', msg);
+              // Ensure timestamp is properly parsed from the message
+              const timestamp = msg.timestamp || msg.created_at || msg.job_started_at || new Date().toISOString();
+              const processedMsg = {
+                role: msg.role,
+                type: msg.type,
+                content: msg.content,
+                timestamp: new Date(timestamp),
+              };
+              console.log('Processed message:', processedMsg);
+              return processedMsg;
+            });
+            console.log('Final history messages:', historyMessages);
+            // Sort messages by timestamp
+            historyMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+            setMessages(historyMessages);
+            break;
+
+          case 'job_started':
+            console.log('New job started:', data.job_id);
+            // Reset the current job's message groups when a new job starts
+            currentJobRef.current = {
+              steps: [],
+              tasks: [],
+              results: [],
+            };
+            break;
+
+          case 'stream':
+            const newMessage: Message = {
+              role: "assistant",
+              type: data.stream_type,
+              content: data.content,
+              timestamp: new Date(data.timestamp),
+            };
+
+            switch (data.stream_type) {
+              case "step":
+                currentJobRef.current.steps.push(newMessage);
+                break;
+              case "task":
+                currentJobRef.current.tasks.push(newMessage);
+                break;
+              case "result":
+                currentJobRef.current.results.push(newMessage);
+                setIsLoading(false);
+                break;
+              default:
+                console.warn("Unknown stream type:", data.stream_type);
+            }
+
+            // Update messages with all current groups
+            setMessages((prev) => {
+              const withoutCurrentJob = prev.filter(
+                (msg) =>
+                  msg.role !== "assistant" ||
+                  !msg.type ||
+                  msg.timestamp < new Date(data.job_started_at)
+              );
+
+              return [
+                ...withoutCurrentJob,
+                ...currentJobRef.current.tasks,
+                ...currentJobRef.current.steps,
+                ...currentJobRef.current.results,
+              ];
+            });
+            break;
+
+          case 'user_message':
+            // Add user message from history
+            const userMessage: Message = {
+              role: "user",
+              type: null,
+              content: data.content,
+              timestamp: new Date(data.timestamp),
+            };
+            setMessages(prev => [...prev, userMessage]);
+            break;
+
+          case 'error':
+            console.error('Error from WebSocket:', data.message);
+            toast({
+              title: "Error",
+              description: data.message,
+              variant: "destructive",
+            });
+            setIsLoading(false);
+            break;
+
+          default:
+            console.warn("Unknown message type:", data.type);
+        }
+      } catch (error) {
+        console.error("Error parsing message:", error);
+        Sentry.captureException(error);
+      }
+    };
+
+    newWs.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      Sentry.captureException(error);
+      toast({
+        title: "Error",
+        description: "Connection error occurred",
+        variant: "destructive",
+      });
+    };
+
+    newWs.onclose = () => {
+      console.log("WebSocket connection closed");
+      setWs(null);
+    };
+
+    setWs(newWs);
+
+    return () => {
+      if (newWs.readyState === WebSocket.OPEN) {
+        newWs.close();
+      }
+    };
+  }, [conversationId, authToken, toast]);
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!input.trim() || isLoading) return;
+      if (!input.trim() || isLoading || !ws || ws.readyState !== WebSocket.OPEN) return;
 
       const userMessage: Message = {
         role: "user",
@@ -232,143 +401,23 @@ export function useChat() {
       setInput("");
       setIsLoading(true);
 
-      // Reset the current job's message groups
-      currentJobRef.current = {
-        steps: [],
-        tasks: [],
-        results: [],
-      };
-
       try {
-        const tokenResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/chat/?conversation_id=${conversationId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${authToken}`,
-            },
-            body: JSON.stringify(input),
-          }
-        );
-
-        if (!tokenResponse.ok) {
-          throw new Error(`HTTP error! status: ${tokenResponse.status}`);
-        }
-
-        const { job_id } = await tokenResponse.json();
-
-        const eventSource = new EventSource(
-          `${process.env.NEXT_PUBLIC_API_URL}/chat/${job_id}/stream`
-        );
-
-        eventSource.onmessage = (event) => {
-          try {
-            if (!event.data || event.data.trim() === "") return;
-
-            const data = JSON.parse(event.data);
-            if (!data || typeof data !== "object") return;
-
-            const newMessage: Message = {
-              role: "assistant",
-              type: data.type,
-              content: data.content,
-              timestamp: new Date(data.timestamp),
-            };
-
-            switch (data.type) {
-              case "step":
-                currentJobRef.current.steps.push(newMessage);
-                break;
-              case "task":
-                currentJobRef.current.tasks.push(newMessage);
-                break;
-              case "result":
-                currentJobRef.current.results.push(newMessage);
-                break;
-              default:
-                console.warn("Unknown message type:", data.type);
-            }
-
-            // Update messages with all current groups
-            setMessages((prev) => {
-              const withoutCurrentJob = prev.filter(
-                (msg) =>
-                  msg.role !== "assistant" ||
-                  !msg.type ||
-                  msg.timestamp < userMessage.timestamp
-              );
-
-              return [
-                ...withoutCurrentJob,
-                ...currentJobRef.current.steps,
-                ...currentJobRef.current.tasks,
-                ...currentJobRef.current.results,
-              ];
-            });
-
-            if (data.type === "result") {
-              eventSource.close();
-              setIsLoading(false);
-            }
-          } catch (error) {
-            Sentry.captureException(error);
-            console.error("Error parsing SSE data:", error);
-          }
-        };
-
-        eventSource.addEventListener("error", (event: MessageEvent) => {
-          const errorData = JSON.parse(event.data);
-          console.error("Received server error:", errorData.message);
-
-          toast({
-            title: "Server Error",
-            description: errorData.message,
-            variant: "destructive",
-          });
-
-          Sentry.captureException(new Error(errorData.message));
-          eventSource.close();
-          setIsLoading(false);
-        });
-
-        eventSource.onerror = (error: Event) => {
-          console.error("EventSource encountered a generic error:", error);
-          toast({
-            title: "Connection Error",
-            description: "A connection error occurred. Please try again.",
-            variant: "destructive",
-          });
-
-          Sentry.captureException(error);
-          setIsLoading(false);
-        };
-
-        eventSource.addEventListener("finish", () => {
-          eventSource.close();
-          setIsLoading(false);
-
-          const assistantMessage: Message = {
-            role: "assistant",
-            type: null,
-            content: "Task completed",
-            timestamp: new Date(),
-          };
-          setMessages((prev) => [...prev, assistantMessage]);
-        });
+        ws.send(JSON.stringify({
+          type: 'chat_message',
+          message: input
+        }));
       } catch (error) {
         console.error("Error sending message:", error);
         Sentry.captureException(error);
         toast({
           title: "Error",
-          description:
-            error instanceof Error ? error.message : "Failed to send message",
+          description: "Failed to send message",
           variant: "destructive",
         });
         setIsLoading(false);
       }
     },
-    [authToken, conversationId, input, isLoading, toast]
+    [input, isLoading, ws, toast]
   );
 
   return {

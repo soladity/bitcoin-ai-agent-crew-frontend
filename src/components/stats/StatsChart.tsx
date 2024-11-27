@@ -19,7 +19,7 @@ export default function PublicStatsDashboard() {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/public_stats/`
+          `${process.env.NEXT_PUBLIC_API_URL}/metrics/public`
         );
         if (!response.ok) throw new Error("Failed to fetch data");
         const result: PublicStats = await response.json();

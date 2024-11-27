@@ -18,6 +18,16 @@ export function useCrewChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [authToken, setAuthToken] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [ws, setWs] = useState<WebSocket | null>(null);
+  const currentJobRef = useRef<{
+    steps: Message[];
+    tasks: Message[];
+    results: Message[];
+  }>({
+    steps: [],
+    tasks: [],
+    results: [],
+  });
 
   const scrollToBottom = useCallback(() => {
     const container = messagesEndRef.current?.parentElement;
@@ -27,10 +37,32 @@ export function useCrewChat() {
   }, []);
 
   const handleResetHistory = useCallback(async () => {
-    if (!authToken) return;
+    if (!authToken || !crewId) return;
 
     try {
+      setIsLoading(true);
+
+      // Close existing WebSocket connection if any
+      if (ws) {
+        await new Promise<void>((resolve) => {
+          const closeHandler = () => {
+            console.log("WebSocket closed during reset");
+            resolve();
+          };
+          
+          if (ws.readyState === WebSocket.CLOSED) {
+            resolve();
+          } else {
+            ws.addEventListener('close', closeHandler, { once: true });
+            ws.close();
+          }
+        });
+        setWs(null);
+      }
+
       setMessages([]);
+      setIsLoading(false);
+      
       toast({
         title: "Success",
         description: "Chat history has been reset.",
@@ -39,13 +71,14 @@ export function useCrewChat() {
     } catch (error) {
       console.error("Failed to reset chat history:", error);
       Sentry.captureException(error);
+      setIsLoading(false);
       toast({
         title: "Error",
         description: "Failed to reset chat history.",
         variant: "destructive",
       });
     }
-  }, [authToken, toast]);
+  }, [authToken, crewId, ws, toast]);
 
   useEffect(() => {
     scrollToBottom();
@@ -62,124 +95,167 @@ export function useCrewChat() {
     getSession();
   }, []);
 
+  // Set up WebSocket connection when we have auth token and crew ID
+  useEffect(() => {
+    if (!authToken || !crewId || ws) return;
+
+    const wsUrl = new URL(`${process.env.NEXT_PUBLIC_API_URL?.replace('http', 'ws')}/crew/${crewId}/ws`);
+    wsUrl.searchParams.append('token', authToken);
+    
+    const newWs = new WebSocket(wsUrl.toString());
+
+    newWs.onopen = () => {
+      console.log('WebSocket connection established');
+      setIsLoading(false);
+    };
+
+    newWs.onmessage = (event) => {
+      try {
+        if (!event.data || event.data.trim() === "") return;
+
+        const data = JSON.parse(event.data);
+        if (!data || typeof data !== "object") return;
+
+        console.log('Received message:', data); // Debug log
+
+        switch (data.type) {
+          case 'history':
+            // Set initial conversation history
+            const historyMessages = data.messages.map((msg: any) => {
+              const timestamp = msg.timestamp || msg.created_at || msg.job_started_at || new Date().toISOString();
+              return {
+                role: msg.role,
+                type: msg.type,
+                content: msg.content,
+                timestamp: new Date(timestamp),
+              };
+            });
+            historyMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+            setMessages(historyMessages);
+            break;
+
+          case 'job_started':
+            console.log('New job started:', data.job_id);
+            // Reset the current job's message groups when a new job starts
+            currentJobRef.current = {
+              steps: [],
+              tasks: [],
+              results: [],
+            };
+            break;
+
+          case 'step':
+            const stepMessage: Message = {
+              role: "assistant",
+              type: "step",
+              content: data.content,
+              timestamp: new Date(),
+            };
+            // Add step message immediately to the chat
+            setMessages((prev) => [...prev, stepMessage]);
+            break;
+
+          case 'task':
+            const taskMessage: Message = {
+              role: "assistant",
+              type: "task",
+              content: data.content,
+              timestamp: new Date(),
+            };
+            // Add task message immediately to the chat
+            setMessages((prev) => [...prev, taskMessage]);
+            break;
+
+          case 'result':
+            const resultMessage: Message = {
+              role: "assistant",
+              type: "result",
+              content: data.content,
+              timestamp: new Date(),
+            };
+            // Add result message to the chat
+            setMessages((prev) => [...prev, resultMessage]);
+            setIsLoading(false); // Allow next message after result
+            break;
+
+          case 'error':
+            console.error('WebSocket error:', data.error);
+            toast({
+              title: "Error",
+              description: data.error || "An error occurred",
+              variant: "destructive",
+            });
+            setIsLoading(false); // Allow retry after error
+            break;
+
+          default:
+            console.warn('Unknown message type:', data.type);
+        }
+      } catch (error) {
+        console.error('Error processing WebSocket message:', error);
+        Sentry.captureException(error);
+        setIsLoading(false); // Allow retry after error
+      }
+    };
+
+    newWs.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      Sentry.captureException(error);
+      toast({
+        title: "Error",
+        description: "Connection error occurred",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    };
+
+    newWs.onclose = () => {
+      console.log('WebSocket connection closed');
+      setWs(null);
+      setIsLoading(false);
+    };
+
+    setWs(newWs);
+
+    return () => {
+      if (newWs.readyState === WebSocket.OPEN) {
+        newWs.close();
+      }
+    };
+  }, [authToken, crewId, toast]);
+
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading || !crewId) return;
+    if (!input.trim() || isLoading || !crewId || !ws || ws.readyState !== WebSocket.OPEN) return;
 
     const userMessage: Message = {
       role: "user",
-      type: null, 
+      type: null,
       content: input,
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setIsLoading(true);
-
     try {
-      const tokenResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/crew/${crewId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
-          },
-          body: JSON.stringify(input),
-        }
-      );
+      // Send message through WebSocket
+      ws.send(JSON.stringify({
+        type: "chat_message",
+        message: input
+      }));
 
-      if (!tokenResponse.ok) {
-        throw new Error(`HTTP error! status: ${tokenResponse.status}`);
-      }
-
-      const { job_id } = await tokenResponse.json();
-
-      const eventSource = new EventSource(
-        `${process.env.NEXT_PUBLIC_API_URL}/crew/jobs/${job_id}/stream`
-      );
-
-      eventSource.onmessage = (event) => {
-        try {
-          if (!event.data || event.data.trim() === "") return;
-
-          const data = JSON.parse(event.data);
-          if (!data || typeof data !== "object") return;
-
-          switch (data.type) {
-            case "step":
-            case "task":
-            case "result":
-              setMessages((prev) => [
-                ...prev,
-                { role: "assistant", type: data.type, content: data.content, timestamp: new Date(data.timestamp) },
-              ]);
-              break;
-            default:
-              console.warn("Unknown message type:", data.type);
-          }
-
-          if (data.type === "result") {
-            eventSource.close();
-            setIsLoading(false);
-          }
-        } catch (error) {
-          Sentry.captureException(error);
-          console.error("Error parsing SSE data:", error);
-        }
-      };
-
-      eventSource.addEventListener("error", (event: MessageEvent) => {
-        const errorData = JSON.parse(event.data);
-        console.error("Received server error:", errorData.message);
-      
-        toast({
-          title: "Server Error",
-          description: errorData.message,
-          variant: "destructive",
-        });
-      
-        Sentry.captureException(new Error(errorData.message));
-        eventSource.close();
-        setIsLoading(false);
-      });
-
-      eventSource.onerror = (error: Event) => {
-        console.error("EventSource encountered a generic error:", error);
-        toast({
-          title: "Connection Error",
-          description: "A connection error occurred. Please try again.",
-          variant: "destructive",
-        });
-
-        Sentry.captureException(error);
-        setIsLoading(false);
-      };
-
-      eventSource.addEventListener("finish", () => {
-        eventSource.close();
-        setIsLoading(false);
-
-        const assistantMessage: Message = {
-          role: "assistant",
-          type: null,
-          content: "Task completed",
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, assistantMessage]);
-      });
+      // Add user message to chat
+      setMessages((prev) => [...prev, userMessage]);
+      setInput("");
+      setIsLoading(true);
     } catch (error) {
+      console.error("Failed to send message:", error);
       Sentry.captureException(error);
-      console.error("Error sending message:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send message",
+        description: "Failed to send message",
         variant: "destructive",
       });
-      setIsLoading(false);
     }
-  }, [authToken, input, isLoading, toast, crewId]);
+  }, [input, isLoading, crewId, ws, toast]);
 
   return {
     messages,
@@ -187,8 +263,9 @@ export function useCrewChat() {
     setInput,
     isLoading,
     handleSubmit,
-    messagesEndRef,
     handleResetHistory,
-    setCrewId
+    messagesEndRef,
+    crewId,
+    setCrewId,
   };
 }
