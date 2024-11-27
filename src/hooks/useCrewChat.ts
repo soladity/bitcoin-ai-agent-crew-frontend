@@ -121,6 +121,7 @@ export function useCrewChat() {
         switch (data.type) {
           case 'history':
             // Set initial conversation history
+            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
             const historyMessages = data.messages.map((msg: any) => {
               const timestamp = msg.timestamp || msg.created_at || msg.job_started_at || new Date().toISOString();
               return {
@@ -130,7 +131,7 @@ export function useCrewChat() {
                 timestamp: new Date(timestamp),
               };
             });
-            historyMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+            historyMessages.sort((a: { timestamp: { getTime: () => number; }; }, b: { timestamp: { getTime: () => number; }; }) => a.timestamp.getTime() - b.timestamp.getTime());
             setMessages(historyMessages);
             break;
 
@@ -222,7 +223,7 @@ export function useCrewChat() {
         newWs.close();
       }
     };
-  }, [authToken, crewId, toast]);
+  }, [authToken, crewId, toast, ws]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();

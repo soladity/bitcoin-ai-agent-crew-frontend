@@ -61,7 +61,7 @@ export function useChat() {
             console.log("WebSocket closed during reset");
             resolve();
           };
-          
+
           if (ws.readyState === WebSocket.CLOSED) {
             resolve();
           } else {
@@ -105,7 +105,7 @@ export function useChat() {
       }
 
       const newConversation = await newConversationResponse.json();
-      
+
       // Reset current job state
       currentJobRef.current = {
         steps: [],
@@ -116,7 +116,7 @@ export function useChat() {
       // Reset messages and set new conversation ID
       setMessages([]);
       setConversationId(newConversation.id);
-      
+
       // Note: loading state will be reset when new WebSocket connects in the useEffect
 
     } catch (error) {
@@ -242,7 +242,7 @@ export function useChat() {
 
     const wsUrl = new URL(`${process.env.NEXT_PUBLIC_API_URL?.replace('http', 'ws')}/chat/conversation/${conversationId}/ws`);
     wsUrl.searchParams.append('token', authToken);
-    
+
     const newWs = new WebSocket(wsUrl.toString());
 
     newWs.onopen = () => {
@@ -261,6 +261,7 @@ export function useChat() {
           case 'history':
             console.log('Raw history data:', data);
             // Set initial conversation history
+            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
             const historyMessages = data.messages.map((msg: any) => {
               console.log('Processing history message:', msg);
               // Ensure timestamp is properly parsed from the message
@@ -276,7 +277,7 @@ export function useChat() {
             });
             console.log('Final history messages:', historyMessages);
             // Sort messages by timestamp
-            historyMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+            historyMessages.sort((a: { timestamp: { getTime: () => number; }; }, b: { timestamp: { getTime: () => number; }; }) => a.timestamp.getTime() - b.timestamp.getTime());
             setMessages(historyMessages);
             break;
 
