@@ -8,6 +8,9 @@ export interface Message {
   type: "task" | "step" | "result" | null;
   content: string;
   timestamp: Date;
+  tool?: string;
+  tool_input?: string;
+  result?: string;
 }
 
 interface Job {
@@ -182,15 +185,24 @@ export function useChat() {
           profile_id: job.profile_id,
           input: job.input,
           result: job.result,
-          messages: job.messages.map((msg: string) => {
-            const parsedMsg = JSON.parse(msg);
-            return {
-              role: parsedMsg.role as "user" | "assistant",
-              type: parsedMsg.type as "task" | "step" | "result" | null,
-              content: parsedMsg.content,
-              timestamp: new Date(parsedMsg.timestamp),
-            };
-          }),
+          messages: job.messages
+            .map((msg: string) => {
+              const parsedMsg = JSON.parse(msg);
+              // Skip step messages with empty thoughts
+              if (parsedMsg.type === "step" && (!parsedMsg.thought || parsedMsg.thought.trim() === "")) {
+                return null;
+              }
+              return {
+                role: parsedMsg.role as "user" | "assistant",
+                type: parsedMsg.type as "task" | "step" | "result" | null,
+                content: parsedMsg.type === "step" ? parsedMsg.thought : parsedMsg.content,
+                timestamp: new Date(parsedMsg.timestamp),
+                tool: parsedMsg.tool,
+                tool_input: parsedMsg.tool_input,
+                result: parsedMsg.result,
+              };
+            })
+            .filter((msg): msg is Message => msg !== null && msg.type !== "task"),
         }));
 
         const initialMessage: Message = {
@@ -266,15 +278,23 @@ export function useChat() {
               console.log('Processing history message:', msg);
               // Ensure timestamp is properly parsed from the message
               const timestamp = msg.timestamp || msg.created_at || msg.job_started_at || new Date().toISOString();
+              // Skip step messages with empty thoughts
+              if (msg.type === "step" && (!msg.thought || msg.thought.trim() === "")) {
+                return null;
+              }
               const processedMsg = {
                 role: msg.role,
                 type: msg.type,
-                content: msg.content,
+                content: msg.type === "step" ? msg.thought : msg.content,
                 timestamp: new Date(timestamp),
+                tool: msg.tool,
+                tool_input: msg.tool_input,
+                result: msg.result,
               };
               console.log('Processed message:', processedMsg);
               return processedMsg;
-            });
+            })
+            .filter((msg): msg is Message => msg !== null && msg.type !== "task");
             console.log('Final history messages:', historyMessages);
             // Sort messages by timestamp
             historyMessages.sort((a: { timestamp: { getTime: () => number; }; }, b: { timestamp: { getTime: () => number; }; }) => a.timestamp.getTime() - b.timestamp.getTime());
@@ -292,11 +312,18 @@ export function useChat() {
             break;
 
           case 'stream':
+            // Skip step messages with empty thoughts
+            if (data.stream_type === "step" && (!data.thought || data.thought.trim() === "")) {
+              break;
+            }
             const newMessage: Message = {
               role: "assistant",
               type: data.stream_type,
-              content: data.content,
+              content: data.stream_type === "step" ? data.thought : data.content,
               timestamp: new Date(data.timestamp),
+              tool: data.tool,
+              tool_input: data.tool_input,
+              result: data.result,
             };
 
             switch (data.stream_type) {
@@ -304,7 +331,7 @@ export function useChat() {
                 currentJobRef.current.steps.push(newMessage);
                 break;
               case "task":
-                currentJobRef.current.tasks.push(newMessage);
+                // Skip storing task messages
                 break;
               case "result":
                 currentJobRef.current.results.push(newMessage);
@@ -325,7 +352,6 @@ export function useChat() {
 
               return [
                 ...withoutCurrentJob,
-                ...currentJobRef.current.tasks,
                 ...currentJobRef.current.steps,
                 ...currentJobRef.current.results,
               ];
