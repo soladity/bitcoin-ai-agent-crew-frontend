@@ -49,7 +49,7 @@ export function useCrewChat() {
             console.log("WebSocket closed during reset");
             resolve();
           };
-          
+
           if (ws.readyState === WebSocket.CLOSED) {
             resolve();
           } else {
@@ -62,7 +62,7 @@ export function useCrewChat() {
 
       setMessages([]);
       setIsLoading(false);
-      
+
       toast({
         title: "Success",
         description: "Chat history has been reset.",
@@ -101,7 +101,7 @@ export function useCrewChat() {
 
     const wsUrl = new URL(`${process.env.NEXT_PUBLIC_API_URL?.replace('http', 'ws')}/crew/${crewId}/ws`);
     wsUrl.searchParams.append('token', authToken);
-    
+
     const newWs = new WebSocket(wsUrl.toString());
 
     newWs.onopen = () => {
@@ -223,7 +223,8 @@ export function useCrewChat() {
         newWs.close();
       }
     };
-  }, [authToken, crewId, toast, ws]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authToken, crewId, toast]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
