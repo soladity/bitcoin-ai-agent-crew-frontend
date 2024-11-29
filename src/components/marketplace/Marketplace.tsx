@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, User, CheckSquare } from "lucide-react";
-// import { CrewDialog } from "./CrewDialog";
+import { CrewDialog } from "./CrewDialog";
 import type { PublicCrew } from "@/types/supabase";
 
 async function getPublicCrews(): Promise<PublicCrew[]> {
@@ -70,7 +70,7 @@ export async function Marketplace() {
             </div>
           </CardContent>
           <CardContent className="pt-0">
-            {/* <CrewDialog crew={crew} /> */}
+            <CrewDialog crew={crew} />
           </CardContent>
         </Card>
       ))}
