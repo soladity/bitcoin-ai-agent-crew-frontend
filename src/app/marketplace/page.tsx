@@ -4,7 +4,7 @@ import { Marketplace } from "@/components/marketplace/Marketplace";
 import { Loader } from "@/components/reusables/Loader";
 
 export const dynamic = "force-dynamic";
-
+export const runtime = "edge";
 export default async function MarketplacePage() {
   return (
     <div className="container mx-auto p-4">
