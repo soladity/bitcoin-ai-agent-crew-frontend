@@ -34,7 +34,7 @@ export default function Marketplace() {
     const fetchCrews = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/public-crews`
+          `${process.env.NEXT_PUBLIC_API_URL}/crew/public`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch crews");
