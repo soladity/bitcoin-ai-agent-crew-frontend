@@ -35,6 +35,7 @@ import {
   ChartPieIcon,
   ChatBubbleBottomCenterTextIcon,
   BuildingStorefrontIcon,
+  DocumentTextIcon,
 } from "@heroicons/react/16/solid";
 import { usePathname } from "next/navigation";
 import { useUserData } from "@/hooks/useUserData";
@@ -176,14 +177,10 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
             <SidebarSpacer />
 
             <SidebarSection>
-              {/* <SidebarItem href="#">
-                <QuestionMarkCircleIcon />
-                <SidebarLabel>Support</SidebarLabel>
+              <SidebarItem href="/terms" current={pathname === "/terms"}>
+                <DocumentTextIcon />
+                <SidebarLabel>Terms of Service</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="#">
-                <SparklesIcon />
-                <SidebarLabel>Changelog</SidebarLabel>
-              </SidebarItem> */}
               <SidebarItem>
                 <Wallet />
                 <SidebarLabel className="flex flex-col">
