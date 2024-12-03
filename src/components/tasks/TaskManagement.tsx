@@ -91,8 +91,8 @@ export default function TaskManagement({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold tracking-tight mt-2">Tasks</h2>
+      <div className="flex justify-between items-center mt-4">
+        <h2 className="text-3xl font-bold tracking-tight">Tasks</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>

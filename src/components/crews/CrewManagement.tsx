@@ -5,12 +5,11 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
-  Settings,
   PlusIcon,
-  Trash2Icon,
-  UserIcon,
   Globe,
   Lock,
+  Clock,
+  Settings2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -20,127 +19,102 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
 import CrewForm from "./CrewForm";
-import { Crew, CrewManagementProps } from "@/types/supabase";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChatBubbleIcon } from "@radix-ui/react-icons";
+import {
+  CrewWithCron,
+  CrewManagementProps,
+  RawCrewData,
+} from "@/types/supabase";
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableHeader,
+} from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Heading } from "../catalyst/heading";
 
 export function CrewManagement({
   initialCrews,
   onCrewUpdate,
 }: CrewManagementProps) {
-  const [crews, setCrews] = useState<Crew[]>(initialCrews);
+  const [crews, setCrews] = useState<CrewWithCron[]>(initialCrews);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [editingCrew, setEditingCrew] = useState<CrewWithCron | null>(null);
   const { toast } = useToast();
   const router = useRouter();
 
   useEffect(() => {
-    const fetchCrews = async () => {
-      const { data, error } = await supabase.from("crews").select("*");
-      if (error) {
+    const fetchCrewsWithCrons = async () => {
+      try {
+        // retrieves data from the "crews" table, along with related data from the "crons" table.
+        const { data: crewsData, error: crewsError } = await supabase.from(
+          "crews"
+        ).select(`*,
+            crons (
+              id,
+              enabled,
+              input,
+              created_at
+            )
+          `);
+
+        if (crewsError) throw crewsError;
+
+        const processedCrews: CrewWithCron[] = crewsData.map(
+          (crew: RawCrewData) => ({
+            id: crew.id,
+            name: crew.name,
+            description: crew.description,
+            created_at: crew.created_at,
+            is_public: crew.is_public,
+            profile_id: crew.profile_id,
+            cron: crew.crons?.[0] || null,
+          })
+        );
+
+        setCrews(processedCrews);
+        onCrewUpdate(processedCrews);
+      } catch (error) {
         console.error("Error fetching crews:", error);
         toast({
           title: "Error",
           description: "Failed to fetch crews. Please refresh the page.",
           variant: "destructive",
         });
-      } else if (data) {
-        setCrews(data);
-        onCrewUpdate(data);
       }
     };
 
-    fetchCrews();
+    fetchCrewsWithCrons();
   }, [onCrewUpdate, toast]);
 
-  const handleDelete = async (id: number) => {
-    setLoading(true);
-    try {
-      await supabase.from("tasks").delete().eq("crew_id", id);
-      await supabase.from("agents").delete().eq("crew_id", id);
-      await supabase.from("crews").delete().eq("id", id);
-
-      const updatedCrews = crews.filter((crew) => crew.id !== id);
-      setCrews(updatedCrews);
-
-      onCrewUpdate(updatedCrews);
-      toast({
-        title: "Crew deleted",
-        description:
-          "The crew and all its associated data has been successfully deleted.",
-      });
-    } catch (error) {
-      console.error("Error deleting crew:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete the crew. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCrewCreated = (newCrew: Crew) => {
-    const updatedCrews = [...crews, newCrew];
+  const handleCrewCreated = (newCrew: CrewWithCron) => {
+    const updatedCrews = editingCrew
+      ? crews.map((c) => (c.id === newCrew.id ? newCrew : c))
+      : [...crews, newCrew];
     setCrews(updatedCrews);
     onCrewUpdate(updatedCrews);
-  };
-
-  const handlePublicToggle = async (crew: Crew) => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("crews")
-        .update({ is_public: !crew.is_public })
-        .eq("id", crew.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        const updatedCrews = crews.map((c) =>
-          c.id === crew.id ? { ...c, is_public: data.is_public } : c
-        );
-        setCrews(updatedCrews);
-        onCrewUpdate(updatedCrews);
-
-        toast({
-          title: "Crew updated",
-          description: `The crew is now ${
-            data.is_public
-              ? "public. Everyone can see your crew and clone it."
-              : "private. Only you can see it."
-          }.`,
-        });
-      }
-    } catch (error) {
-      console.error("Error updating crew:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update the crew. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+    setEditingCrew(null);
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-sm font-medium">Your Crews</h3>
+    <div className="container mx-auto p-4">
+      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-zinc-950/10 pb-6 dark:border-white/10">
+        <Heading>Your Crews</Heading>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" variant="outline">
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Add Crew
+            <Button onClick={() => setEditingCrew(null)}>
+              <PlusIcon className="h-4 w-4 mr-2" /> Add Crew
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Create New Crew</DialogTitle>
             </DialogHeader>
@@ -151,68 +125,112 @@ export function CrewManagement({
           </DialogContent>
         </Dialog>
       </div>
-      <ScrollArea className="h-[calc(100vh-12rem)]">
-        <div className="space-y-2">
+
+      <div className="mt-6">
+        {/* Desktop view */}
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px]">Name</TableHead>
+                <TableHead className="w-full">Description</TableHead>
+                <TableHead className="w-[100px] text-center">Status</TableHead>
+                <TableHead className="w-[80px] text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {crews.map((crew) => (
+                <TableRow key={crew.id}>
+                  <TableCell className="font-medium">
+                    {crew.name}
+                  </TableCell>
+                  <TableCell className="max-w-md truncate">
+                    {crew.description || "No description"}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            {crew.is_public ? (
+                              <Globe className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <Lock className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{crew.is_public ? "Public" : "Private"}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      {crew.cron?.enabled && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Cron Enabled</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => router.push(`/crews/${crew.id}/manage`)}
+                    >
+                      <Settings2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Mobile view */}
+        <div className="grid grid-cols-1 gap-4 md:hidden">
           {crews.map((crew) => (
             <div
               key={crew.id}
-              className="flex flex-col space-y-2 p-3 border rounded-md"
+              className="rounded-lg border bg-card text-card-foreground shadow-sm"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <UserIcon className="h-4 w-4 text-primary" />
-                  <span className="font-medium text-sm">{crew.name}</span>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={() => router.push(`/crew/${crew.id}/manage`)}
-                >
-                  <Settings className="h-3 w-3" />
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground line-clamp-2">
-                {crew.description || "No description"}
-              </p>
-              <div className="flex justify-between items-center text-xs text-muted-foreground">
-                <span>
-                  Created: {new Date(crew.created_at).toLocaleDateString()}
-                </span>
-                <div className="flex items-center space-x-2">
-                  <div className="flex items-center space-x-1">
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold">{crew.name}</h3>
+                  <div className="flex items-center gap-2">
                     {crew.is_public ? (
-                      <Globe className="h-3 w-3" />
+                      <Globe className="h-4 w-4 text-muted-foreground" />
                     ) : (
-                      <Lock className="h-3 w-3" />
+                      <Lock className="h-4 w-4 text-muted-foreground" />
                     )}
-                    <Switch
-                      checked={crew.is_public}
-                      onCheckedChange={() => handlePublicToggle(crew)}
-                      disabled={loading}
-                    />
+                    {crew.cron?.enabled && (
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                    )}
                   </div>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {crew.description || "No description"}
+                </p>
+                <div className="flex justify-end">
                   <Button
-                    variant="ghost"
                     size="sm"
-                    onClick={() => router.push(`/crew/${crew.id}/execute`)}
+                    onClick={() => router.push(`/crews/${crew.id}/manage`)}
+                    className="w-full"
                   >
-                    Chat
-                    <ChatBubbleIcon className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(crew.id)}
-                    disabled={loading}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2Icon className="h-3 w-3" />
+                    <Settings2 className="h-4 w-4 mr-2" />
+                    Manage Crew
                   </Button>
                 </div>
               </div>
             </div>
           ))}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }

@@ -105,7 +105,7 @@ export default function StacksAuth() {
       if (success) {
         // Delay redirect to show success message
         setTimeout(() => {
-          router.push("/dashboard");
+          router.push("/chat");
         }, 2000);
       }
     } catch (error) {

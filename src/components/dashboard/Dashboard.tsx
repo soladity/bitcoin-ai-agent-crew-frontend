@@ -1,149 +1,171 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/utils/supabase/client";
-import { CrewManagement } from "@/components/crews/CrewManagement";
-import { CloneTradingAnalyzer } from "@/components/crews/CloneTradingAnalyzer";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import DashboardChat from "./DashboardChat";
-import { Crew } from "@/types/supabase";
-import { AlertCircle, Settings } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import Link from "next/link";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { Loader } from "../reusables/Loader";
+
+interface DashboardStats {
+  totalCrews: number;
+  totalJobs: number;
+  jobsPerDay: { date: string; jobs: number }[];
+  crewActivity: { name: string; jobs: number }[];
+}
+
+// Mock data
+const mockData: DashboardStats = {
+  totalCrews: 12,
+  totalJobs: 456,
+  jobsPerDay: [
+    { date: "2024-01-01", jobs: 15 },
+    { date: "2024-01-02", jobs: 20 },
+    { date: "2024-01-03", jobs: 18 },
+    { date: "2024-01-04", jobs: 25 },
+    { date: "2024-01-05", jobs: 22 },
+    { date: "2024-01-06", jobs: 30 },
+    { date: "2024-01-07", jobs: 28 },
+  ],
+  crewActivity: [
+    { name: "AI Crew", jobs: 120 },
+    { name: "Data Crew", jobs: 85 },
+    { name: "Dev Crew", jobs: 95 },
+    { name: "Research Crew", jobs: 75 },
+    { name: "Support Crew", jobs: 81 },
+  ],
+};
 
 export default function Dashboard() {
-  const [crews, setCrews] = useState<Crew[]>([]);
-  const [hasClonedAnalyzer, setHasClonedAnalyzer] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-  const fetchCrews = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("crews")
-        .select("id, name, description, created_at")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        throw error;
-      }
-
-      setCrews(data || []);
-    } catch (err) {
-      console.error("Error fetching crews:", err);
-      setError("Failed to fetch crews");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const checkClonedAnalyzer = useCallback(async () => {
-    try {
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!user) {
-        console.error("No authenticated user found");
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("crews")
-        .select("*")
-        .eq("profile_id", user.id)
-        .eq("name", "Trading Analyzer");
-
-      if (error) {
-        throw error;
-      }
-
-      setHasClonedAnalyzer(data && data.length > 0);
-    } catch (err) {
-      console.error("Error checking for cloned analyzer:", err);
-      setError("Failed to check cloned analyzer status");
-    }
-  }, []);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initializeDashboard = async () => {
-      await Promise.all([fetchCrews(), checkClonedAnalyzer()]);
+    // Simulate API call with mock data
+    const fetchStats = async () => {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+      setStats(mockData);
+      setLoading(false);
     };
 
-    initializeDashboard();
-  }, [fetchCrews, checkClonedAnalyzer]);
-
-  const handleCloneComplete = useCallback(() => {
-    setHasClonedAnalyzer(true);
-    fetchCrews();
-  }, [fetchCrews]);
-
-  const handleCrewsUpdated = useCallback(
-    (updatedCrews: Crew[]) => {
-      setCrews(updatedCrews);
-      checkClonedAnalyzer();
-    },
-    [checkClonedAnalyzer]
-  );
-
-  const toggleSheet = useCallback(() => {
-    setIsSheetOpen((prev) => !prev);
+    fetchStats();
   }, []);
 
-  return (
-    <div className="container mx-auto p-4 space-y-8">
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetTrigger asChild>
-          <Button onClick={toggleSheet}>
-            Click to manage Crews <Settings className="mb-1" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>Manage Crews</SheetTitle>
-            <SheetDescription>
-              Create, edit, or delete your crews here.
-            </SheetDescription>
-          </SheetHeader>
-          {isLoading ? (
-            <p className="text-muted-foreground">Loading crews...</p>
-          ) : (
-            <CrewManagement
-              initialCrews={crews}
-              onCrewUpdate={handleCrewsUpdated}
-            />
-          )}
-        </SheetContent>
-      </Sheet>
+  if (loading) return <Loader />;
+  if (!stats) return null;
 
-      {!isLoading && !hasClonedAnalyzer && (
-        <CloneTradingAnalyzer
-          onCloneComplete={handleCloneComplete}
-          disabled={false}
-        />
-      )}
-      <Link href="/public-crews" className="ml-3">
-        <Button variant="secondary">View Public Crews</Button>
-      </Link>
-      <DashboardChat />
-    </div>
+  return (
+    <>
+      {/* Coming Soon Overlay */}
+
+
+      {/* Dashboard Content */}
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total Crews
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalCrews}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total Jobs Run
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalJobs}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Average Jobs per Day
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {Math.round(stats.jobsPerDay.reduce((acc, day) => acc + day.jobs, 0) / stats.jobsPerDay.length)}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Jobs Over Time</CardTitle>
+              <CardDescription>Number of jobs run per day</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={stats.jobsPerDay}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="date" 
+                      tickFormatter={(value) => new Date(value).toLocaleDateString()}
+                    />
+                    <YAxis />
+                    <Tooltip
+                      labelFormatter={(value) => new Date(value).toLocaleDateString()}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="jobs"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Crew Activity</CardTitle>
+              <CardDescription>Jobs run by each crew</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={stats.crewActivity}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar
+                      dataKey="jobs"
+                      fill="hsl(var(--primary))"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </>
   );
 }
