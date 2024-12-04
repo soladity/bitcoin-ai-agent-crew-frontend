@@ -74,13 +74,13 @@ export default function Chat() {
   }, []);
 
   return (
-    <div className="relative flex flex-col h-[calc(100dvh-2rem)] overflow-hidden">
+    <div className="relative flex flex-col h-[98-dvh] overflow-hidden">
       <div
         ref={scrollContainerRef}
         className="flex-1 overflow-y-auto scroll-smooth relative"
-        style={{ 
+        style={{
           height: "calc(100vh - 8rem)",
-          maxHeight: "calc(100vh - 8rem)" 
+          maxHeight: "calc(100vh - 8rem)",
         }}
       >
         <div className="space-y-4 px-4 py-2">
@@ -93,9 +93,18 @@ export default function Chat() {
                 <div className="flex items-center gap-2 mb-2">
                   <Bot className="w-4 h-4 text-blue-300" />
                   <div className="flex gap-1">
-                    <div className="w-2 h-2 rounded-full bg-blue-300/80 animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-2 h-2 rounded-full bg-blue-300/80 animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-2 h-2 rounded-full bg-blue-300/80 animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <div
+                      className="w-2 h-2 rounded-full bg-blue-300/80 animate-bounce"
+                      style={{ animationDelay: "0ms" }}
+                    />
+                    <div
+                      className="w-2 h-2 rounded-full bg-blue-300/80 animate-bounce"
+                      style={{ animationDelay: "150ms" }}
+                    />
+                    <div
+                      className="w-2 h-2 rounded-full bg-blue-300/80 animate-bounce"
+                      style={{ animationDelay: "300ms" }}
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
