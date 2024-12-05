@@ -180,7 +180,7 @@ export default function AgentManagement({
           }}
         >
           <DialogTrigger asChild>
-            <Button >
+            <Button>
               <PlusIcon className="mr-2 h-4 w-4" />
               Add Agent
             </Button>

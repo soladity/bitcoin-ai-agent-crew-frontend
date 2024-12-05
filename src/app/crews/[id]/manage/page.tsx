@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import AgentManagement from "@/components/agents/AgentManagement";
@@ -8,7 +8,13 @@ import TaskManagement from "@/components/tasks/TaskManagement";
 import { Card, CardContent } from "@/components/ui/card";
 import { Agent, CrewWithCron, Task } from "@/types/supabase";
 import { Switch } from "@/components/ui/switch";
-import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { HelpCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -44,16 +50,45 @@ export default function CrewDetails() {
   const [editForm, setEditForm] = useState({
     name: "",
     description: "",
-    is_public: false
+    is_public: false,
   });
   const [cronInput, setCronInput] = useState("");
   const [cronEnabled, setCronEnabled] = useState(false);
   const [cronId, setCronId] = useState(0);
 
+  const fetchAgents = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from("agents")
+        .select("*")
+        .eq("crew_id", id);
+
+      if (error) throw error;
+
+      setAgents(data || []);
+    } catch (error) {
+      console.error("Error fetching agents:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch agents.",
+        variant: "destructive",
+      });
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchAgents();
+    }
+  }, [id, fetchAgents]);
+
   // Fetch current user
   useEffect(() => {
     async function fetchUser() {
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
       if (error) {
         console.error("Error fetching user:", error);
         return;
@@ -69,21 +104,17 @@ export default function CrewDetails() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [crewResponse, agentsResponse, tasksResponse] = await Promise.all([
-          supabase
-            .from("crews")
-            .select(`*, crons(id, enabled, input, created_at)`)
-            .eq("id", id)
-            .single(),
-          supabase
-            .from("agents")
-            .select("*")
-            .eq("crew_id", id),
-          supabase
-            .from("tasks")
-            .select("*")
-            .eq("crew_id", id)
-        ]);
+        const [crewResponse, agentsResponse, tasksResponse] = await Promise.all(
+          [
+            supabase
+              .from("crews")
+              .select(`*, crons(id, enabled, input, created_at)`)
+              .eq("id", id)
+              .single(),
+            supabase.from("agents").select("*").eq("crew_id", id),
+            supabase.from("tasks").select("*").eq("crew_id", id),
+          ]
+        );
 
         if (crewResponse.error) throw crewResponse.error;
         if (agentsResponse.error) throw agentsResponse.error;
@@ -96,7 +127,7 @@ export default function CrewDetails() {
         setEditForm({
           name: crewData.name,
           description: crewData.description || "",
-          is_public: crewData.is_public || false
+          is_public: crewData.is_public || false,
         });
         if (crewData.crons?.[0]?.input) {
           setCronId(crewData.crons[0].id);
@@ -111,7 +142,7 @@ export default function CrewDetails() {
         toast({
           title: "Error",
           description: "Failed to load crew data. Please refresh the page.",
-          variant: "destructive"
+          variant: "destructive",
         });
       }
     }
@@ -132,7 +163,7 @@ export default function CrewDetails() {
         .update({
           name: editForm.name,
           description: editForm.description,
-          is_public: editForm.is_public
+          is_public: editForm.is_public,
         })
         .eq("id", crew.id);
 
@@ -153,22 +184,24 @@ export default function CrewDetails() {
         name: editForm.name,
         description: editForm.description,
         is_public: editForm.is_public,
-        cron: crew.cron ? {
-          ...crew.cron,
-          input: cronInput
-        } : null
+        cron: crew.cron
+          ? {
+              ...crew.cron,
+              input: cronInput,
+            }
+          : null,
       });
 
       toast({
         title: "Success",
-        description: "Crew settings updated successfully."
+        description: "Crew settings updated successfully.",
       });
     } catch (error) {
       console.error("Error saving settings:", error);
       toast({
         title: "Error",
         description: "Failed to save crew settings. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsSaving(false);
@@ -187,7 +220,7 @@ export default function CrewDetails() {
             crew_id: crew.id,
             enabled: true,
             profile_id: currentUser,
-            input: ""
+            input: "",
           })
           .select()
           .single();
@@ -201,7 +234,7 @@ export default function CrewDetails() {
           setCronEnabled(true);
           toast({
             title: "Success",
-            description: "Autonomous running enabled."
+            description: "Autonomous running enabled.",
           });
         }
       } else if (cronId) {
@@ -220,15 +253,18 @@ export default function CrewDetails() {
 
         toast({
           title: "Success",
-          description: `Autonomous running ${checked ? "enabled" : "disabled"}.`
+          description: `Autonomous running ${
+            checked ? "enabled" : "disabled"
+          }.`,
         });
       }
     } catch (error) {
       console.error("Error toggling autonomous mode:", error);
       toast({
         title: "Error",
-        description: "Failed to update autonomous running status. Please try again.",
-        variant: "destructive"
+        description:
+          "Failed to update autonomous running status. Please try again.",
+        variant: "destructive",
       });
     }
   };
@@ -250,7 +286,7 @@ export default function CrewDetails() {
 
       toast({
         title: "Success",
-        description: "Crew deleted successfully"
+        description: "Crew deleted successfully",
       });
 
       router.push("/crews");
@@ -259,7 +295,7 @@ export default function CrewDetails() {
       toast({
         title: "Error",
         description: "Failed to delete crew. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsDeleting(false);
@@ -267,7 +303,11 @@ export default function CrewDetails() {
   };
 
   if (!crew) {
-    return <div className="flex justify-center items-center min-h-[200px]">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        Loading...
+      </div>
+    );
   }
 
   return (
@@ -282,15 +322,24 @@ export default function CrewDetails() {
                 <input
                   type="text"
                   value={editForm.name}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
                   className="w-full px-3 py-2 border rounded-md"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
+                <label className="block text-sm font-medium mb-1">
+                  Description
+                </label>
                 <textarea
                   value={editForm.description}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                   className="w-full px-3 py-2 border rounded-md"
                   rows={3}
                 />
@@ -302,7 +351,9 @@ export default function CrewDetails() {
                   </div>
                   <Switch
                     checked={editForm.is_public}
-                    onCheckedChange={(checked) => setEditForm(prev => ({ ...prev, is_public: checked }))}
+                    onCheckedChange={(checked) =>
+                      setEditForm((prev) => ({ ...prev, is_public: checked }))
+                    }
                   />
                 </div>
                 <div className="flex items-center">
@@ -318,7 +369,8 @@ export default function CrewDetails() {
                         <TooltipContent className="max-w-sm p-4">
                           <p className="font-medium mb-2">Cron Job</p>
                           <p className="text-sm">
-                            Enable to run this crew automatically on an hourly schedule.
+                            Enable to run this crew automatically on an hourly
+                            schedule.
                           </p>
                         </TooltipContent>
                       </Tooltip>
@@ -332,7 +384,9 @@ export default function CrewDetails() {
               </div>
               {cronEnabled && (
                 <div className="pt-2">
-                  <label className="block text-sm font-medium mb-1">Cron Input Prompt</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Cron Input Prompt
+                  </label>
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -351,10 +405,13 @@ export default function CrewDetails() {
                         <TooltipContent className="max-w-sm p-4">
                           <p className="font-medium mb-2">Example Prompt</p>
                           <p className="text-sm">
-                            Check Bitcoin price and if its above $40,000, analyze market sentiment from the last hour and provide a summary of bullish/bearish indicators
+                            Check Bitcoin price and if its above $40,000,
+                            analyze market sentiment from the last hour and
+                            provide a summary of bullish/bearish indicators
                           </p>
                           <p className="text-xs mt-2 text-muted-foreground">
-                            Note: This job will run every hour. The schedule is fixed and cannot be modified.
+                            Note: This job will run every hour. The schedule is
+                            fixed and cannot be modified.
                           </p>
                         </TooltipContent>
                       </Tooltip>
@@ -363,10 +420,7 @@ export default function CrewDetails() {
                 </div>
               )}
               <div className="pt-4 flex justify-start gap-2">
-                <Button
-                  onClick={handleSaveSettings}
-                  disabled={isSaving}
-                >
+                <Button onClick={handleSaveSettings} disabled={isSaving}>
                   {isSaving ? "Saving..." : "Save Changes"}
                 </Button>
                 <AlertDialog>
@@ -380,8 +434,9 @@ export default function CrewDetails() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the crew
-                        and all its associated data including agents, tasks, and jobs.
+                        This action cannot be undone. This will permanently
+                        delete the crew and all its associated data including
+                        agents, tasks, and jobs.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -405,7 +460,9 @@ export default function CrewDetails() {
         <CardContent className="pt-6">
           <AgentManagement
             crewId={crew.id}
-            onAgentAdded={() => { }}
+            onAgentAdded={() => {
+              fetchAgents();
+            }}
           />
         </CardContent>
       </Card>
@@ -416,8 +473,8 @@ export default function CrewDetails() {
             tasks={tasks}
             agents={agents}
             crewId={crew.id}
-            onTaskAdded={() => { }}
-            onEditTask={() => { }}
+            onTaskAdded={() => {}}
+            onEditTask={() => {}}
             currentUser={currentUser}
           />
         </CardContent>
