@@ -82,6 +82,30 @@ export default function CrewDetails() {
     }
   }, [id, fetchAgents]);
 
+  const fetchTasks = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("crew_id", id);
+
+      if (error) throw error;
+
+      setTasks(data || []);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch tasks.",
+        variant: "destructive",
+      });
+    }
+  }, [id, toast]);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
+
   // Fetch current user
   useEffect(() => {
     async function fetchUser() {
@@ -473,7 +497,9 @@ export default function CrewDetails() {
             tasks={tasks}
             agents={agents}
             crewId={crew.id}
-            onTaskAdded={() => {}}
+            onTaskAdded={() => {
+              fetchTasks();
+            }}
             onEditTask={() => {}}
             currentUser={currentUser}
           />
