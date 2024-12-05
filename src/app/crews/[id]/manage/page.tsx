@@ -74,7 +74,7 @@ export default function CrewDetails() {
         variant: "destructive",
       });
     }
-  }, [id]);
+  }, [id, toast]);
 
   useEffect(() => {
     if (id) {
