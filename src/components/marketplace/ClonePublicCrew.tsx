@@ -37,7 +37,7 @@ export function ClonePublicCrew({ crew, disabled }: ClonePublicCrewProps) {
       const { data: clonedCrew, error: crewError } = await supabase
         .from("crews")
         .insert({
-          name: `${crew.name} (Cloned)`,
+          name: crew.name,
           description: crew.description,
           profile_id: profile.user.id,
         })

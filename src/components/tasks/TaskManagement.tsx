@@ -42,12 +42,6 @@ export default function TaskManagement({
   const { toast } = useToast();
 
   const handleTaskSubmitted = () => {
-    toast({
-      title: "Success",
-      description: editingTask
-        ? "Task updated successfully"
-        : "Task created successfully",
-    });
     onTaskAdded();
     setIsDialogOpen(false);
     setEditingTask(null);
