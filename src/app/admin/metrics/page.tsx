@@ -23,12 +23,18 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Loader } from "@/components/reusables/Loader";
+import { supabase } from "@/utils/supabase/client";
 
 interface CrewMetrics {
   total_crews: number;
   crews_by_date: {
     [date: string]: string[];
   };
+}
+
+interface CrewData {
+  created_at: string;
+  name: string;
 }
 
 export default function AdminMetrics() {
@@ -39,26 +45,43 @@ export default function AdminMetrics() {
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/crews_metrics`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch metrics");
+        // Query crews directly from Supabase
+        const { data: crews, error: crewsError } = await supabase
+          .from('crews')
+          .select('created_at,name')
+          .order('created_at', { ascending: true });
+
+        if (crewsError) {
+          throw crewsError;
         }
-        const data: CrewMetrics = await response.json();
-        setMetrics(data);
+
+        // Process crews data
+        const crews_by_date: { [key: string]: string[] } = {};
+        crews?.forEach((crew: CrewData) => {
+          const date = crew.created_at.split('T')[0];  // Get just the date part
+          if (!crews_by_date[date]) {
+            crews_by_date[date] = [];
+          }
+          crews_by_date[date].push(crew.name);
+        });
+
+        setMetrics({
+          total_crews: crews?.length || 0,
+          crews_by_date
+        });
       } catch (error: unknown) {
+        console.error('Error fetching metrics:', error);
         setError("Failed to fetch metrics. Please try again later.");
-        console.error(
-          "Error fetching metrics:",
-          error instanceof Error ? error.message : String(error)
-        );
       } finally {
         setLoading(false);
       }
     };
 
     fetchMetrics();
+
+    // Refresh data every 5 minutes
+    const interval = setInterval(fetchMetrics, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {

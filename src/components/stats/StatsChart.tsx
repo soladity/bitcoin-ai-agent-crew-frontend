@@ -18,17 +18,26 @@ export default function PublicStatsDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/metrics/public`
-        );
-        if (!response.ok) throw new Error("Failed to fetch data");
-        const result: PublicStats = await response.json();
-        setData(result);
+        const response = await fetch('https://cache.aibtc.dev/supabase/stats');
+        if (!response.ok) throw new Error("Failed to fetch stats data");
+        const result = await response.json();
+        setData({
+          timestamp: result.timestamp,
+          total_jobs: result.total_jobs,
+          main_chat_jobs: result.main_chat_jobs,
+          individual_crew_jobs: result.individual_crew_jobs,
+          top_profile_stacks_addresses: result.top_profile_stacks_addresses,
+          top_crew_names: result.top_crew_names,
+        });
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching stats:", err);
       }
     };
     void fetchData();
+
+    // Fetch data every 5 minutes
+    const interval = setInterval(fetchData, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   if (!data) {
