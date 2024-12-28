@@ -27,20 +27,12 @@ import {
 } from "@/components/catalyst/sidebar";
 import { SidebarLayout } from "@/components/catalyst/sidebar-layout";
 import {
-  ArrowRightStartOnRectangleIcon,
   ChevronUpIcon,
   WrenchScrewdriverIcon,
-  ChartBarIcon,
-  UserGroupIcon,
-  ChartPieIcon,
-  ChatBubbleBottomCenterTextIcon,
-  BuildingStorefrontIcon,
-  DocumentTextIcon,
-  CircleStackIcon,
 } from "@heroicons/react/16/solid";
 import { usePathname } from "next/navigation";
 import { useUserData } from "@/hooks/useUserData";
-import { Bot, MessageSquareText, TowerControl, Wallet } from "lucide-react";
+import { Bot, ChartPie, CircleUser, LogOut, MessageSquareText, Scroll, Store, TowerControl, Wallet } from "lucide-react";
 import SignOut from "@/components/auth/SignOut";
 import Image from "next/image";
 
@@ -61,12 +53,12 @@ function AccountDropdownMenu({
         </DropdownItem>
       )}
       <DropdownItem href="/profile">
-        <Avatar initials="P" className="size-4" />
-        <DropdownLabel>Profile Settings</DropdownLabel>
+        <CircleUser className="mr-2 h-4 w-4" />
+        <DropdownLabel>Profile</DropdownLabel>
       </DropdownItem>
       <DropdownItem>
-        <ArrowRightStartOnRectangleIcon />
-        <SignOut />
+        <LogOut className="mr-2 h-4 w-4" />
+        <DropdownLabel><SignOut /></DropdownLabel>
       </DropdownItem>
     </DropdownMenu>
   );
@@ -160,21 +152,21 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
                 href="/marketplace"
                 current={pathname.startsWith("/marketplace")}
               >
-                <BuildingStorefrontIcon />
+                <Store />
                 <SidebarLabel>Marketplace</SidebarLabel>
               </SidebarItem>
-              <SidebarItem
+              {/* <SidebarItem
                 href="/leaderboard"
                 current={pathname.startsWith("/leaderboard")}
               >
                 <ChartBarIcon />
                 <SidebarLabel>Leaderboard</SidebarLabel>
-              </SidebarItem>
+              </SidebarItem> */}
               <SidebarItem
                 href="/stats"
                 current={pathname.startsWith("/stats")}
               >
-                <ChartPieIcon />
+                <ChartPie />
                 <SidebarLabel>Stats</SidebarLabel>
               </SidebarItem>
 
@@ -184,7 +176,7 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
 
             <SidebarSection>
               <SidebarItem href="/terms" current={pathname === "/terms"}>
-                <DocumentTextIcon />
+                <Scroll />
                 <SidebarLabel>Terms of Service</SidebarLabel>
               </SidebarItem>
               <SidebarItem>

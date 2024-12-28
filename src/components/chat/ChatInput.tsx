@@ -3,8 +3,7 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { ChevronDoubleDownIcon, ArrowUpCircleIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowDownToLine, Loader2, RotateCcw, Send } from "lucide-react";
 
 interface ChatInputProps {
   input: string;
@@ -40,7 +39,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       variant="destructive"
       className="h-10 w-10 p-0 rounded-md text-white font-medium hover:bg-red-600/90 focus:ring-2 focus:ring-offset-2"
     >
-      <TrashIcon className="h-8 w-8" />
+      <RotateCcw className="h-8 w-8" />
     </Button>
     <Input
       value={input}
@@ -58,7 +57,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       {isLoading ? (
         <Loader2 className="h-8 w-8 animate-spin" />
       ) : (
-        <ArrowUpCircleIcon className="h-8 w-8" />
+        <Send className="h-8 w-8" />
       )}
     </Button>
     <Button
@@ -67,7 +66,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       disabled={isScrollButtonDisabled}
       className="h-10 w-10 p-0 rounded-md bg-primary text-white font-medium hover:bg-primary/90 focus:ring-2 focus:ring-offset-2 focus:ring-primary"
     >
-      <ChevronDoubleDownIcon className="h-8 w-8" />
+      <ArrowDownToLine className="h-8 w-8" />
     </Button>
   </form>
 );

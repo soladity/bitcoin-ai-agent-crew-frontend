@@ -45,6 +45,8 @@ interface Holder {
   percentage: number;
 }
 
+export const runtime = "edge";
+
 export default function CollectivePage() {
   const params = useParams();
   const id = params.id as string;
@@ -91,7 +93,7 @@ export default function CollectivePage() {
             (cap) => cap.type === "token"
           );
           if (tokenCapability) {
-            await fetchHolders(tokenCapability.contract_principal, tokenCapability.symbol || "");
+            await fetchHolders(tokenCapability.contract_principal);
           }
         }
       } catch (error) {
@@ -104,7 +106,7 @@ export default function CollectivePage() {
     fetchData();
   }, [id]);
 
-  const fetchHolders = async (contractPrincipal: string, symbol: string) => {
+  const fetchHolders = async (contractPrincipal: string) => {
     try {
       const response = await fetch(
         `https://api.hiro.so/ordinals/v1/tokens/${contractPrincipal}/holders`
@@ -112,6 +114,7 @@ export default function CollectivePage() {
       const data = await response.json();
       setTotalSupply(data.total_supply);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const holdersWithPercentage = data.results.map((holder: any) => ({
         ...holder,
         percentage: (Number(holder.balance) / Number(data.total_supply)) * 100,

@@ -12,7 +12,7 @@ import {
 import { supabase } from "@/utils/supabase/client";
 import Image from "next/image";
 import Link from "next/link";
-import { Coins, Handshake, Loader2, PiggyBank, Settings2, Vault } from "lucide-react";
+import { Coins, Loader2, PiggyBank, Settings2, Vault } from "lucide-react";
 import { Heading } from "../catalyst/heading";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -86,7 +86,7 @@ const Collectives = () => {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[24px]">Logo</TableHead>
-              <TableHead className="w-[200px]">Name</TableHead>
+              <TableHead className="w-auto">Name</TableHead>
               <TableHead className="w-full">Mission</TableHead>
               <TableHead className="w-[100px] text-center">Capabilities</TableHead>
               <TableHead className="w-[80px] text-right">Actions</TableHead>
@@ -100,8 +100,8 @@ const Collectives = () => {
                     <Image
                       src={collective.image_url}
                       alt={collective.name}
-                      width={24}
-                      height={24}
+                      width={100}
+                      height={50}
                       className="rounded-full"
                     />
                   )}

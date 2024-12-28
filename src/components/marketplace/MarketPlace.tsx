@@ -20,45 +20,93 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, User, CheckSquare } from "lucide-react";
-import type { PublicCrew } from "@/types/supabase";
 import { ClonePublicCrew } from "./ClonePublicCrew";
 import { Heading } from "../catalyst/heading";
 import { Loader } from "../reusables/Loader";
+import { supabase } from "@/utils/supabase/client";
+
+interface Agent {
+  id: number;
+  name: string;
+  role: string;
+  crew_id: number;
+  goal: string;
+}
+
+interface Task {
+  id: number;
+  description: string;
+  crew_id: number;
+}
+
+interface Crew {
+  id: number;
+  name: string;
+  description: string;
+  is_public: boolean;
+  created_at: string;
+  profile_id: string;
+  agents?: Agent[];
+  tasks?: Task[];
+}
 
 export default function Marketplace() {
-  const [crews, setCrews] = useState<PublicCrew[]>([]);
+  const [crews, setCrews] = useState<Crew[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchCrews = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/crew/public`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch crews");
-        }
-        const data = await response.json();
-        setCrews(data);
-      } catch (error: unknown) {
-        setError("Failed to load crews. Please try again later.");
-        console.error("Error fetching crews:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCrews();
+    fetchData();
   }, []);
 
-  if (loading) {
-    return <Loader />;
-  }
+  const fetchData = async () => {
+    try {
+      setLoading(true);
 
-  if (error) {
-    return <div className="text-red-500">{error}</div>;
-  }
+      // Fetch public crews
+      const { data: crewsData, error: crewsError } = await supabase
+        .from("crews")
+        .select("*")
+        .eq("is_public", true)
+        .order("created_at", { ascending: false });
+
+      if (crewsError) throw crewsError;
+      if (!crewsData) return;
+
+      // Fetch agents for all crews
+      const { data: agentsData, error: agentsError } = await supabase
+        .from("agents")
+        .select("*")
+        .in("crew_id", crewsData.map((crew) => crew.id));
+
+      if (agentsError) throw agentsError;
+
+      // Fetch tasks for all crews
+      const { data: tasksData, error: tasksError } = await supabase
+        .from("tasks")
+        .select("*")
+        .in("crew_id", crewsData.map((crew) => crew.id));
+
+      if (tasksError) throw tasksError;
+
+      // Combine the data
+      const enrichedCrews = crewsData.map((crew) => ({
+        ...crew,
+        agents: agentsData?.filter((agent) => agent.crew_id === crew.id) || [],
+        tasks: tasksData?.filter((task) => task.crew_id === crew.id) || [],
+      }));
+
+      setCrews(enrichedCrews);
+    } catch (error: unknown) {
+      setError("Failed to load crews. Please try again later.");
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <Loader />;
+  if (error) return <div className="text-red-500">{error}</div>;
 
   return (
     <div className="container mx-auto p-4">
@@ -71,7 +119,7 @@ export default function Marketplace() {
                 <CardTitle className="text-xl font-bold">{crew.name}</CardTitle>
                 <Badge variant="secondary" className="ml-2">
                   <Users className="w-3 h-3 mr-1" />
-                  {crew.clones || 0}
+                  {crew.agents?.length || 0}
                 </Badge>
               </div>
               <CardDescription>{crew.description}</CardDescription>
@@ -82,7 +130,7 @@ export default function Marketplace() {
                   <h4 className="text-sm font-medium mb-2">Created By</h4>
                   <div className="flex items-center">
                     <User className="w-4 h-4 mr-2" />
-                    <span className="text-sm">{crew.creator_email}</span>
+                    <span className="text-sm">{crew.profile_id}</span>
                   </div>
                 </div>
                 <div>
@@ -91,11 +139,7 @@ export default function Marketplace() {
                     <div className="flex items-center">
                       <CheckSquare className="w-4 h-4 mr-2" />
                       <span className="text-sm">
-                        {crew.agents?.reduce(
-                          (count, agent) => count + (agent.tasks?.length || 0),
-                          0
-                        ) || 0}{" "}
-                        Tasks
+                        {crew.tasks?.length || 0} Tasks
                       </span>
                     </div>
                     <div className="flex items-center">
@@ -141,14 +185,14 @@ export default function Marketplace() {
                                 </span>
                                 {agent.goal}
                               </div>
-                              {agent.tasks?.length ? (
+                              {crew.tasks?.length ? (
                                 <div className="space-y-2">
                                   <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                                     <CheckSquare className="w-3.5 h-3.5" />
                                     TASKS
                                   </div>
                                   <ul className="space-y-2 text-sm">
-                                    {agent.tasks.map((task, index) => (
+                                    {crew.tasks.map((task, index) => (
                                       <li
                                         key={index}
                                         className="p-2 rounded-sm bg-muted/50"
@@ -170,7 +214,7 @@ export default function Marketplace() {
                     )}
                   </ScrollArea>
                   <div className="flex justify-end pt-4">
-                    <ClonePublicCrew crew={crew} disabled={false} />
+                    <ClonePublicCrew crewId={crew.id}/>
                   </div>
                 </DialogContent>
               </Dialog>
