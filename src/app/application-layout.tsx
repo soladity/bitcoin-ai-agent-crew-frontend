@@ -36,6 +36,7 @@ import {
   ChatBubbleBottomCenterTextIcon,
   BuildingStorefrontIcon,
   DocumentTextIcon,
+  CircleStackIcon,
 } from "@heroicons/react/16/solid";
 import { usePathname } from "next/navigation";
 import { useUserData } from "@/hooks/useUserData";
@@ -171,6 +172,10 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
               >
                 <ChartPieIcon />
                 <SidebarLabel>Stats</SidebarLabel>
+              </SidebarItem>
+              <SidebarItem href="/tokens" current={pathname === "/tokens"}>
+                <CircleStackIcon />
+                <SidebarLabel>Tokens</SidebarLabel>
               </SidebarItem>
             </SidebarSection>
 
