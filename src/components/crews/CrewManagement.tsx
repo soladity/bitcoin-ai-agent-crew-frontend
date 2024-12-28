@@ -60,7 +60,7 @@ export function CrewManagement({
         ).select(`*,
             crons (
               id,
-              enabled,
+              is_enabled,
               input,
               created_at
             )
@@ -107,7 +107,7 @@ export function CrewManagement({
   return (
     <div className="container mx-auto p-4">
       <div className="flex w-full flex-wrap items-end justify-between gap-4 border-zinc-950/10 pb-6 dark:border-white/10">
-        <Heading>Your Crews</Heading>
+        <Heading>Crews</Heading>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => setEditingCrew(null)}>
@@ -163,7 +163,7 @@ export function CrewManagement({
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                      {crew.cron?.enabled && (
+                      {crew.cron?.is_enabled && (
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger>
@@ -208,7 +208,7 @@ export function CrewManagement({
                     ) : (
                       <Lock className="h-4 w-4 text-muted-foreground" />
                     )}
-                    {crew.cron?.enabled && (
+                    {crew.cron?.is_enabled && (
                       <Clock className="h-4 w-4 text-muted-foreground" />
                     )}
                   </div>

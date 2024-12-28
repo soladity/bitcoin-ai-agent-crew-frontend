@@ -31,7 +31,7 @@ export default function CrewForm({
     if (editingCrew?.cron) {
       setHasCron(true);
       setCronInput(editingCrew.cron.input);
-      setCronEnabled(editingCrew.cron.enabled);
+      setCronEnabled(editingCrew.cron.is_enabled);
     }
   }, [editingCrew]);
 

@@ -1,10 +1,37 @@
 // types/supabase.ts
 
+export interface Collective {
+  id: string;
+  name: string;
+  created_at: string;
+  mission: string;
+  description: string;
+  image_url: string | null;
+  is_graduated: boolean;
+  is_deployed: boolean;
+}
+
+export interface Capability {
+  id: string;                
+  created_at: string;        
+  collective_id: string;     
+  type: string;              
+  contract_principal: string;
+  tx_id: string;             
+  symbol: string | null;     
+  decimals: number | null;   
+  max_supply: string | null; 
+  uri: string | null;        
+  image_url: string | null;  
+  description: string | null;
+  is_deployed: boolean;      
+}
+
 export interface CronEntry {
   id?: number;
   profile_id?: string;
   crew_id?: number;
-  enabled: boolean;
+  is_enabled: boolean;
   input: string;
   created_at?: string;
 }
@@ -42,7 +69,7 @@ export interface RawCrewData {
   profile_id: string;
   crons?: Array<{
     id: number;
-    enabled: boolean;
+    is_enabled: boolean;
     input: string;
     created_at: string;
   }>;

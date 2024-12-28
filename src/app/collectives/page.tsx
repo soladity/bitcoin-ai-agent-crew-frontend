@@ -1,14 +1,14 @@
 
 import React from "react";
-import Tokens from "@/components/tokens/Tokens";
+import Collectives from "@/components/collectives/Collectives";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Tokens",
+  title: "Collectives",
 };
 
 const page = () => {
-  return <Tokens />;
+  return <Collectives />;
 };
 
 export default page;

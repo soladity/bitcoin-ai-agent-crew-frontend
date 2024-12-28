@@ -40,7 +40,7 @@ import {
 } from "@heroicons/react/16/solid";
 import { usePathname } from "next/navigation";
 import { useUserData } from "@/hooks/useUserData";
-import { Wallet } from "lucide-react";
+import { Bot, MessageSquareText, TowerControl, Wallet } from "lucide-react";
 import SignOut from "@/components/auth/SignOut";
 import Image from "next/image";
 
@@ -142,14 +142,18 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
                 <SidebarLabel>Dashboard</SidebarLabel>
               </SidebarItem> */}
               <SidebarItem href="/chat" current={pathname === "/chat"}>
-                <ChatBubbleBottomCenterTextIcon />
+                <MessageSquareText />
                 <SidebarLabel>Chat</SidebarLabel>
+              </SidebarItem>
+              <SidebarItem href="/collectives" current={pathname === "/collectives"}>
+                <TowerControl />
+                <SidebarLabel>Collectives</SidebarLabel>
               </SidebarItem>
               <SidebarItem
                 href="/crews"
                 current={pathname.startsWith("/crews")}
               >
-                <UserGroupIcon />
+                <Bot />
                 <SidebarLabel>Crews</SidebarLabel>
               </SidebarItem>
               <SidebarItem
@@ -173,10 +177,7 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
                 <ChartPieIcon />
                 <SidebarLabel>Stats</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="/tokens" current={pathname === "/tokens"}>
-                <CircleStackIcon />
-                <SidebarLabel>Tokens</SidebarLabel>
-              </SidebarItem>
+
             </SidebarSection>
 
             <SidebarSpacer />

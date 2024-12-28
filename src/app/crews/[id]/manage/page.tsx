@@ -132,7 +132,7 @@ export default function CrewDetails() {
           [
             supabase
               .from("crews")
-              .select(`*, crons(id, enabled, input, created_at)`)
+              .select(`*, crons(id, is_enabled, input, created_at)`)
               .eq("id", id)
               .single(),
             supabase.from("agents").select("*").eq("crew_id", id),
@@ -155,7 +155,7 @@ export default function CrewDetails() {
         });
         if (crewData.crons?.[0]?.input) {
           setCronId(crewData.crons[0].id);
-          setCronEnabled(crewData.crons[0].enabled);
+          setCronEnabled(crewData.crons[0].is_enabled);
           setCronInput(crewData.crons[0].input);
         }
 
@@ -242,7 +242,7 @@ export default function CrewDetails() {
           .from("crons")
           .insert({
             crew_id: crew.id,
-            enabled: true,
+            is_enabled: true,
             profile_id: currentUser,
             input: "",
           })
@@ -265,7 +265,7 @@ export default function CrewDetails() {
         // Update existing cron
         const { error } = await supabase
           .from("crons")
-          .update({ enabled: checked })
+          .update({ is_enabled: checked })
           .eq("id", cronId);
 
         if (error) throw error;
