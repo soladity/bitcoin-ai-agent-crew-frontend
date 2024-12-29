@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/utils/supabase/client";
-import * as Sentry from "@sentry/nextjs";
 
 export interface Message {
   role: "user" | "assistant";
@@ -71,7 +70,6 @@ export function useCrewChat() {
       });
     } catch (error) {
       console.error("Failed to reset chat history:", error);
-      Sentry.captureException(error);
       setIsLoading(false);
       toast({
         title: "Error",
@@ -196,14 +194,12 @@ export function useCrewChat() {
         }
       } catch (error) {
         console.error('Error processing WebSocket message:', error);
-        Sentry.captureException(error);
         setIsLoading(false); // Allow retry after error
       }
     };
 
     newWs.onerror = (error) => {
       console.error('WebSocket error:', error);
-      Sentry.captureException(error);
       toast({
         title: "Error",
         description: "Connection error occurred",
@@ -252,7 +248,6 @@ export function useCrewChat() {
       setIsLoading(true);
     } catch (error) {
       console.error("Failed to send message:", error);
-      Sentry.captureException(error);
       toast({
         title: "Error",
         description: "Failed to send message",

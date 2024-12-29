@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -9,142 +9,181 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/utils/supabase/client";
 import Image from "next/image";
 import Link from "next/link";
 import { Coins, Loader2, PiggyBank, Settings2, Vault } from "lucide-react";
 import { Heading } from "../catalyst/heading";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { Collective } from "@/types/supabase";
 
-export interface Capability {
-  id: string;                
-  collective_id: string;     
-  type: string;
+interface Collective {
+  id: string;
+  name: string;
+  mission: string;
+  description: string;
+  image_url: string;
+  is_graduated: boolean;
+  is_deployed: boolean;
+  created_at: string;
+  capabilities?: Array<{
+    id: string;
+    type: string;
+  }>;
 }
 
-const Collectives = () => {
+export default function Collectives() {
   const [collectives, setCollectives] = useState<Collective[]>([]);
-  const [collectiveCapabilities, setCollectiveCapabilities] =
-    useState<Capability[]>([]);
-
   const [loading, setLoading] = useState(true);
-
-  const router = useRouter();
-
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    const fetchCollectives = async () => {
-
-      const { data, error } = await supabase
-        .from("collectives")
-        .select("*")
-        .order("name");
-
-      if (error) {
-        console.error("Error fetching collectives:", error);
-      } else {
-        setCollectives(data || []);
-      }
-      setLoading(false);
-    };
-
-    const fetchCollectiveCapabilities = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("capabilities")
-          .select("id, collective_id, type")
-          .order("created_at", { ascending: false });
-
-        if (error) {
-          console.error("Error fetching collective capabilities:", error);
-        } else {
-          setCollectiveCapabilities(data || []);
-        }
-      } catch (error) {
-        console.error("Error fetching collective capabilities:", error);
-      }
-    };
-
-    fetchCollectiveCapabilities();
-
     fetchCollectives();
   }, []);
 
+  const fetchCollectives = async () => {
+    try {
+      setLoading(true);
+      const { data: collectivesData, error: collectivesError } = await supabase
+        .from("collectives")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (collectivesError) throw collectivesError;
+      if (!collectivesData) return;
+
+      const { data: capabilitiesData, error: capabilitiesError } = await supabase
+        .from("capabilities")
+        .select("*");
+
+      if (capabilitiesError) throw capabilitiesError;
+
+      // Combine the data
+      const enrichedCollectives = collectivesData.map(collective => ({
+        ...collective,
+        capabilities: capabilitiesData?.filter(cap => cap.collective_id === collective.id) || []
+      }));
+
+      setCollectives(enrichedCollectives);
+    } catch (error) {
+      console.error("Error fetching collectives:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getCapabilityIcon = (type: string) => {
+    switch (type.toLowerCase()) {
+      case "token":
+        return <Coins className="h-4 w-4" />;
+      case "governance":
+        return <Settings2 className="h-4 w-4" />;
+      case "dex":
+        return <PiggyBank className="h-4 w-4" />;
+      case "treasury":
+        return <Vault className="h-4 w-4" />;
+      default:
+        return null;
+    }
+  };
+
+  const filteredCollectives = collectives.filter(
+    (collective) =>
+      collective.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      collective.mission.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (loading) {
-    return <Loader2 className="mr-2 h-4 w-4 animate-spin" />;
+    return (
+      <div className="flex justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-zinc-950/10 pb-6 dark:border-white/10">
-        <Heading>Collectives</Heading>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Heading>All Collectives</Heading>
+        <Input
+          placeholder="Search collectives..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-sm"
+        />
       </div>
-      <div>
+
+      <Card>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[24px]">Logo</TableHead>
+              <TableHead className="w-[50px]">Logo</TableHead>
               <TableHead className="w-auto">Name</TableHead>
               <TableHead className="w-full">Mission</TableHead>
-              <TableHead className="w-[100px] text-center">Capabilities</TableHead>
+              <TableHead className="w-[150px] text-center">Capabilities</TableHead>
+              <TableHead className="w-[100px] text-center">Status</TableHead>
               <TableHead className="w-[80px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {collectives.map((collective) => (
+            {filteredCollectives.map((collective) => (
               <TableRow key={collective.id}>
-                <TableCell className="flex items-center gap-2">
+                <TableCell>
                   {collective.image_url && (
                     <Image
                       src={collective.image_url}
                       alt={collective.name}
-                      width={100}
-                      height={50}
-                      className="rounded-full"
+                      width={40}
+                      height={40}
+                      className="rounded-lg"
                     />
                   )}
                 </TableCell>
-                <TableCell>
-                  <Link
-                    href={`/collectives/${collective.id}`}
-                    className="font-medium hover:underline"
-                  >
-                    {collective.name}
-                  </Link>
+                <TableCell className="font-medium">{collective.name}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {collective.mission}
                 </TableCell>
-                <TableCell>{collective.mission}</TableCell>
-                <TableCell className="text-center">
-                  <div className="flex justify-center gap-1">
-                    {collectiveCapabilities
-                      .filter((cap) => cap.collective_id === collective.id)
-                      .map((cap) => (
-                        <span key={cap.id} title={cap.type}>
-                          {cap.type === "token" && <Coins className="h-4 w-4" />}
-                          {cap.type === "governance" && <Settings2 className="h-4 w-4" />}
-                          {cap.type === "dex" && <PiggyBank className="h-4 w-4" />}
-                          {cap.type === "pool" && <Vault className="h-4 w-4" />}
-                        </span>
-                      ))}
+                <TableCell>
+                  <div className="flex justify-center gap-2">
+                    {collective.capabilities?.map((capability) => (
+                      <div
+                        key={capability.id}
+                        className="p-1.5 rounded-md bg-muted"
+                        title={capability.type}
+                      >
+                        {getCapabilityIcon(capability.type)}
+                      </div>
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col items-center gap-1">
+                    {collective.is_graduated && (
+                      <Badge variant="default">Graduated</Badge>
+                    )}
+                    {collective.is_deployed && (
+                      <Badge variant="default">Deployed</Badge>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    onClick={() => router.push(`/collectives/${collective.id}`)}
+                    asChild
                   >
-                    View
+                    <Link href={`/collectives/${collective.id}`}>
+                      View
+                    </Link>
                   </Button>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      </div>
+      </Card>
     </div>
   );
-};
-
-export default Collectives;
+}

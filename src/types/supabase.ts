@@ -2,18 +2,28 @@
 
 export interface Collective {
   id: string;
-  name: string;
   created_at: string;
+  name: string;
   mission: string;
   description: string;
-  image_url: string | null;
+  image_url: string;
   is_graduated: boolean;
   is_deployed: boolean;
+  x_url?: string;
+  telegram_url?: string;
+  website_url?: string;
+}
+
+export interface Holder {
+  address: string;
+  balance: string;
+  percentage: number;
 }
 
 export interface Capability {
   id: string;                
-  created_at: string;        
+  created_at: string; 
+  updated_at: string;       
   collective_id: string;     
   type: string;              
   contract_principal: string;
@@ -24,7 +34,8 @@ export interface Capability {
   uri: string | null;        
   image_url: string | null;  
   description: string | null;
-  is_deployed: boolean;      
+  is_deployed: boolean;   
+  status: string | null;   
 }
 
 export interface CronEntry {

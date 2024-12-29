@@ -15,7 +15,7 @@ export default function CollectiveLayout({
   const id = params.id as string;
   const pathname = usePathname();
 
-  const isOverview = !pathname.includes("/activity");
+  const isOverview = !pathname.includes("/proposals");
 
   return (
     <div className="container mx-auto p-4 space-y-4">
@@ -27,10 +27,10 @@ export default function CollectiveLayout({
             Overview
           </Button>
         </Link>
-        <Link href={`/collectives/${id}/activity`}>
+        <Link href={`/collectives/${id}/proposals`}>
           <Button variant={!isOverview ? "default" : "ghost"}>
             <Activity className="mr-2 h-4 w-4" />
-            Activity
+            Proposals
           </Button>
         </Link>
         </div>

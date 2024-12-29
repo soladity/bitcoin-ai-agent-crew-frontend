@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/utils/supabase/client";
-import * as Sentry from "@sentry/nextjs";
 
 export interface Message {
   role: "user" | "assistant";
@@ -130,7 +129,6 @@ export function useChat() {
 
     } catch (error) {
       console.error("Error resetting history:", error);
-      Sentry.captureException(error);
       toast({
         title: "Error",
         description: "Failed to reset chat history",
@@ -191,7 +189,6 @@ export function useChat() {
 
       } catch (error) {
         console.error("Failed to fetch history:", error);
-        Sentry.captureException(error);
         toast({
           title: "Error",
           description: "Failed to fetch chat history",
@@ -357,13 +354,11 @@ export function useChat() {
         }
       } catch (error) {
         console.error("Error parsing message:", error);
-        Sentry.captureException(error);
       }
     };
 
     newWs.onerror = (error) => {
       console.error("WebSocket error:", error);
-      Sentry.captureException(error);
       toast({
         title: "Error",
         description: "Connection error occurred",
@@ -409,7 +404,6 @@ export function useChat() {
         }));
       } catch (error) {
         console.error("Error sending message:", error);
-        Sentry.captureException(error);
         toast({
           title: "Error",
           description: "Failed to send message",

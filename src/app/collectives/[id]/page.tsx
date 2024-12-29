@@ -5,45 +5,10 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import { CollectiveOverview } from "@/components/collectives/CollectiveOverview";
-import { CollectiveCapabilities } from "@/components/collectives/CollectiveCapabilities";
-import { CollectiveHolders } from "@/components/collectives/CollectiveHolders";
-
-interface Collective {
-  id: string;
-  created_at: string;
-  name: string;
-  mission: string;
-  description: string;
-  image_url: string;
-  is_graduated: boolean;
-  is_deployed: boolean;
-  x_url?: string;
-  telegram_url?: string;
-  website_url?: string;
-}
-
-interface Capability {
-  id: string;
-  created_at: string;
-  collective_id: string;
-  type: string;
-  contract_principal: string;
-  tx_id: string;
-  symbol?: string;
-  decimals?: number;
-  max_supply?: string;
-  uri?: string;
-  image_url?: string;
-  description?: string;
-  is_deployed: boolean;
-}
-
-interface Holder {
-  address: string;
-  balance: string;
-  percentage: number;
-}
+import CollectiveOverview from "@/components/collectives/CollectiveOverview";
+import CollectiveHolders from "@/components/collectives/CollectiveHolders";
+import CollectiveCapabilities from "@/components/collectives/CollectiveCapabilities";
+import { Capability, Collective, Holder } from "@/types/supabase";
 
 export const runtime = "edge";
 
@@ -53,7 +18,7 @@ export default function CollectivePage() {
   const [collective, setCollective] = useState<Collective | null>(null);
   const [collectiveCapabilities, setCollectiveCapabilities] = useState<Capability[] | null>(null);
   const [holders, setHolders] = useState<Holder[]>([]);
-  const [totalSupply, setTotalSupply] = useState<string>("");
+  const [tokenSymbol, setTokenSymbol] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -94,6 +59,7 @@ export default function CollectivePage() {
           );
           if (tokenCapability) {
             await fetchHolders(tokenCapability.contract_principal);
+            setTokenSymbol(tokenCapability.token_symbol);
           }
         }
       } catch (error) {
@@ -112,7 +78,6 @@ export default function CollectivePage() {
         `https://api.hiro.so/ordinals/v1/tokens/${contractPrincipal}/holders`
       );
       const data = await response.json();
-      setTotalSupply(data.total_supply);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const holdersWithPercentage = data.results.map((holder: any) => ({
@@ -151,7 +116,7 @@ export default function CollectivePage() {
       )}
       
       {collectiveCapabilities?.some(cap => cap.type === "token") && (
-        <CollectiveHolders holders={holders} totalSupply={totalSupply} />
+        <CollectiveHolders holders={holders} tokenSymbol={tokenSymbol} />
       )}
 
       <div className="text-sm text-muted-foreground mt-8">
