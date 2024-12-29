@@ -7,25 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Settings2, ChevronDown, ChevronUp } from "lucide-react";
 import { BsGlobe, BsTwitterX, BsTelegram } from "react-icons/bs";
+import {Collective, Token} from "@/types/supabase";
 
 interface CollectiveOverviewProps {
-  collective: {
-    name: string;
-    mission: string;
-    description?: string;
-    image_url?: string;
-    website_url?: string;
-    x_url?: string;
-    telegram_url?: string;
-    is_graduated: boolean;
-    is_deployed: boolean;
-    token_price?: string;
-    treasury_balance?: string;
-    member_count?: number;
-  };
+  collective: Collective
+  token: Token
 }
 
-function CollectiveOverview({ collective }: CollectiveOverviewProps) {
+function CollectiveOverview({ collective, token }: CollectiveOverviewProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   return (
@@ -34,9 +23,9 @@ function CollectiveOverview({ collective }: CollectiveOverviewProps) {
       <div className="relative h-48 w-full overflow-hidden rounded-lg bg-gradient-to-r from-primary/10 to-primary/5">
         <div className="absolute inset-0 flex items-center justify-between p-8">
           <div className="flex items-center gap-6">
-            {collective.image_url && (
+            {token.image_url && (
               <Image
-                src={collective.image_url}
+                src={token.image_url}
                 alt={collective.name}
                 width={100}
                 height={100}
@@ -65,22 +54,22 @@ function CollectiveOverview({ collective }: CollectiveOverviewProps) {
 
       {/* Key Stats */}
       <div className="grid grid-cols-3 gap-4">
-        {collective.token_price && (
+        {true && (
           <Card className="p-6">
             <div className="text-sm text-muted-foreground">Token Price</div>
-            <div className="mt-2 text-2xl font-bold">{collective.token_price}</div>
+            <div className="mt-2 text-2xl font-bold">2.34</div>
           </Card>
         )}
-        {collective.treasury_balance && (
+        {true && (
           <Card className="p-6">
             <div className="text-sm text-muted-foreground">Treasury Balance</div>
-            <div className="mt-2 text-2xl font-bold">{collective.treasury_balance}</div>
+            <div className="mt-2 text-2xl font-bold">123.45</div>
           </Card>
         )}
-        {collective.member_count && (
+        {true && (
           <Card className="p-6">
             <div className="text-sm text-muted-foreground">Members</div>
-            <div className="mt-2 text-2xl font-bold">{collective.member_count}</div>
+            <div className="mt-2 text-2xl font-bold">123</div>
           </Card>
         )}
       </div>

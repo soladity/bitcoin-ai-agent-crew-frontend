@@ -1,5 +1,14 @@
 // types/supabase.ts
 
+export interface Token {
+  id: string;
+  collective_id: string;
+  contract_principal: string;
+  name: string;
+  symbol: string;
+  image_url: string;
+}
+
 export interface Collective {
   id: string;
   created_at: string;

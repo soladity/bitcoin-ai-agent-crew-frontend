@@ -16,8 +16,9 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/utils/supabase/client";
 import Image from "next/image";
 import Link from "next/link";
-import { Coins, Loader2, PiggyBank, Settings2, Vault } from "lucide-react";
+import { Bolt, Coins, Loader2, PiggyBank, Settings2, Vault } from "lucide-react";
 import { Heading } from "../catalyst/heading";
+import { Token } from "@/types/supabase";
 
 interface Collective {
   id: string;
@@ -34,14 +35,33 @@ interface Collective {
   }>;
 }
 
+
+
 export default function Collectives() {
   const [collectives, setCollectives] = useState<Collective[]>([]);
+  const [tokens, setTokens] = useState<Token[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchCollectives();
+    fetchTokens();
   }, []);
+
+  const fetchTokens = async () => {
+    try {
+      setLoading(true);
+      const { data: tokensData, error: tokensError } = await supabase
+        .from("tokens")
+        .select("*");
+      if (tokensError) throw tokensError;
+      setTokens(tokensData);
+    } catch (error) {
+      console.error("Error fetching tokens:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchCollectives = async () => {
     try {
@@ -85,7 +105,7 @@ export default function Collectives() {
       case "treasury":
         return <Vault className="h-4 w-4" />;
       default:
-        return null;
+        return <Bolt className="h-4 w-4" />;
     }
   };
 
@@ -131,9 +151,14 @@ export default function Collectives() {
             {filteredCollectives.map((collective) => (
               <TableRow key={collective.id}>
                 <TableCell>
-                  {collective.image_url && (
+                  {tokens
+                    .find((token) => token.collective_id === collective.id)
+                    ?.image_url && (
                     <Image
-                      src={collective.image_url}
+                      src={
+                        tokens.find((token) => token.collective_id === collective.id)?.image_url ||
+                        collective.image_url
+                      }
                       alt={collective.name}
                       width={40}
                       height={40}

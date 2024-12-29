@@ -8,7 +8,7 @@ import { format } from "date-fns";
 import CollectiveOverview from "@/components/collectives/CollectiveOverview";
 import CollectiveHolders from "@/components/collectives/CollectiveHolders";
 import CollectiveCapabilities from "@/components/collectives/CollectiveCapabilities";
-import { Capability, Collective, Holder } from "@/types/supabase";
+import { Capability, Collective, Holder, Token } from "@/types/supabase";
 
 export const runtime = "edge";
 
@@ -19,6 +19,7 @@ export default function CollectivePage() {
   const [collectiveCapabilities, setCollectiveCapabilities] = useState<Capability[] | null>(null);
   const [holders, setHolders] = useState<Holder[]>([]);
   const [tokenSymbol, setTokenSymbol] = useState<string>("");
+  const [token, setToken] = useState<Token | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -52,16 +53,23 @@ export default function CollectivePage() {
 
         setCollectiveCapabilities(capabilitiesData);
 
-        // If collective is deployed, fetch token holders
-        if (collectiveData.is_deployed) {
-          const tokenCapability = capabilitiesData?.find(
-            (cap) => cap.type === "token"
-          );
-          if (tokenCapability) {
-            await fetchHolders(tokenCapability.contract_principal);
-            setTokenSymbol(tokenCapability.token_symbol);
-          }
+
+        const { data: tokensData, error: tokensError } = await supabase
+          .from("tokens")
+          .select("*")
+          .eq("collective_id", id);
+
+        if (tokensError) {
+          console.error("Error fetching tokens:", tokensError);
+          return;
         }
+
+        if (tokensData && tokensData.length > 0) {
+          setToken(tokensData[0]);
+          await fetchHolders(tokensData[0].contract_principal, tokensData[0].symbol);
+          setTokenSymbol(tokensData[0].symbol);
+        }
+
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -72,10 +80,10 @@ export default function CollectivePage() {
     fetchData();
   }, [id]);
 
-  const fetchHolders = async (contractPrincipal: string) => {
+  const fetchHolders = async (contractPrincipal: string, tokenSymbol: string) => {
     try {
       const response = await fetch(
-        `https://api.hiro.so/ordinals/v1/tokens/${contractPrincipal}/holders`
+        `https://api.testnet.hiro.so/extended/v1/tokens/ft/${contractPrincipal}::${tokenSymbol}/holders`
       );
       const data = await response.json();
 
@@ -109,7 +117,7 @@ export default function CollectivePage() {
 
   return (
     <div className="max-w-[1400px] mx-auto p-4 space-y-6">
-      <CollectiveOverview collective={collective} />
+      <CollectiveOverview collective={collective} token={token} />
       
       {collectiveCapabilities && collectiveCapabilities.length > 0 && (
         <CollectiveCapabilities capabilities={collectiveCapabilities} />
