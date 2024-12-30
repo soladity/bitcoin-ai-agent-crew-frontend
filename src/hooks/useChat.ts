@@ -152,10 +152,6 @@ export function useChat() {
           .limit(1)
           .single();
 
-        if (conversationError) {
-          throw conversationError;
-        }
-
         if (!conversation) {
           // Create a new conversation if none exists
           const { data: newConversation, error: createError } = await supabase

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Settings2, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { BsGlobe, BsTwitterX, BsTelegram } from "react-icons/bs";
 import {Collective, Token} from "@/types/supabase";
 
@@ -109,18 +109,7 @@ function CollectiveOverview({ collective, token }: CollectiveOverviewProps) {
         </div>
 
         <div className="space-y-4">
-          {/* Mission Card */}
-          <Card className="p-6 bg-primary/5 border-primary/10">
-            <div className="flex items-start gap-4">
-              <div className="p-2 rounded-md bg-primary/10">
-                <Settings2 className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-primary">Mission</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{collective.mission}</p>
-              </div>
-            </div>
-          </Card>
+
 
           {/* Social Links */}
           <Card className="p-6">

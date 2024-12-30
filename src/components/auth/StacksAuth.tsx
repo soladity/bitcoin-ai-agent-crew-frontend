@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { AppConfig, showConnect, UserSession } from "@stacks/connect";
+import { AppConfig, showConnect, UserSession, openSignatureRequestPopup } from "@stacks/connect";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { StacksMainnet } from "@stacks/network";
 
 const appConfig = new AppConfig(["store_write", "publish_data"]);
 const userSession = new UserSession({ appConfig });
@@ -21,12 +22,13 @@ export default function StacksAuth() {
     setMounted(true);
   }, []);
 
-  const handleAuthentication = async (stxAddress: string) => {
+  const handleAuthentication = async (stxAddress: string, signature: string) => {
     try {
+      console.log(signature);
       // Try to sign in first
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: `${stxAddress}@stacks.id`,
-        password: stxAddress,
+        password: signature,
       });
 
       if (signInError && signInError.status === 400) {
@@ -37,7 +39,7 @@ export default function StacksAuth() {
 
         const { error: signUpError } = await supabase.auth.signUp({
           email: `${stxAddress}@stacks.id`,
-          password: stxAddress,
+          password: signature,
         });
 
         if (signUpError) throw signUpError;
@@ -79,8 +81,8 @@ export default function StacksAuth() {
       await new Promise<void>((resolve) => {
         showConnect({
           appDetails: {
-            name: "AIBTC Champions Sprint",
-            icon: window.location.origin + "/logos/aibtcdev-avatar-1000px.png",
+            name: "AIBTC",
+            icon: "https://bncytzyfafclmdxrwpgq.supabase.co/storage/v1/object/public/aibtcdev/aibtcdev-avatar-250px.png",
           },
           onCancel: () => {
             toast({
@@ -96,11 +98,37 @@ export default function StacksAuth() {
       const userData = userSession.loadUserData();
       const stxAddress = userData.profile.stxAddress.mainnet;
 
+      // Request signature
       toast({
-        description: "Wallet connected. Authenticating...",
+        description: "Please sign the message to authenticate...",
       });
 
-      const success = await handleAuthentication(stxAddress);
+      let signature: string;
+      await new Promise<void>((resolve, reject) => {
+        openSignatureRequestPopup({
+          message: "Please sign the message to authenticate.",
+          network: new StacksMainnet(),
+          appDetails: {
+            name: "AIBTC",
+            icon: "https://bncytzyfafclmdxrwpgq.supabase.co/storage/v1/object/public/aibtcdev/aibtcdev-avatar-250px.png",
+          },
+          onFinish: (data) => {
+            signature = data.signature.slice(0, 72);
+            console.log(data);
+            console.log('Trimmed signature:', signature);
+            resolve();
+          },
+          onCancel: () => {
+            reject(new Error("Signature request cancelled"));
+          },
+        });
+      });
+
+      toast({
+        description: "Signature received. Authenticating...",
+      });
+
+      const success = await handleAuthentication(stxAddress, signature!);
 
       if (success) {
         // Delay redirect to show success message
@@ -109,9 +137,9 @@ export default function StacksAuth() {
         }, 2000);
       }
     } catch (error) {
-      console.error("Wallet connection error:", error);
+      console.error("Authentication error:", error);
       toast({
-        description: "Failed to connect wallet. Please try again.",
+        description: "Authentication failed. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -126,7 +154,7 @@ export default function StacksAuth() {
       <Button
         onClick={handleAuth}
         disabled={isLoading}
-        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-bold"
+        className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-lg font-bold transition-all duration-200 border-0"
       >
         {isLoading ? (
           <>

@@ -19,7 +19,15 @@ export default function CollectivePage() {
   const [collectiveCapabilities, setCollectiveCapabilities] = useState<Capability[] | null>(null);
   const [holders, setHolders] = useState<Holder[]>([]);
   const [tokenSymbol, setTokenSymbol] = useState<string>("");
-  const [token, setToken] = useState<Token | null>(null);
+  const [token, setToken] = useState<Token>({
+    id: "0",
+    collective_id: "0",
+    contract_principal: "",
+    name: "",
+    symbol: "",
+    decimals: 0,
+    image_url: "",
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

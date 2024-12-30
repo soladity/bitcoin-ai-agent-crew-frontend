@@ -6,6 +6,7 @@ export interface Token {
   contract_principal: string;
   name: string;
   symbol: string;
+  decimals: number;
   image_url: string;
 }
 

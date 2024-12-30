@@ -10,7 +10,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/utils/supabase/client";
@@ -34,8 +33,6 @@ interface Collective {
     type: string;
   }>;
 }
-
-
 
 export default function Collectives() {
   const [collectives, setCollectives] = useState<Collective[]>([]);
@@ -124,9 +121,9 @@ export default function Collectives() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Heading>All Collectives</Heading>
+    <div className="container mx-auto p-4">
+      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-zinc-950/10 pb-6 dark:border-white/10">
+        <Heading>Collectives</Heading>
         <Input
           placeholder="Search collectives..."
           value={searchQuery}
@@ -135,80 +132,72 @@ export default function Collectives() {
         />
       </div>
 
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[50px]">Logo</TableHead>
-              <TableHead className="w-auto">Name</TableHead>
-              <TableHead className="w-full">Mission</TableHead>
-              <TableHead className="w-[150px] text-center">Capabilities</TableHead>
-              <TableHead className="w-[100px] text-center">Status</TableHead>
-              <TableHead className="w-[80px] text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredCollectives.map((collective) => (
-              <TableRow key={collective.id}>
-                <TableCell>
-                  {tokens
-                    .find((token) => token.collective_id === collective.id)
-                    ?.image_url && (
-                    <Image
-                      src={
-                        tokens.find((token) => token.collective_id === collective.id)?.image_url ||
-                        collective.image_url
-                      }
-                      alt={collective.name}
-                      width={40}
-                      height={40}
-                      className="rounded-lg"
-                    />
-                  )}
-                </TableCell>
-                <TableCell className="font-medium">{collective.name}</TableCell>
-                <TableCell className="text-muted-foreground">
-                  {collective.mission}
-                </TableCell>
-                <TableCell>
-                  <div className="flex justify-center gap-2">
-                    {collective.capabilities?.map((capability) => (
-                      <div
-                        key={capability.id}
-                        className="p-1.5 rounded-md bg-muted"
-                        title={capability.type}
-                      >
-                        {getCapabilityIcon(capability.type)}
-                      </div>
-                    ))}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-col items-center gap-1">
-                    {collective.is_graduated && (
-                      <Badge variant="default">Graduated</Badge>
-                    )}
-                    {collective.is_deployed && (
-                      <Badge variant="default">Deployed</Badge>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    asChild
-                  >
-                    <Link href={`/collectives/${collective.id}`}>
-                      View
-                    </Link>
-                  </Button>
-                </TableCell>
+      <div className="mt-6">
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-[50px]">Logo</TableHead>
+                <TableHead className="w-auto w-[200px]">Name</TableHead>
+                <TableHead className="w-auto">Mission</TableHead>
+                <TableHead className="w-[150px] text-center">Capabilities</TableHead>
+                <TableHead className="w-[80px] text-right">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
+            </TableHeader>
+            <TableBody>
+              {filteredCollectives.map((collective) => (
+                <TableRow key={collective.id}>
+                  <TableCell>
+                    {tokens
+                      .find((token) => token.collective_id === collective.id)
+                      ?.image_url && (
+                      <Image
+                        src={
+                          tokens.find((token) => token.collective_id === collective.id)?.image_url ||
+                          collective.image_url
+                        }
+                        alt={collective.name}
+                        width={40}
+                        height={40}
+                        className="rounded-lg"
+                      />
+                    )}
+                  </TableCell>
+                  <TableCell className="font-medium">{collective.name}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {collective.mission}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex justify-center gap-2">
+                      {collective.capabilities?.map((capability) => (
+                        <div
+                          key={capability.id}
+                          className="p-1.5 rounded-md bg-muted"
+                          title={capability.type}
+                        >
+                          {getCapabilityIcon(capability.type)}
+                        </div>
+                      ))}
+                    </div>
+                  </TableCell>
+
+                  <TableCell className="text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                    >
+                      <Link href={`/collectives/${collective.id}`}>
+                        View
+                      </Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      </div>
     </div>
   );
 }
