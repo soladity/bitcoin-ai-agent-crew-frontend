@@ -1,5 +1,16 @@
 // types/supabase.ts
 
+export interface Schedule {
+  id: string;
+  profile_id: string;
+  name: string;
+  task: string;
+  enabled: boolean;
+  cron: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Token {
   id: string;
   collective_id: string;
