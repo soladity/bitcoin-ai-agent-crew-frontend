@@ -144,7 +144,7 @@ export function useChat() {
 
       try {
         // Get the latest conversation for the user
-        const { data: conversation, error: conversationError } = await supabase
+        const { data: conversation } = await supabase
           .from('conversations')
           .select('*')
           .eq('profile_id', profileId)
