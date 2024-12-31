@@ -14,6 +14,7 @@ export default function Chat() {
     isLoading,
     handleSubmit,
     handleResetHistory,
+    handleReconnect,
     messagesEndRef,
     isConnected,
   } = useChat();
@@ -127,6 +128,7 @@ export default function Chat() {
           isConnected={isConnected}
           onSubmit={handleSubmit}
           onReset={handleResetHistory}
+          onReconnect={handleReconnect}
           onScrollToBottom={scrollToBottom}
           isScrollButtonDisabled={!showScrollButton}
         />

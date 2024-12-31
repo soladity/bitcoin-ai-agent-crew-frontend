@@ -48,6 +48,22 @@ interface HiroHolderResponse {
   }[];
 }
 
+// Cache for storing fetched data
+const collectiveCache = new Map<string, {
+  data: {
+    collective: Collective | null;
+    collectiveCapabilities: Capability[] | null;
+    holders: Holder[];
+    tokenSymbol: string;
+    token: Token;
+    marketStats: MarketStats;
+    treasuryTokens: TreasuryToken[];
+  };
+  timestamp: number;
+}>();
+
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+
 export function useCollectiveDetails(id: string) {
   const [collective, setCollective] = useState<Collective | null>(null);
   const [collectiveCapabilities, setCollectiveCapabilities] = useState<Capability[] | null>(null);
@@ -164,56 +180,50 @@ export function useCollectiveDetails(id: string) {
   };
 
   useEffect(() => {
-    const fetchCollectiveAndCapabilities = async () => {
+    const loadData = async () => {
+      // Check cache first
+      const cachedData = collectiveCache.get(id);
+      const now = Date.now();
+
+      if (cachedData && (now - cachedData.timestamp) < CACHE_DURATION) {
+        // Use cached data
+        setCollective(cachedData.data.collective);
+        setCollectiveCapabilities(cachedData.data.collectiveCapabilities);
+        setHolders(cachedData.data.holders);
+        setTokenSymbol(cachedData.data.tokenSymbol);
+        setToken(cachedData.data.token);
+        setMarketStats(cachedData.data.marketStats);
+        setTreasuryTokens(cachedData.data.treasuryTokens);
+        setLoading(false);
+        return;
+      }
+
       try {
-        // Fetch collective data
+        // Fetch collective and capabilities
         const { data: collectiveData, error: collectiveError } = await supabase
           .from("collectives")
           .select("*")
           .eq("id", id)
           .single();
 
-        if (collectiveError) {
-          console.error("Error fetching collective:", collectiveError);
-          return;
-        }
-        
+        if (collectiveError) throw collectiveError;
         setCollective(collectiveData);
 
-        // Fetch capabilities
         const { data: capabilitiesData, error: capabilitiesError } = await supabase
           .from("capabilities")
           .select("*")
           .eq("collective_id", id);
 
-        if (capabilitiesError) {
-          console.error("Error fetching capabilities:", capabilitiesError);
-          return;
-        }
-
+        if (capabilitiesError) throw capabilitiesError;
         setCollectiveCapabilities(capabilitiesData);
-      } catch (error) {
-        console.error("Error in fetchCollectiveAndCapabilities:", error);
-      }
-    };
 
-    fetchCollectiveAndCapabilities();
-  }, [id]);
-
-  useEffect(() => {
-    const fetchTokensAndMarketData = async () => {
-      if (!collectiveCapabilities) return;
-
-      try {
+        // Fetch token data
         const { data: tokensData, error: tokensError } = await supabase
           .from("tokens")
           .select("*")
           .eq("collective_id", id);
 
-        if (tokensError) {
-          console.error("Error fetching tokens:", tokensError);
-          return;
-        }
+        if (tokensError) throw tokensError;
 
         if (tokensData && tokensData.length > 0) {
           const currentToken = tokensData[0];
@@ -222,51 +232,63 @@ export function useCollectiveDetails(id: string) {
 
           // Fetch holders and market data
           const { totalSupply, holderCount } = await fetchHolders(
-            currentToken.contract_principal, 
+            currentToken.contract_principal,
             currentToken.symbol
           );
-          
+
           const price = await fetchTokenPrice(
             currentToken.contract_principal,
             currentToken.symbol
           );
 
-          // Calculate market stats
           const marketCap = price * totalSupply;
-          
+
           // Fetch treasury tokens
-          const treasuryAddr = collectiveCapabilities.find(
+          const treasuryAddr = capabilitiesData.find(
             (capability) => capability.type === "aibtc-ext006-treasury"
           )?.contract_principal;
-          if (!treasuryAddr) {
-            console.error("No treasury address found");
-            return;
-          }
+
+          if (!treasuryAddr) throw new Error("No treasury address found");
+
           const treasuryTokensList = await fetchTreasuryTokens(treasuryAddr);
           setTreasuryTokens(treasuryTokensList);
 
-          // Calculate treasury balance (sum of all token values)
           const treasuryBalance = treasuryTokensList.reduce(
             (sum, token) => sum + token.value,
             0
           );
 
-          setMarketStats({
+          const newMarketStats = {
             price,
             marketCap,
             treasuryBalance,
             holderCount,
+          };
+          setMarketStats(newMarketStats);
+
+          // Cache the fetched data
+          collectiveCache.set(id, {
+            data: {
+              collective: collectiveData,
+              collectiveCapabilities: capabilitiesData,
+              holders: holders,
+              tokenSymbol: currentToken.symbol,
+              token: currentToken,
+              marketStats: newMarketStats,
+              treasuryTokens: treasuryTokensList,
+            },
+            timestamp: now,
           });
         }
       } catch (error) {
-        console.error("Error in fetchTokensAndMarketData:", error);
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTokensAndMarketData();
-  }, [collectiveCapabilities, id]);
+    loadData();
+  }, [id, holders]);
 
   return {
     collective,

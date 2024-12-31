@@ -40,20 +40,20 @@ export function useChat() {
     }
   }, []);
 
-    // Fetch current user and their profile
-    useEffect(() => {
-      async function fetchUserAndProfile() {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error) {
-          console.error("Error fetching user:", error);
-          return;
-        }
-        if (user) {
-          setProfileId(user.id);
-        }
+  // Fetch current user and their profile
+  useEffect(() => {
+    async function fetchUserAndProfile() {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error("Error fetching user:", error);
+        return;
       }
-      fetchUserAndProfile();
-    }, []);
+      if (user) {
+        setProfileId(user.id);
+      }
+    }
+    fetchUserAndProfile();
+  }, []);
 
   const handleResetHistory = useCallback(async () => {
     if (!profileId) return;
@@ -377,6 +377,174 @@ export function useChat() {
     };
   }, [conversationId, authToken, toast]);
 
+  const handleReconnect = useCallback(async () => {
+    if (!conversationId || !authToken) return;
+
+    // Close existing WebSocket if any
+    if (ws) {
+      ws.close();
+      setWs(null);
+    }
+
+    // Create new WebSocket connection
+    const wsUrl = new URL(`${process.env.NEXT_PUBLIC_API_URL?.replace('http', 'ws')}/chat/conversation/${conversationId}/ws`);
+    wsUrl.searchParams.append('token', authToken);
+
+    const newWs = new WebSocket(wsUrl.toString());
+
+    newWs.onopen = () => {
+      console.log('WebSocket connection re-established');
+      setIsConnected(true);
+      setIsLoading(false);
+      toast({
+        title: "Connected",
+        description: "Successfully reconnected to the chat",
+      });
+    };
+
+    newWs.onmessage = (event) => {
+      try {
+        if (!event.data || event.data.trim() === "") return;
+
+        const data = JSON.parse(event.data);
+        if (!data || typeof data !== "object") return;
+
+        switch (data.type) {
+          case 'history':
+            console.log('Raw history data:', data);
+            // Set initial conversation history
+            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+            const historyMessages = data.messages.map((msg: any) => {
+              console.log('Processing history message:', msg);
+              // Ensure timestamp is properly parsed from the message
+              const timestamp = msg.timestamp || msg.created_at || msg.job_started_at || new Date().toISOString();
+              // Skip step messages with empty thoughts
+              if (msg.type === "step" && (!msg.thought || msg.thought.trim() === "")) {
+                return null;
+              }
+              const processedMsg = {
+                role: msg.role,
+                type: msg.type,
+                content: msg.type === "step" ? msg.thought : msg.content,
+                timestamp: new Date(timestamp),
+                tool: msg.tool,
+                tool_input: msg.tool_input,
+                result: msg.result,
+              };
+              console.log('Processed message:', processedMsg);
+              return processedMsg;
+            })
+            .filter((msg: Message | null): msg is Message => msg !== null && msg.type !== "task");
+            console.log('Final history messages:', historyMessages);
+            // Sort messages by timestamp
+            historyMessages.sort((a: { timestamp: { getTime: () => number; }; }, b: { timestamp: { getTime: () => number; }; }) => a.timestamp.getTime() - b.timestamp.getTime());
+            setMessages(historyMessages);
+            break;
+
+          case 'job_started':
+            console.log('New job started:', data.job_id);
+            // Reset the current job's message groups when a new job starts
+            currentJobRef.current = {
+              steps: [],
+              tasks: [],
+              results: [],
+            };
+            break;
+
+          case 'stream':
+            // Skip step messages with empty thoughts
+            if (data.stream_type === "step" && (!data.thought || data.thought.trim() === "")) {
+              break;
+            }
+            const newMessage: Message = {
+              role: "assistant",
+              type: data.stream_type,
+              content: data.stream_type === "step" ? data.thought : data.content,
+              timestamp: new Date(data.timestamp),
+              tool: data.tool,
+              tool_input: data.tool_input,
+              result: data.result,
+            };
+
+            switch (data.stream_type) {
+              case "step":
+                currentJobRef.current.steps.push(newMessage);
+                break;
+              case "task":
+                // Skip storing task messages
+                break;
+              case "result":
+                currentJobRef.current.results.push(newMessage);
+                setIsLoading(false);
+                break;
+              default:
+                console.warn("Unknown stream type:", data.stream_type);
+            }
+
+            // Update messages with all current groups
+            setMessages((prev) => {
+              const withoutCurrentJob = prev.filter(
+                (msg) =>
+                  msg.role !== "assistant" ||
+                  !msg.type ||
+                  msg.timestamp < new Date(data.job_started_at)
+              );
+
+              return [
+                ...withoutCurrentJob,
+                ...currentJobRef.current.steps,
+                ...currentJobRef.current.results,
+              ];
+            });
+            break;
+
+          case 'user_message':
+            // Add user message from history
+            const userMessage: Message = {
+              role: "user",
+              type: null,
+              content: data.content,
+              timestamp: new Date(data.timestamp),
+            };
+            setMessages(prev => [...prev, userMessage]);
+            break;
+
+          case 'error':
+            console.error('Error from WebSocket:', data.message);
+            toast({
+              title: "Error",
+              description: data.message,
+              variant: "destructive",
+            });
+            setIsLoading(false);
+            break;
+
+          default:
+            console.warn("Unknown message type:", data.type);
+        }
+      } catch (error) {
+        console.error("Error parsing message:", error);
+      }
+    };
+
+    newWs.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      toast({
+        title: "Error",
+        description: "Connection error occurred",
+        variant: "destructive",
+      });
+    };
+
+    newWs.onclose = () => {
+      console.log("WebSocket connection closed");
+      setIsConnected(false);
+      setWs(null);
+    };
+
+    setWs(newWs);
+  }, [conversationId, authToken, ws, toast]);
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -418,6 +586,7 @@ export function useChat() {
     isLoading,
     handleSubmit,
     handleResetHistory,
+    handleReconnect,
     messagesEndRef,
     isConnected,
   };

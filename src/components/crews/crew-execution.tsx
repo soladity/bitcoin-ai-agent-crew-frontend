@@ -60,6 +60,11 @@ export default function ExecutionPanel({ crewId }: ExecutionPanelProps) {
           isConnected={isConnected}
           onSubmit={handleSubmit}
           onReset={handleResetHistory}
+          onReconnect={() => {}}
+          onScrollToBottom={() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          }}
+          isScrollButtonDisabled={isLoading}
         />
       </CardContent>
     </Card>

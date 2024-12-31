@@ -137,11 +137,11 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
                 <MessageSquareText />
                 Chat
               </SidebarItem>
-              <SidebarItem href="/collectives" current={pathname === "/collectives"}>
+              <SidebarItem href="/collectives" current={pathname.startsWith("/collectives")}>
                 <TowerControl />
                 <SidebarLabel>Collectives</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="/tasks" current={pathname === "/tasks"}>
+              <SidebarItem href="/tasks" current={pathname.startsWith("/tasks")}>
                 <ListTodo />
                 Tasks
               </SidebarItem>
