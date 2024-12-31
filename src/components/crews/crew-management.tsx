@@ -19,7 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import CrewForm from "./CrewForm";
+import CrewForm from "./crew-form";
 import {
   CrewWithCron,
   CrewManagementProps,

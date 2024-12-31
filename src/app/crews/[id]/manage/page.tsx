@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
-import AgentManagement from "@/components/agents/AgentManagement";
-import TaskManagement from "@/components/tasks/TaskManagement";
+import AgentManagement from "@/components/crews/agent-management";
+import TaskManagement from "@/components/tasks/task-management";
 import { Card, CardContent } from "@/components/ui/card";
 import { Agent, CrewWithCron, Task } from "@/types/supabase";
 import { Switch } from "@/components/ui/switch";

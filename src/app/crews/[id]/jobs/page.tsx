@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import JobsView from "@/components/crews/CrewJobs";
+import JobsView from "@/components/crews/crew-jobs";
 
 export const runtime = 'edge';
 

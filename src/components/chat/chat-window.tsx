@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useChat } from "@/hooks/useChat";
-import { MessageBubble } from "@/components/chat/MessageBubble";
-import { ChatInput } from "@/components/chat/ChatInput";
+import { useChat } from "@/hooks/use-chat";
+import { MessageBubble } from "@/components/chat/chat-message-bubble";
+import { ChatInput } from "@/components/chat/chat-input";
 import { Bot } from "lucide-react";
 
 export default function Chat() {

@@ -4,18 +4,55 @@ import { useState } from "react";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { BsGlobe, BsTwitterX, BsTelegram } from "react-icons/bs";
-import {Collective, Token} from "@/types/supabase";
+import { Collective, Token } from "@/types/supabase";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface CollectiveOverviewProps {
-  collective: Collective
-  token: Token
+  collective: Collective;
+  token: Token;
+  treasuryTokens?: {
+    type: 'FT' | 'NFT';
+    name: string;
+    symbol: string;
+    amount: number;
+    value: number;
+  }[];
+  marketStats?: {
+    price: number;
+    marketCap: number;
+    treasuryBalance: number;
+    holderCount: number;
+  };
 }
 
-function CollectiveOverview({ collective, token }: CollectiveOverviewProps) {
+function CollectiveOverview({ 
+  collective, 
+  token, 
+  treasuryTokens = [], 
+  marketStats = {
+    price: 0,
+    marketCap: 0,
+    treasuryBalance: 0,
+    holderCount: 0
+  }
+}: CollectiveOverviewProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+
+  const formatNumber = (num: number) => {
+    if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
+    if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
+    if (num >= 1e3) return `$${(num / 1e3).toFixed(2)}K`;
+    return `$${num.toFixed(2)}`;
+  };
 
   return (
     <div className="space-y-6">
@@ -23,7 +60,7 @@ function CollectiveOverview({ collective, token }: CollectiveOverviewProps) {
       <div className="relative h-48 w-full overflow-hidden rounded-lg bg-gradient-to-r from-primary/10 to-primary/5">
         <div className="absolute inset-0 flex items-center justify-between p-8">
           <div className="flex items-center gap-6">
-            {token.image_url && (
+            {token?.image_url && (
               <Image
                 src={token.image_url}
                 alt={collective.name}
@@ -37,41 +74,27 @@ function CollectiveOverview({ collective, token }: CollectiveOverviewProps) {
               <p className="mt-2 text-lg text-muted-foreground">{collective.mission}</p>
             </div>
           </div>
-          <div className="flex gap-2">
-            {collective.is_graduated && (
-              <Badge variant="default" className="h-6">
-                Graduated
-              </Badge>
-            )}
-            {collective.is_deployed && (
-              <Badge variant="default" className="h-6">
-                Deployed
-              </Badge>
-            )}
-          </div>
         </div>
       </div>
 
       {/* Key Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        {true && (
-          <Card className="p-6">
-            <div className="text-sm text-muted-foreground">Token Price</div>
-            <div className="mt-2 text-2xl font-bold">2.34</div>
-          </Card>
-        )}
-        {true && (
-          <Card className="p-6">
-            <div className="text-sm text-muted-foreground">Treasury Balance</div>
-            <div className="mt-2 text-2xl font-bold">123.45</div>
-          </Card>
-        )}
-        {true && (
-          <Card className="p-6">
-            <div className="text-sm text-muted-foreground">Members</div>
-            <div className="mt-2 text-2xl font-bold">123</div>
-          </Card>
-        )}
+      <div className="grid grid-cols-4 gap-4">
+        <Card className="p-6">
+          <div className="text-sm text-muted-foreground">Token Price</div>
+          <div className="mt-2 text-2xl font-bold">{formatNumber(marketStats.price)}</div>
+        </Card>
+        <Card className="p-6">
+          <div className="text-sm text-muted-foreground">Market Cap</div>
+          <div className="mt-2 text-2xl font-bold">{formatNumber(marketStats.marketCap)}</div>
+        </Card>
+        <Card className="p-6">
+          <div className="text-sm text-muted-foreground">Treasury Balance</div>
+          <div className="mt-2 text-2xl font-bold">{formatNumber(marketStats.treasuryBalance)}</div>
+        </Card>
+        <Card className="p-6">
+          <div className="text-sm text-muted-foreground">Holders</div>
+          <div className="mt-2 text-2xl font-bold">{marketStats.holderCount.toLocaleString()}</div>
+        </Card>
       </div>
 
       {/* Description and Social Links */}
@@ -108,12 +131,10 @@ function CollectiveOverview({ collective, token }: CollectiveOverviewProps) {
           </Card>
         </div>
 
-        <div className="space-y-4">
-
-
+        <div>
           {/* Social Links */}
           <Card className="p-6">
-            <h3 className="font-semibold mb-4">Connect</h3>
+            <h3 className="font-semibold mb-4">Socials</h3>
             <div className="flex gap-4">
               {collective.website_url && (
                 <a
@@ -149,6 +170,33 @@ function CollectiveOverview({ collective, token }: CollectiveOverviewProps) {
           </Card>
         </div>
       </div>
+
+      {/* Treasury Tokens Table */}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold mb-4">Treasury Holdings</h2>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Type</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Symbol</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="text-right">Value</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {treasuryTokens.map((token, index) => (
+              <TableRow key={index}>
+                <TableCell>{token.type}</TableCell>
+                <TableCell>{token.name}</TableCell>
+                <TableCell>{token.symbol}</TableCell>
+                <TableCell className="text-right">{token.amount.toLocaleString()}</TableCell>
+                <TableCell className="text-right">{formatNumber(token.value)}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
     </div>
   );
 }

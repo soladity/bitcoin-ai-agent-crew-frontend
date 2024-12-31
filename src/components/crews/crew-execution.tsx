@@ -1,10 +1,10 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { useCrewChat } from "@/hooks/useCrewChat";
-import { MessageBubble } from "../chat/MessageBubble";
+import { useCrewChat } from "@/hooks/use-crew-chat";
+import { MessageBubble } from "../chat/chat-message-bubble";
 import { Skeleton } from "../ui/skeleton";
-import { ChatInput } from "../chat/ChatInput";
+import { ChatInput } from "../chat/chat-input";
 import { useEffect, useCallback } from "react";
 
 interface ExecutionPanelProps {

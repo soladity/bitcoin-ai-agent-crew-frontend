@@ -20,9 +20,9 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, User, CheckSquare } from "lucide-react";
-import { ClonePublicCrew } from "./ClonePublicCrew";
+import { ClonePublicCrew } from "./marketplace-clone-public-crew";
 import { Heading } from "../catalyst/heading";
-import { Loader } from "../reusables/Loader";
+import { Loader } from "../reusables/loader";
 import { supabase } from "@/utils/supabase/client";
 
 interface Agent {

@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PlusIcon, Edit2Icon, Trash2Icon } from "lucide-react";
-import TaskForm from "./TaskForm";
+import TaskForm from "./task-form";
 import {
   Popover,
   PopoverContent,

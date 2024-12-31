@@ -19,7 +19,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Loader } from "../reusables/Loader";
+import { Loader } from "../reusables/loader";
 
 interface DashboardStats {
   totalCrews: number;

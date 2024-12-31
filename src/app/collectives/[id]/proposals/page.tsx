@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
-import CollectiveProposals from "@/components/collectives/CollectiveProposals";
+import CollectiveProposals from "@/components/collectives/collective-proposals";
 import { supabase } from "@/utils/supabase/client";
 
 export const runtime = 'edge';

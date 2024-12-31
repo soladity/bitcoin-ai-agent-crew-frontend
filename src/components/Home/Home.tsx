@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import SignIn from "../auth/StacksAuth";
+import SignIn from "../auth/auth-stacks";
 
 export default function Home() {
   return (

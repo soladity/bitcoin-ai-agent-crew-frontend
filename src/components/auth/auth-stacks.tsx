@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { StacksMainnet } from "@stacks/network";
+import { STACKS_MAINNET } from "@stacks/network";
 
 const appConfig = new AppConfig(["store_write", "publish_data"]);
 const userSession = new UserSession({ appConfig });
@@ -107,7 +107,7 @@ export default function StacksAuth() {
       await new Promise<void>((resolve, reject) => {
         openSignatureRequestPopup({
           message: "Please sign the message to authenticate.",
-          network: new StacksMainnet(),
+          network: STACKS_MAINNET,
           appDetails: {
             name: "AIBTC",
             icon: "https://bncytzyfafclmdxrwpgq.supabase.co/storage/v1/object/public/aibtcdev/aibtcdev-avatar-250px.png",

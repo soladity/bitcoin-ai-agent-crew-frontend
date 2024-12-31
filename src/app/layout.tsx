@@ -17,16 +17,16 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "logos/aibtcdev-champions-sprint-trading-series-800px.png",
-        width: 800,
-        height: 800,
+        url: "logos/aibtcdev-avatar-1000px.png",
+        width: 1000,
+        height: 1000,
         alt: "AIBTC",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    images: ["logos/aibtcdev-champions-sprint-trading-series-800px.png"],
+    images: ["logos/aibtcdev-avatar-1000px.png"],
   },
 };
 

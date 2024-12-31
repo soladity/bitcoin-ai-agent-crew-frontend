@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { Schedule } from "@/types/supabase";
+import { ScheduleSelector } from "../reusables/schedule-selector";
 
 interface TaskEditModalProps {
   task: Schedule | null;
@@ -53,31 +54,30 @@ export function TaskEditModal({ task, open, onClose }: TaskEditModalProps) {
           <SheetTitle>Edit Task</SheetTitle>
         </SheetHeader>
         <form onSubmit={handleSubmit} className="space-y-6 pt-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              value={formData.name || ""}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="task">Task</Label>
-            <Input
-              id="task"
-              value={formData.task || ""}
-              onChange={(e) => setFormData({ ...formData, task: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="cron">Schedule (Cron Expression)</Label>
-            <Input
-              id="cron"
-              value={formData.cron || ""}
-              onChange={(e) => setFormData({ ...formData, cron: e.target.value })}
-            />
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                value={formData.name || ""}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="task">Task</Label>
+              <textarea
+                id="task"
+                value={formData.task || ""}
+                onChange={(e) => setFormData({ ...formData, task: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Schedule</Label>
+              <ScheduleSelector 
+                value={formData.cron || ""} 
+                onChange={(cron) => setFormData({ ...formData, cron: cron })}
+              />
+            </div>
           </div>
 
           <div className="flex items-center space-x-2">

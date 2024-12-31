@@ -1,5 +1,5 @@
 import React from "react";
-import PublicStatsDashboard from "@/components/stats/StatsChart";
+import PublicStatsDashboard from "@/components/stats/stats-chart";
 const page = () => {
   return <PublicStatsDashboard />;
 };

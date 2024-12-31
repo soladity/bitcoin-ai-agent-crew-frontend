@@ -1,6 +1,6 @@
 
 import React from "react";
-import Collectives from "@/components/collectives/Collectives";
+import Collectives from "@/components/collectives/collectives";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

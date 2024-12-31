@@ -31,9 +31,9 @@ import {
   WrenchScrewdriverIcon,
 } from "@heroicons/react/16/solid";
 import { usePathname } from "next/navigation";
-import { useUserData } from "@/hooks/useUserData";
-import { Bot, ChartPie, CircleUser, LogOut, ListTodo, MessageSquareText, Scroll, Store, TowerControl, Wallet } from "lucide-react";
-import SignOut from "@/components/auth/SignOut";
+import { useUserData } from "@/hooks/use-user-data";
+import { Bot, ChartPie, CircleUser, LogOut, ListTodo, MessageSquareText, Scroll, TowerControl } from "lucide-react";
+import SignOut from "@/components/auth/auth-signout";
 import Image from "next/image";
 
 function AccountDropdownMenu({
@@ -75,13 +75,13 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
     )}`;
   }, [userData?.stxAddress]);
 
-  const displayAgentAddress = React.useMemo(() => {
-    if (!userData?.agentAddress) return "No agents assigned";
-    return `${userData.agentAddress.slice(
-      0,
-      5
-    )}...${userData.agentAddress.slice(-5)}`;
-  }, [userData?.agentAddress]);
+  // const displayAgentAddress = React.useMemo(() => {
+  //   if (!userData?.agentAddress) return "No agents assigned";
+  //   return `${userData.agentAddress.slice(
+  //     0,
+  //     5
+  //   )}...${userData.agentAddress.slice(-5)}`;
+  // }, [userData?.agentAddress]);
 
   const displayRole = React.useMemo(() => {
     if (
@@ -137,28 +137,32 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
                 <MessageSquareText />
                 Chat
               </SidebarItem>
-              <SidebarItem href="/tasks" current={pathname === "/tasks"}>
-                <ListTodo />
-                Tasks
-              </SidebarItem>
               <SidebarItem href="/collectives" current={pathname === "/collectives"}>
                 <TowerControl />
                 <SidebarLabel>Collectives</SidebarLabel>
               </SidebarItem>
-              <SidebarItem
+              <SidebarItem href="/tasks" current={pathname === "/tasks"}>
+                <ListTodo />
+                Tasks
+              </SidebarItem>
+              <SidebarItem href="/agents" current={pathname.startsWith("/agents")}>
+                <Bot />
+                Agents
+              </SidebarItem>
+              {/* <SidebarItem
                 href="/crews"
                 current={pathname.startsWith("/crews")}
               >
-                <Bot />
+                <Users />
                 <SidebarLabel>Crews</SidebarLabel>
-              </SidebarItem>
-              <SidebarItem
+              </SidebarItem> */}
+              {/* <SidebarItem
                 href="/marketplace"
                 current={pathname.startsWith("/marketplace")}
               >
                 <Store />
                 <SidebarLabel>Marketplace</SidebarLabel>
-              </SidebarItem>
+              </SidebarItem> */}
               {/* <SidebarItem
                 href="/leaderboard"
                 current={pathname.startsWith("/leaderboard")}
@@ -183,7 +187,7 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
                 <Scroll />
                 <SidebarLabel>Terms of Service</SidebarLabel>
               </SidebarItem>
-              <SidebarItem>
+              {/* <SidebarItem>
                 <Wallet />
                 <SidebarLabel className="flex flex-col">
                   {isLoading ? "Loading..." : displayAgentAddress}
@@ -195,7 +199,7 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
                     </span>
                   )}
                 </SidebarLabel>
-              </SidebarItem>
+              </SidebarItem> */}
             </SidebarSection>
           </SidebarBody>
 

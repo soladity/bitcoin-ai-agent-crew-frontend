@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PlusIcon, Edit2Icon, Trash2Icon } from "lucide-react";
-import AgentForm from "./AgentForm";
+import AgentForm from "./agent-form";
 import { Badge } from "@/components/ui/badge";
 import {
   Popover,

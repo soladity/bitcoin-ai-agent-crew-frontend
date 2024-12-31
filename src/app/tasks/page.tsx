@@ -1,11 +1,11 @@
 "use client";
 
-import { TasksTable } from "@/components/tasks/TasksTable";
+import { TasksTable } from "@/components/tasks/tasks";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "@heroicons/react/16/solid";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
-import { TaskEditModal } from "@/components/tasks/TaskEditModal";
+import { TaskEditModal } from "@/components/tasks/task-edit-modal";
 import { Heading } from "@/components/catalyst/heading";
 
 export default function TasksPage() {

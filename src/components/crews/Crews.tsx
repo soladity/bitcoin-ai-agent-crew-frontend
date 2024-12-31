@@ -4,7 +4,7 @@ import React from "react";
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { Crew } from "@/types/supabase";
-import { CrewManagement } from "@/components/crews/CrewManagement";
+import { CrewManagement } from "@/components/crews/crew-management";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 

@@ -86,7 +86,7 @@ export default function PublicStatsDashboard() {
           </div>
         </div>
 
-        {/* Active Users Section */}
+        {/* Active Users Section
         <div className="bg-gray-900 rounded-xl p-8 space-y-6">
           <h2 className="text-xl font-semibold">Active Power Users</h2>
           <div className="space-y-4">
@@ -104,7 +104,7 @@ export default function PublicStatsDashboard() {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
 
         <div className="text-center text-sm text-gray-500">
           Last updated: {new Date(data.timestamp).toLocaleString()}

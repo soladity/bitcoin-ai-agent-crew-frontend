@@ -1,6 +1,6 @@
 
 import React from "react";
-import Crews from "@/components/crews/Crews";
+import Crews from "@/components/crews/crews";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

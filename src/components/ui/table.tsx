@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useRouter } from "next/navigation"
 
 import { cn } from "@/lib/utils"
 
@@ -66,6 +67,33 @@ const TableRow = React.forwardRef<
 ))
 TableRow.displayName = "TableRow"
 
+interface ClickableTableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
+  href?: string;
+  children: React.ReactNode;
+}
+
+const ClickableTableRow = React.forwardRef<
+  HTMLTableRowElement,
+  ClickableTableRowProps
+>(({ href, children, className, ...props }, ref) => {
+  const router = useRouter();
+  
+  return (
+    <tr
+      ref={ref}
+      onClick={() => href && router.push(href)}
+      className={cn(
+        "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted cursor-pointer",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </tr>
+  );
+});
+ClickableTableRow.displayName = "ClickableTableRow"
+
 const TableHead = React.forwardRef<
   HTMLTableCellElement,
   React.ThHTMLAttributes<HTMLTableCellElement>
@@ -114,4 +142,5 @@ export {
   TableRow,
   TableCell,
   TableCaption,
+  ClickableTableRow,
 }

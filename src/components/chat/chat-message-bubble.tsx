@@ -3,7 +3,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Message } from "@/hooks/useChat";
+import { Message } from "@/hooks/use-chat";
 import { cn } from "@/lib/utils";
 import { 
   Clock, 

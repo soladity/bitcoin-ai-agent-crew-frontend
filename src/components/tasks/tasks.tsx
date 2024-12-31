@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Edit2 } from "lucide-react";
-import { TaskEditModal } from "./TaskEditModal";
+import { TaskEditModal } from "./task-edit-modal";
 import { supabase } from "@/utils/supabase/client";
 import { Schedule } from "@/types/supabase";
 

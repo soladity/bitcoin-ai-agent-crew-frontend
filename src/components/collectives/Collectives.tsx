@@ -8,14 +8,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  ClickableTableRow,
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/utils/supabase/client";
 import Image from "next/image";
-import Link from "next/link";
-import { Bolt, Coins, Loader2, PiggyBank, Settings2, Vault } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Heading } from "../catalyst/heading";
 import { Token } from "@/types/supabase";
 
@@ -91,21 +90,6 @@ export default function Collectives() {
     }
   };
 
-  const getCapabilityIcon = (type: string) => {
-    switch (type.toLowerCase()) {
-      case "token":
-        return <Coins className="h-4 w-4" />;
-      case "governance":
-        return <Settings2 className="h-4 w-4" />;
-      case "dex":
-        return <PiggyBank className="h-4 w-4" />;
-      case "treasury":
-        return <Vault className="h-4 w-4" />;
-      default:
-        return <Bolt className="h-4 w-4" />;
-    }
-  };
-
   const filteredCollectives = collectives.filter(
     (collective) =>
       collective.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -137,63 +121,38 @@ export default function Collectives() {
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className="w-[50px]">Logo</TableHead>
-                <TableHead className="w-auto w-[200px]">Name</TableHead>
-                <TableHead className="w-auto">Mission</TableHead>
-                <TableHead className="w-[150px] text-center">Capabilities</TableHead>
-                <TableHead className="w-[80px] text-right">Actions</TableHead>
+                <TableHead className="w-[80px]">Logo</TableHead>
+                <TableHead className="w-[300px]">Name</TableHead>
+                <TableHead className="w-[150px]">Token Symbol</TableHead>
+                <TableHead className="w-[150px] text-right">Price</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredCollectives.map((collective) => (
-                <TableRow key={collective.id}>
-                  <TableCell>
-                    {tokens
-                      .find((token) => token.collective_id === collective.id)
-                      ?.image_url && (
-                      <Image
-                        src={
-                          tokens.find((token) => token.collective_id === collective.id)?.image_url ||
-                          collective.image_url
-                        }
-                        alt={collective.name}
-                        width={40}
-                        height={40}
-                        className="rounded-lg"
-                      />
-                    )}
-                  </TableCell>
-                  <TableCell className="font-medium">{collective.name}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {collective.mission}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex justify-center gap-2">
-                      {collective.capabilities?.map((capability) => (
-                        <div
-                          key={capability.id}
-                          className="p-1.5 rounded-md bg-muted"
-                          title={capability.type}
-                        >
-                          {getCapabilityIcon(capability.type)}
-                        </div>
-                      ))}
-                    </div>
-                  </TableCell>
-
-                  <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      asChild
-                    >
-                      <Link href={`/collectives/${collective.id}`}>
-                        View
-                      </Link>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {filteredCollectives.map((collective) => {
+                const token = tokens.find((token) => token.collective_id === collective.id);
+                const randomPrice = (Math.random() * 100).toFixed(2);
+                return (
+                  <ClickableTableRow 
+                    key={collective.id}
+                    href={`/collectives/${collective.id}`}
+                  >
+                    <TableCell className="w-[80px]">
+                      {token?.image_url && (
+                        <Image
+                          src={token.image_url || collective.image_url}
+                          alt={collective.name}
+                          width={40}
+                          height={40}
+                          className="rounded-lg"
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell className="w-[300px] font-medium">{collective.name}</TableCell>
+                    <TableCell className="w-[150px]">{token?.symbol || '-'}</TableCell>
+                    <TableCell className="w-[150px] text-right">${randomPrice}</TableCell>
+                  </ClickableTableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </Card>

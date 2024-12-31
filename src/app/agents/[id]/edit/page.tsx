@@ -1,0 +1,65 @@
+"use client";
+
+import { useEffect } from "react";
+import { useParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { useAgent } from "@/hooks/use-agent";
+import { AgentForm } from "@/components/agents/agent-form";
+
+export const runtime = 'edge';
+
+export default function AgentEditPage() {
+  const params = useParams();
+  const {
+    loading,
+    saving,
+    formData,
+    fetchAgent,
+    handleSubmit,
+    handleChange,
+    handleToolsChange,
+  } = useAgent();
+
+  useEffect(() => {
+    if (params.id && params.id !== "new") {
+      fetchAgent(params.id as string);
+    }
+  }, [fetchAgent, params.id]);
+
+  if (loading) {
+    return <div className="container mx-auto py-8">Loading...</div>;
+  }
+
+  return (
+    <div className="container mx-auto py-8">
+      <div className="mb-8">
+        <Link href="/agents">
+          <Button variant="ghost" className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Agents
+          </Button>
+        </Link>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            {params.id && params.id !== "new" ? "Edit Agent" : "Create New Agent"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AgentForm
+            formData={formData}
+            saving={saving}
+            onSubmit={handleSubmit}
+            onChange={handleChange}
+            onToolsChange={handleToolsChange}
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
