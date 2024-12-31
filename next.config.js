@@ -12,7 +12,7 @@ const nextConfig = {
     // Extend the default aliases to include "@"
     config.resolve.alias = {
       ...config.resolve.alias,
-      "@": path.join(__dirname, "src"),
+      "@": path.join(__dirname, "src"), // __dirname works in CommonJS
     };
     return config;
   },
