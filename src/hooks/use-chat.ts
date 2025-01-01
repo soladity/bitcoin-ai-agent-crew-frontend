@@ -32,6 +32,7 @@ export function useChat() {
     tasks: [],
     results: [],
   });
+  const lastStreamedContentRef = useRef<string | null>(null);
 
   const scrollToBottom = useCallback(() => {
     const container = messagesEndRef.current?.parentElement;
@@ -293,15 +294,52 @@ export function useChat() {
             };
 
             switch (data.stream_type) {
+              case "token":
+                // Accumulate tokens instead of replacing
+                lastStreamedContentRef.current = (lastStreamedContentRef.current || '') + data.content;
+                // For token streams, we update the last message's content
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  const lastMessage = newMessages[newMessages.length - 1];
+                  
+                  if (newMessages.length > 0 && lastMessage.role === "assistant" && !lastMessage.type) {
+                    // Update existing message
+                    newMessages[newMessages.length - 1] = {
+                      ...lastMessage,
+                      content: lastMessage.content + data.content
+                    };
+                  } else {
+                    // Create new message
+                    newMessages.push({
+                      role: "assistant",
+                      type: null,
+                      content: data.content,
+                      timestamp: new Date(data.timestamp),
+                    });
+                  }
+                  return newMessages;
+                });
+                break;
               case "step":
+                // Reset the streamed content when we get a new step
+                lastStreamedContentRef.current = null;
                 currentJobRef.current.steps.push(newMessage);
                 break;
               case "task":
+                // Reset the streamed content when we get a new task
+                lastStreamedContentRef.current = null;
                 // Skip storing task messages
                 break;
               case "result":
-                currentJobRef.current.results.push(newMessage);
+                // Check if the result matches the last streamed content
+                console.log('Last streamed content:', lastStreamedContentRef.current);
+                console.log('New result content:', data.content);
+                if (!lastStreamedContentRef.current || lastStreamedContentRef.current.trim() !== data.content.trim()) {
+                  currentJobRef.current.results.push(newMessage);
+                }
                 setIsLoading(false);
+                // Reset the streamed content after processing the result
+                lastStreamedContentRef.current = null;
                 break;
               default:
                 console.warn("Unknown stream type:", data.stream_type);
@@ -467,15 +505,52 @@ export function useChat() {
             };
 
             switch (data.stream_type) {
+              case "token":
+                // Accumulate tokens instead of replacing
+                lastStreamedContentRef.current = (lastStreamedContentRef.current || '') + data.content;
+                // For token streams, we update the last message's content
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  const lastMessage = newMessages[newMessages.length - 1];
+                  
+                  if (newMessages.length > 0 && lastMessage.role === "assistant" && !lastMessage.type) {
+                    // Update existing message
+                    newMessages[newMessages.length - 1] = {
+                      ...lastMessage,
+                      content: lastMessage.content + data.content
+                    };
+                  } else {
+                    // Create new message
+                    newMessages.push({
+                      role: "assistant",
+                      type: null,
+                      content: data.content,
+                      timestamp: new Date(data.timestamp),
+                    });
+                  }
+                  return newMessages;
+                });
+                break;
               case "step":
+                // Reset the streamed content when we get a new step
+                lastStreamedContentRef.current = null;
                 currentJobRef.current.steps.push(newMessage);
                 break;
               case "task":
+                // Reset the streamed content when we get a new task
+                lastStreamedContentRef.current = null;
                 // Skip storing task messages
                 break;
               case "result":
-                currentJobRef.current.results.push(newMessage);
+                // Check if the result matches the last streamed content
+                console.log('Last streamed content:', lastStreamedContentRef.current);
+                console.log('New result content:', data.content);
+                if (!lastStreamedContentRef.current || lastStreamedContentRef.current.trim() !== data.content.trim()) {
+                  currentJobRef.current.results.push(newMessage);
+                }
                 setIsLoading(false);
+                // Reset the streamed content after processing the result
+                lastStreamedContentRef.current = null;
                 break;
               default:
                 console.warn("Unknown stream type:", data.stream_type);
