@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { Task } from "@/types/supabase";
 import { ScheduleSelector } from "../reusables/schedule-selector";
+import { Textarea } from "@/components/ui/textarea";
 
 interface TaskEditModalProps {
   task: Task | null;
@@ -77,7 +78,7 @@ export function TaskEditModal({ task, open, onClose, agentId, profileId }: TaskE
             </div>
             <div className="space-y-2">
               <Label htmlFor="prompt">Prompt</Label>
-              <textarea
+              <Textarea
                 id="prompt"
                 value={formData.prompt || ""}
                 onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}

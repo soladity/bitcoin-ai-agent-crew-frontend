@@ -288,7 +288,7 @@ export function useCollectiveDetails(id: string) {
     };
 
     loadData();
-  }, [id, holders]);
+  }, [id]);
 
   return {
     collective,

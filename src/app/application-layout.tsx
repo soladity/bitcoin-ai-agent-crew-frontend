@@ -32,7 +32,7 @@ import {
 } from "@heroicons/react/16/solid";
 import { usePathname } from "next/navigation";
 import { useUserData } from "@/hooks/use-user-data";
-import { Bot, ChartPie, CircleUser, LogOut, MessageSquareText, Scroll, TowerControl } from "lucide-react";
+import { Bot, CircleUser, LogOut, MessageSquareText, Scroll, TowerControl } from "lucide-react";
 import SignOut from "@/components/auth/auth-signout";
 import Image from "next/image";
 
@@ -129,10 +129,6 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
 
           <SidebarBody>
             <SidebarSection>
-              {/* <SidebarItem href="/dashboard" current={pathname === "/"}>
-                <DashboardIcon />
-                <SidebarLabel>Dashboard</SidebarLabel>
-              </SidebarItem> */}
               <SidebarItem href="/chat" current={pathname === "/chat"}>
                 <MessageSquareText />
                 Chat
@@ -141,43 +137,10 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
                 <TowerControl />
                 <SidebarLabel>Collectives</SidebarLabel>
               </SidebarItem>
-              {/* <SidebarItem href="/tasks" current={pathname.startsWith("/tasks")}>
-                <ListTodo />
-                Tasks
-              </SidebarItem> */}
               <SidebarItem href="/agents" current={pathname.startsWith("/agents")}>
                 <Bot />
                 Agents
               </SidebarItem>
-              {/* <SidebarItem
-                href="/crews"
-                current={pathname.startsWith("/crews")}
-              >
-                <Users />
-                <SidebarLabel>Crews</SidebarLabel>
-              </SidebarItem> */}
-              {/* <SidebarItem
-                href="/marketplace"
-                current={pathname.startsWith("/marketplace")}
-              >
-                <Store />
-                <SidebarLabel>Marketplace</SidebarLabel>
-              </SidebarItem> */}
-              {/* <SidebarItem
-                href="/leaderboard"
-                current={pathname.startsWith("/leaderboard")}
-              >
-                <ChartBarIcon />
-                <SidebarLabel>Leaderboard</SidebarLabel>
-              </SidebarItem> */}
-              <SidebarItem
-                href="/stats"
-                current={pathname.startsWith("/stats")}
-              >
-                <ChartPie />
-                <SidebarLabel>Stats</SidebarLabel>
-              </SidebarItem>
-
             </SidebarSection>
 
             <SidebarSpacer />
