@@ -9,7 +9,7 @@ export interface Message {
   timestamp: Date;
   tool?: string;
   tool_input?: string;
-  result?: string;
+  tool_output?: string;
 }
 
 export function useChat() {
@@ -256,7 +256,7 @@ export function useChat() {
                 timestamp: new Date(timestamp),
                 tool: msg.tool,
                 tool_input: msg.tool_input,
-                result: msg.result,
+                tool_output: msg.tool_output,
               };
               console.log('Processed message:', processedMsg);
               return processedMsg;
@@ -290,7 +290,7 @@ export function useChat() {
               timestamp: new Date(data.timestamp),
               tool: data.tool,
               tool_input: data.tool_input,
-              result: data.result,
+              tool_output: data.tool_output,
             };
 
             switch (data.stream_type) {
@@ -467,7 +467,7 @@ export function useChat() {
                 timestamp: new Date(timestamp),
                 tool: msg.tool,
                 tool_input: msg.tool_input,
-                result: msg.result,
+                tool_output: msg.tool_output,
               };
               console.log('Processed message:', processedMsg);
               return processedMsg;
@@ -501,7 +501,7 @@ export function useChat() {
               timestamp: new Date(data.timestamp),
               tool: data.tool,
               tool_input: data.tool_input,
-              result: data.result,
+              tool_output: data.tool_output,
             };
 
             switch (data.stream_type) {

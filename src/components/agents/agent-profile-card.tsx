@@ -1,9 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Edit2Icon } from "lucide-react";
-import {  Agent } from "@/types/supabase";
+import { Agent } from "@/types/supabase";
 
 interface AgentProfileCardProps {
   agent: Agent;
@@ -21,13 +18,8 @@ export function AgentProfileCard({ agent }: AgentProfileCardProps) {
             className="object-cover rounded-lg"
           />
         </div>
-        <div className="flex justify-end">
-          <Link href={`/agents/${agent.id}/edit`}>
-            <Button>
-              <Edit2Icon className="mr-2 h-4 w-4" />
-              Edit Agent
-            </Button>
-          </Link>
+        <div className="flex">
+          <h1 className="text-3xl font-bold mb-2">{agent.name}</h1>
         </div>
       </CardContent>
     </Card>

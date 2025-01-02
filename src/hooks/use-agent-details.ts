@@ -20,6 +20,7 @@ export function useAgentDetails() {
         .eq("id", id)
         .single();
 
+      const agentData = data as Agent;
 
       if (error) {
         toast({
@@ -31,10 +32,7 @@ export function useAgentDetails() {
         return;
       }
 
-      // need to take the agent_tools field and convert it to a string array
-      data.agent_tools = data.agent_tools.split(",");
-
-      setAgent(data);
+      setAgent(agentData);
       setLoading(false);
     };
 

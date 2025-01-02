@@ -55,13 +55,11 @@ export function useAgent() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    // Special handling for tools field
-    if (name === 'tools') {
-      const toolsArray = value.split(',').map(tool => tool.trim()).filter(Boolean);
-      setFormData(prev => ({ ...prev, [name]: toolsArray }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+  }, []);
+
+  const handleToolsChange = useCallback((tools: string[]) => {
+    setFormData(prev => ({ ...prev, agent_tools: tools }));
   }, []);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
@@ -105,5 +103,6 @@ export function useAgent() {
     formData,
     handleSubmit,
     handleChange,
+    handleToolsChange,
   };
 }

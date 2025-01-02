@@ -8,6 +8,7 @@ export function useAgentsList() {
   const { toast } = useToast();
 
   const fetchAgents = useCallback(async () => {
+    // need data to be in Agent[] type
     const { data, error } = await supabase
       .from("agents")
       .select("*");
@@ -21,12 +22,13 @@ export function useAgentsList() {
       return;
     }
 
-    // need to take the agent_tools field and convert it to a string array
-    data.forEach((agent) => {
-      agent.agent_tools = agent.agent_tools.split(",");
-    });
 
-    setAgents(data || []);
+    const agents = data as Agent[];
+
+    for (const agent of agents) {
+      console.log(agent);
+    }
+    setAgents(agents || []);
   }, [toast]);
 
   useEffect(() => {

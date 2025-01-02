@@ -62,14 +62,14 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
             </pre>
           </div>
         )}
-        {message.result && (
+        {message.tool_output && (
           <div className="text-xs font-mono space-y-1">
             <div className="flex items-center gap-2 text-white/90">
               <Code className="w-4 h-4" />
               <span className="font-medium">Output</span>
             </div>
             <pre className="p-2 bg-black/20 rounded-lg overflow-x-auto whitespace-pre-wrap">
-              {message.result}
+              {message.tool_output}
             </pre>
           </div>
         )}

@@ -1,12 +1,10 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { useAgent } from "@/hooks/use-agent";
 import { AgentForm } from "@/components/agents/agent-form";
+import { Loader } from "@/components/reusables/loader";
 
 export const runtime = 'edge';
 
@@ -18,23 +16,15 @@ export default function AgentEditPage() {
     formData,
     handleSubmit,
     handleChange,
+    handleToolsChange,
   } = useAgent();
 
   if (loading) {
-    return <div className="container mx-auto py-8">Loading...</div>;
+    return <Loader />;
   }
 
   return (
     <div className="container mx-auto py-8">
-      <div className="mb-8">
-        <Link href="/agents">
-          <Button variant="ghost" className="mb-4">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Agents
-          </Button>
-        </Link>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>
@@ -47,9 +37,7 @@ export default function AgentEditPage() {
             saving={saving}
             onSubmit={handleSubmit}
             onChange={handleChange}
-            onToolsChange={function (): void {
-              throw new Error("Function not implemented.");
-            }}
+            onToolsChange={handleToolsChange}
           />
         </CardContent>
       </Card>

@@ -10,10 +10,12 @@ export function AgentDetailsCard({ agent }: AgentDetailsCardProps) {
   return (
     <Card>
       <CardContent className="pt-6">
-        <h1 className="text-3xl font-bold mb-2">{agent.name}</h1>
-        <p className="text-lg text-muted-foreground mb-4">{agent.role}</p>
-        
         <div className="space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Role</h2>
+            <p>{agent.role}</p>
+          </div>
+
           <div>
             <h2 className="text-xl font-semibold mb-2">Goal</h2>
             <p>{agent.goal}</p>
