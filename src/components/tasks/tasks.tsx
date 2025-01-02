@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,11 +21,8 @@ export function TasksTable({ agentId }: TasksTableProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user: profileId } = useProfile();
 
-  useEffect(() => {
-    fetchTasks();
-  }, );
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     const { data, error } = await supabase
       .from("tasks")
       .select("*")
@@ -38,7 +35,11 @@ export function TasksTable({ agentId }: TasksTableProps) {
     }
 
     setTasks(data || []);
-  };
+  }, [agentId]);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [agentId, fetchTasks]);
 
   const handleEditClick = (task: Task) => {
     setSelectedTask(task);
