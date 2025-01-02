@@ -131,7 +131,7 @@ export default function AgentManagement({
     setIsDialogOpen(true);
   };
 
-  const handleDeleteAgent = async (agentId: number) => {
+  const handleDeleteAgent = async (agentId: string) => {
     try {
       // First delete all tasks associated with the agent
       const { error: tasksError } = await supabase

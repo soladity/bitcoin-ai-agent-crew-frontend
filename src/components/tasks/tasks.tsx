@@ -7,21 +7,29 @@ import { Button } from "@/components/ui/button";
 import { Edit2 } from "lucide-react";
 import { TaskEditModal } from "./task-edit-modal";
 import { supabase } from "@/utils/supabase/client";
-import { Schedule } from "@/types/supabase";
+import { Task} from "@/types/supabase";
+import { useProfile } from "@/hooks/use-profile";
 
-export function TasksTable() {
-  const [tasks, setTasks] = useState<Schedule[]>([]);
-  const [selectedTask, setSelectedTask] = useState<Schedule | null>(null);
+interface TasksTableProps {
+  agentId: string;
+}
+
+
+export function TasksTable({ agentId }: TasksTableProps) {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user: profileId } = useProfile();
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, );
 
   const fetchTasks = async () => {
     const { data, error } = await supabase
-      .from("schedules")
+      .from("tasks")
       .select("*")
+      .eq("agent_id", agentId)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -32,7 +40,7 @@ export function TasksTable() {
     setTasks(data || []);
   };
 
-  const handleEditClick = (task: Schedule) => {
+  const handleEditClick = (task: Task) => {
     setSelectedTask(task);
     setIsModalOpen(true);
   };
@@ -61,10 +69,10 @@ export function TasksTable() {
             {tasks.map((task) => (
               <TableRow key={task.id}>
                 <TableCell className="font-medium">{task.name}</TableCell>
-                <TableCell className="max-w-md truncate">{task.task}</TableCell>
+                <TableCell className="max-w-md truncate">{task.prompt}</TableCell>
                 <TableCell>
-                  <Badge variant={task.enabled ? "default" : "destructive"}>
-                    {task.enabled ? "Enabled" : "Disabled"}
+                  <Badge variant={task.is_scheduled ? "default" : "destructive"}>
+                    {task.is_scheduled ? "Enabled" : "Disabled"}
                   </Badge>
                 </TableCell>
                 <TableCell>{task.cron}</TableCell>
@@ -101,11 +109,11 @@ export function TasksTable() {
               </Button>
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
-              {task.task}
+              {task.prompt}
             </div>
             <div className="flex justify-between items-center">
-              <Badge variant={task.enabled ? "default" : "destructive"}>
-                {task.enabled ? "Enabled" : "Disabled"}
+              <Badge variant={task.is_scheduled ? "default" : "destructive"}>
+                {task.is_scheduled ? "Enabled" : "Disabled"}
               </Badge>
               <span className="text-sm">{task.cron}</span>
             </div>
@@ -115,8 +123,10 @@ export function TasksTable() {
 
       <TaskEditModal
         task={selectedTask}
+        agentId={agentId}
         open={isModalOpen}
         onClose={handleModalClose}
+        profileId={profileId?.id || ""}
       />
     </>
   );

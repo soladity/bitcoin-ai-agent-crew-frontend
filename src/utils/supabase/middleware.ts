@@ -64,7 +64,7 @@ export const updateSession = async (request: NextRequest) => {
     }
 
     // Regular route protection
-    if (request.nextUrl.pathname.startsWith("/dashboard") && userError) {
+    if (request.nextUrl.pathname.startsWith("/agents") && userError) {
       return NextResponse.redirect(new URL("/", request.url));
     }
 
@@ -74,7 +74,7 @@ export const updateSession = async (request: NextRequest) => {
     }
 
     if (
-      request.nextUrl.pathname.startsWith("/public-crew") &&
+      request.nextUrl.pathname.startsWith("/collectives") &&
       (userError || !user)
     ) {
       return NextResponse.redirect(new URL("/", request.url));

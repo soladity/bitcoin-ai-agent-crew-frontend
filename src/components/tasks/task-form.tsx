@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TaskFormProps } from "@/types/supabase";
+import {TaskFormProps } from "@/types/supabase";
 
 export default function TaskForm({
   crewId,
@@ -22,11 +22,8 @@ export default function TaskForm({
   onTaskSubmitted,
   onClose,
 }: TaskFormProps) {
-  const [description, setDescription] = useState(task?.description || "");
-  const [expectedOutput, setExpectedOutput] = useState(
-    task?.expected_output || ""
-  );
-  const [selectedAgentId, setSelectedAgentId] = useState<number | null>(
+  const [prompt, setPrompt] = useState(task?.prompt || "");
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(
     task?.agent_id || null
   );
   const [loading, setLoading] = useState(false);
@@ -49,11 +46,13 @@ export default function TaskForm({
       }
 
       const taskData = {
-        description,
-        expected_output: expectedOutput,
-        agent_id: selectedAgentId,
-        crew_id: crewId,
+        name: task?.name || "",
+        prompt,
+        agent_id: selectedAgentId || "",
+        crew_id: crewId || "",
         profile_id: user.id,
+        is_scheduled: false,
+
       };
 
       let error;
@@ -104,19 +103,9 @@ export default function TaskForm({
         <Label htmlFor="description">Task Description</Label>
         <Textarea
           id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
           placeholder="Enter task description"
-          required
-        />
-      </div>
-      <div>
-        <Label htmlFor="expectedOutput">Expected Output</Label>
-        <Textarea
-          id="expectedOutput"
-          value={expectedOutput}
-          onChange={(e) => setExpectedOutput(e.target.value)}
-          placeholder="Enter expected output"
           required
         />
       </div>
@@ -124,7 +113,7 @@ export default function TaskForm({
         <Label htmlFor="agent">Assign to Agent</Label>
         <Select
           value={selectedAgentId?.toString()}
-          onValueChange={(value) => setSelectedAgentId(Number(value))}
+          onValueChange={(value) => setSelectedAgentId(value)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select an agent" />

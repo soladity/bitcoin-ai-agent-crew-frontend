@@ -1,42 +1,20 @@
 "use client";
 
-import { TasksTable } from "@/components/tasks/tasks";
-import { Button } from "@/components/ui/button";
-import { PlusIcon } from "@heroicons/react/16/solid";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useState } from "react";
-import { TaskEditModal } from "@/components/tasks/task-edit-modal";
-import { Heading } from "@/components/catalyst/heading";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useProfile } from "@/hooks/use-profile";
 
 export default function TasksPage() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const router = useRouter();
+  const { user } = useProfile();
 
-  return (
-    <div className="container mx-auto p-4">
-      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-zinc-950/10 pb-6 dark:border-white/10">
-        <Heading>Tasks</Heading>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusIcon className="h-4 w-4 mr-2" /> Add Task
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Create New Task</DialogTitle>
-            </DialogHeader>
-            <TaskEditModal
-              task={null}
-              open={isDialogOpen}
-              onClose={() => setIsDialogOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
+  useEffect(() => {
+    // Redirect to the first agent's tasks page
+    // You might want to fetch the user's first agent ID here
+    if (user?.id) {
+      router.replace("/agents");
+    }
+  }, [router, user]);
 
-      <div className="mt-6">
-        <TasksTable />
-      </div>
-    </div>
-  );
+  return null; // or a loading spinner
 }

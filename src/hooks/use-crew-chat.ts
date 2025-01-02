@@ -13,7 +13,7 @@ export function useCrewChat() {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [crewId, setCrewId] = useState<number | null>(null);
+  const [crewId, setCrewId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);

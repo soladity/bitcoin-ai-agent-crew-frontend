@@ -1,12 +1,14 @@
 // types/supabase.ts
 
-export interface Schedule {
+export interface Task {
   id: string;
-  profile_id: string;
   name: string;
-  task: string;
-  enabled: boolean;
+  prompt: string;
+  agent_id: string;
   cron: string;
+  crew_id: string;
+  profile_id: string;
+  is_scheduled: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -60,16 +62,16 @@ export interface Capability {
 }
 
 export interface CronEntry {
-  id?: number;
+  id?: string;
   profile_id?: string;
-  crew_id?: number;
+  crew_id?: string;
   is_enabled: boolean;
   input: string;
   created_at?: string;
 }
 
 export interface Crew {
-  id: number;
+  id: string;
   name: string;
   description: string;
   created_at: string;
@@ -93,14 +95,14 @@ export interface CrewManagementProps {
 }
 
 export interface RawCrewData {
-  id: number;
+  id: string;
   name: string;
   description: string;
   created_at: string;
   is_public: boolean;
   profile_id: string;
   crons?: Array<{
-    id: number;
+    id: string;
     is_enabled: boolean;
     input: string;
     created_at: string;
@@ -109,12 +111,14 @@ export interface RawCrewData {
 
 // Interface representing an agent
 export interface Agent {
-    id: number;
+    id: string;
     name: string;
     role: string;
     goal: string;
     backstory: string;
     agent_tools: string[]; // Array of agent tools
+    profile_id: string;
+    image_url: string;
 }
 
 // Interface for props of the AgentForm component
@@ -126,22 +130,14 @@ export interface AgentFormProps {
 
 // Interface for props of the AgentManagement component
 export interface AgentManagementProps {
-    crewId: number; // ID of the current crew
+    crewId: string; // ID of the current crew
     onAgentAdded: () => void; // Callback for when a new agent is added
 }
 
-// Interface representing a task
-export interface Task {
-    id: number;
-    description: string;
-    expected_output: string;
-    agent_id: number; // ID of the assigned agent
-    profile_id: string; // ID of the associated profile
-}
 
 // Interface for props of the TaskForm component
 export interface TaskFormProps {
-    crewId: number; // ID of the current crew
+    crewId: string; // ID of the current crew
     agents: Agent[]; // Array of agents
     task?: Task; // Optional existing task to edit
     onTaskSubmitted: () => void; // Callback for when a task is submitted
@@ -150,7 +146,7 @@ export interface TaskFormProps {
 
 // Interface for props of the TaskManagement component
 export interface TaskManagementProps {
-    crewId: number; // ID of the current crew
+    crewId: string; // ID of the current crew
     onTaskAdded: () => void; // Callback for when a new task is added
     tasks: Task[]; // Array of tasks
     agents: Agent[]; // Array of agents
@@ -177,15 +173,15 @@ export interface CloneTask {
 // INTERFACE FOR PUBLIC CREWS
 
 interface PublicTask {
-    id: number;
+    id: string;
     description: string;
     expected_output: string;
-    agent_id: number;
+    agent_id: string;
     profile_id: string;
   }
   
  interface PublicAgent {
-    id: number;
+    id: string;
     name: string;
     role: string;
     goal: string;
@@ -195,7 +191,7 @@ interface PublicTask {
   }
   
 export  interface PublicCrew {
-    id: number;
+    id: string;
     name: string;
     description: string;
     created_at: string;

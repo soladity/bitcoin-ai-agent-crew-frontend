@@ -7,17 +7,24 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/client";
-import { Schedule } from "@/types/supabase";
+import { Task } from "@/types/supabase";
 import { ScheduleSelector } from "../reusables/schedule-selector";
 
 interface TaskEditModalProps {
-  task: Schedule | null;
+  task: Task | null;
   open: boolean;
   onClose: () => void;
+  agentId: string;
+  profileId: string;
 }
 
-export function TaskEditModal({ task, open, onClose }: TaskEditModalProps) {
-  const [formData, setFormData] = useState<Partial<Schedule>>({});
+export function TaskEditModal({ task, open, onClose, agentId, profileId }: TaskEditModalProps) {
+
+  const [formData, setFormData] = useState<Partial<Task>>({
+    agent_id: agentId,
+    is_scheduled: true,
+    profile_id: profileId
+  });
 
   useEffect(() => {
     if (task) {
@@ -27,24 +34,29 @@ export function TaskEditModal({ task, open, onClose }: TaskEditModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!task?.id) return;
 
-    const { error } = await supabase
-      .from("schedules")
-      .update({
-        name: formData.name,
-        task: formData.task,
-        enabled: formData.enabled,
-        cron: formData.cron,
-      })
-      .eq("id", task.id);
-
-    if (error) {
-      console.error("Error updating task:", error);
+    // if task id is not provided, create a new task
+    if (!task?.id) {
+      const { error } = await supabase.from("tasks").insert([formData]);
+      if (error) {
+        console.error("Error creating task:", error);
+        return;
+      }
+      onClose();
       return;
-    }
+    } else {
+      const { error } = await supabase
+        .from("tasks")
+        .update(formData)
+        .eq("id", task?.id);
 
-    onClose();
+      if (error) {
+        console.error("Error updating task:", error);
+        return;
+      }
+
+      onClose();
+    }
   };
 
   return (
@@ -64,11 +76,11 @@ export function TaskEditModal({ task, open, onClose }: TaskEditModalProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="task">Task</Label>
+              <Label htmlFor="prompt">Prompt</Label>
               <textarea
-                id="task"
-                value={formData.task || ""}
-                onChange={(e) => setFormData({ ...formData, task: e.target.value })}
+                id="prompt"
+                value={formData.prompt || ""}
+                onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
               />
             </div>
             <div className="space-y-2">
@@ -83,9 +95,9 @@ export function TaskEditModal({ task, open, onClose }: TaskEditModalProps) {
           <div className="flex items-center space-x-2">
             <Switch
               id="enabled"
-              checked={formData.enabled}
+              checked={formData.is_scheduled}
               onCheckedChange={(checked) =>
-                setFormData({ ...formData, enabled: checked })
+                setFormData({ ...formData, is_scheduled: checked })
               }
             />
             <Label htmlFor="enabled">Enabled</Label>

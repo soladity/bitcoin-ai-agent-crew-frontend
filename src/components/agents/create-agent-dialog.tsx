@@ -29,7 +29,7 @@ export function CreateAgentDialog({ isOpen, onOpenChange }: CreateAgentDialogPro
         <div className="py-4">
           <Link href="/agents/new" className="w-full">
             <Button className="w-full" onClick={() => onOpenChange(false)}>
-              Continue to Agent Creation
+              Create New Agent
             </Button>
           </Link>
         </div>

@@ -9,7 +9,7 @@ import { useEffect, useCallback } from "react";
 
 interface ExecutionPanelProps {
   crewName: string;
-  crewId: number;
+  crewId: string;
 }
 
 export default function ExecutionPanel({ crewId }: ExecutionPanelProps) {
@@ -26,7 +26,7 @@ export default function ExecutionPanel({ crewId }: ExecutionPanelProps) {
   } = useCrewChat();
 
   const memoizedSetCrewId = useCallback(
-    (id: number) => {
+    (id: string) => {
       setCrewId(id);
     },
     [setCrewId]

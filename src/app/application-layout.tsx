@@ -32,7 +32,7 @@ import {
 } from "@heroicons/react/16/solid";
 import { usePathname } from "next/navigation";
 import { useUserData } from "@/hooks/use-user-data";
-import { Bot, ChartPie, CircleUser, LogOut, ListTodo, MessageSquareText, Scroll, TowerControl } from "lucide-react";
+import { Bot, ChartPie, CircleUser, LogOut, MessageSquareText, Scroll, TowerControl } from "lucide-react";
 import SignOut from "@/components/auth/auth-signout";
 import Image from "next/image";
 
@@ -141,10 +141,10 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
                 <TowerControl />
                 <SidebarLabel>Collectives</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="/tasks" current={pathname.startsWith("/tasks")}>
+              {/* <SidebarItem href="/tasks" current={pathname.startsWith("/tasks")}>
                 <ListTodo />
                 Tasks
-              </SidebarItem>
+              </SidebarItem> */}
               <SidebarItem href="/agents" current={pathname.startsWith("/agents")}>
                 <Bot />
                 Agents

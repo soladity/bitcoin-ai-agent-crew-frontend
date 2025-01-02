@@ -53,7 +53,7 @@ export default function TaskManagement({
     onEditTask(task);
   };
 
-  const handleDeleteTask = async (taskId: number) => {
+  const handleDeleteTask = async (taskId: string) => {
     try {
       const { error } = await supabase.from("tasks").delete().eq("id", taskId);
 
@@ -74,13 +74,13 @@ export default function TaskManagement({
     }
   };
 
-  const getAgentName = (agentId: number) => {
+  const getAgentName = (agentId: string) => {
     const agent = agents.find((a) => a.id === agentId);
     return agent ? agent.name : "Unassigned";
   };
 
   const filteredTasks = tasks.filter((task) =>
-    task.description.toLowerCase().includes(searchTerm.toLowerCase())
+    task.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -123,8 +123,7 @@ export default function TaskManagement({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Description</TableHead>
-              <TableHead>Expected Output</TableHead>
+              <TableHead>Name</TableHead>
               <TableHead>Assigned Agent</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -136,23 +135,11 @@ export default function TaskManagement({
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="link">
-                        {task.description.substring(0, 30)}...
+                        {task.name.substring(0, 30)}...
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-80">
-                      <p>{task.description}</p>
-                    </PopoverContent>
-                  </Popover>
-                </TableCell>
-                <TableCell>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="link">
-                        {task.expected_output.substring(0, 30)}...
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80">
-                      <p>{task.expected_output}</p>
+                      <p>{task.name}</p>
                     </PopoverContent>
                   </Popover>
                 </TableCell>

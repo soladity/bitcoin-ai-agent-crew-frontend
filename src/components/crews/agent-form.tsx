@@ -17,12 +17,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, X } from "lucide-react";
 import { AgentFormProps } from "@/types/supabase";
 import { TOOL_CATEGORIES, ToolCategory, fetchTools, Tool } from "@/lib/tools";
+import { useProfile } from "@/hooks/use-profile";
 
 export default function AgentForm({
   agent,
   onSubmit,
   loading,
 }: AgentFormProps) {
+  const { user: profile } = useProfile();
   const [agentName, setAgentName] = useState(agent?.name || "");
   const [role, setRole] = useState(agent?.role || "");
   const [goal, setGoal] = useState(agent?.goal || "");
@@ -58,6 +60,8 @@ export default function AgentForm({
       goal,
       backstory,
       agent_tools: selectedTools,
+      image_url: "",
+      profile_id: profile?.id || "",
     });
   };
 
