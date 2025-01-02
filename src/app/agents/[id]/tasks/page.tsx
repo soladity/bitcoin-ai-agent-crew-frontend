@@ -10,6 +10,8 @@ import { Heading } from "@/components/catalyst/heading";
 import { useParams } from "next/navigation";
 import { useProfile } from "@/hooks/use-profile";
 
+export const runtime = 'edge';
+
 export default function AgentTasksPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const params = useParams();
