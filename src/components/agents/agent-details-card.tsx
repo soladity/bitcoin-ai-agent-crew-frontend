@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Agent } from "@/hooks/use-agent";
+import { Agent } from "@/types/supabase";
 
 interface AgentDetailsCardProps {
   agent: Agent;
@@ -25,14 +25,14 @@ export function AgentDetailsCard({ agent }: AgentDetailsCardProps) {
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold mb-2">Description</h2>
-            <p>{agent.description}</p>
+            <h2 className="text-xl font-semibold mb-2">Role</h2>
+            <p>{agent.role}</p>
           </div>
 
           <div>
             <h2 className="text-xl font-semibold mb-2">Tools</h2>
             <div className="flex flex-wrap gap-2">
-              {agent.tools?.map((tool) => (
+              {agent.agent_tools?.map((tool) => (
                 <Badge key={tool} variant="secondary">
                   {tool}
                 </Badge>

@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Edit2Icon } from "lucide-react";
-import { Agent } from "@/hooks/use-agent";
-
+import { Agent } from "@/types/supabase";
 interface AgentCardProps {
   agent: Agent;
 }
@@ -28,13 +27,13 @@ export function AgentCard({ agent }: AgentCardProps) {
         <p className="text-sm text-muted-foreground mb-2">{agent.role}</p>
         <p className="text-sm line-clamp-2 mb-4">{agent.goal}</p>
         <div className="flex flex-wrap gap-1">
-          {agent.tools?.slice(0, 3).map((tool) => (
+          {agent.agent_tools?.slice(0, 3).map((tool) => (
             <Badge key={tool} variant="secondary">
               {tool}
             </Badge>
           ))}
-          {agent.tools?.length > 3 && (
-            <Badge variant="secondary">+{agent.tools.length - 3}</Badge>
+          {agent.agent_tools?.length > 3 && (
+            <Badge variant="secondary">+{agent.agent_tools.length - 3}</Badge>
           )}
         </div>
       </CardContent>

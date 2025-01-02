@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Agent } from "@/hooks/use-agent";
+import { Agent } from "@/types/supabase";
 
 export function useAgentsList() {
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -20,6 +20,11 @@ export function useAgentsList() {
       });
       return;
     }
+
+    // need to take the agent_tools field and convert it to a string array
+    data.forEach((agent) => {
+      agent.agent_tools = agent.agent_tools.split(",");
+    });
 
     setAgents(data || []);
   }, [toast]);

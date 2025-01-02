@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Agent } from "@/hooks/use-agent";
+import { Agent } from "@/types/supabase";
 
 export function useAgentDetails() {
   const params = useParams();
@@ -20,6 +20,7 @@ export function useAgentDetails() {
         .eq("id", id)
         .single();
 
+
       if (error) {
         toast({
           title: "Error",
@@ -29,6 +30,9 @@ export function useAgentDetails() {
         router.push("/agents");
         return;
       }
+
+      // need to take the agent_tools field and convert it to a string array
+      data.agent_tools = data.agent_tools.split(",");
 
       setAgent(data);
       setLoading(false);

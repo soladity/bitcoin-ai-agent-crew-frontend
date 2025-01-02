@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Agent } from "@/hooks/use-agent";
+import { Agent } from "@/types/supabase";
 
 interface AgentFormProps {
   formData: Partial<Agent>;
@@ -66,17 +66,6 @@ export function AgentForm({
       </div>
 
       <div>
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          name="description"
-          value={formData.description}
-          onChange={onChange}
-          required
-        />
-      </div>
-
-      <div>
         <Label htmlFor="image_url">Image URL</Label>
         <Input
           id="image_url"
@@ -91,7 +80,7 @@ export function AgentForm({
         <Input
           id="tools"
           name="tools"
-          value={formData.tools?.join(", ")}
+          value={formData.agent_tools}
           onChange={onToolsChange}
         />
       </div>

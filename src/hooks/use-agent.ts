@@ -1,18 +1,8 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-export interface Agent {
-  id: string;
-  name: string;
-  role: string;
-  goal: string;
-  backstory: string;
-  image_url: string;
-  tools: string[];
-  description: string;
-}
+import { Agent } from "@/types/supabase";
 
 export function useAgent() {
   const params = useParams();
@@ -26,79 +16,94 @@ export function useAgent() {
     goal: "",
     backstory: "",
     image_url: "",
-    tools: [],
-    description: "",
+    agent_tools: [],
   });
 
-  const fetchAgent = async (id: string) => {
-    const { data, error } = await supabase
-      .from("agents")
-      .select("*")
-      .eq("id", id)
-      .single();
+  const fetchAgent = useCallback(async (id: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("agents")
+        .select("*")
+        .eq("id", id)
+        .single();
 
-    if (error) {
+      if (error) throw error;
+
+      setFormData(data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+    } catch (error: any) {
       toast({
         title: "Error",
         description: "Failed to fetch agent details",
         variant: "destructive",
       });
       router.push("/agents");
-      return;
+    } finally {
+      setLoading(false);
     }
+  }, [toast, router]);
 
-    setFormData(data);
-    setLoading(false);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-
-    const isNewAgent = !params.id || params.id === "new";
-    const { error } = isNewAgent
-      ? await supabase.from("agents").insert([formData])
-      : await supabase
-          .from("agents")
-          .update(formData)
-          .eq("id", params.id);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save agent",
-        variant: "destructive",
-      });
-      setSaving(false);
-      return;
+  useEffect(() => {
+    if (params.id && params.id !== "new") {
+      fetchAgent(params.id as string);
+    } else {
+      setLoading(false);
     }
+  }, [params.id, fetchAgent]);
 
-    toast({
-      title: "Success",
-      description: "Agent saved successfully",
-    });
-    router.push("/agents");
-  };
-
-  const handleChange = (
+  const handleChange = useCallback((
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+    // Special handling for tools field
+    if (name === 'tools') {
+      const toolsArray = value.split(',').map(tool => tool.trim()).filter(Boolean);
+      setFormData(prev => ({ ...prev, [name]: toolsArray }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  }, []);
 
-  const handleToolsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const tools = e.target.value.split(",").map((tool) => tool.trim());
-    setFormData((prev) => ({ ...prev, tools }));
-  };
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+
+    try {
+      const { error } = params.id && params.id !== "new"
+        ? await supabase
+            .from("agents")
+            .update(formData)
+            .eq("id", params.id)
+        : await supabase
+            .from("agents")
+            .insert([formData])
+            .select();
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Agent saved successfully",
+      });
+
+      router.push("/agents");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }, [formData, params.id, router, toast]);
 
   return {
     loading,
     saving,
     formData,
-    fetchAgent,
     handleSubmit,
     handleChange,
-    handleToolsChange,
   };
 }

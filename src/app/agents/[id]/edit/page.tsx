@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,17 +16,9 @@ export default function AgentEditPage() {
     loading,
     saving,
     formData,
-    fetchAgent,
     handleSubmit,
     handleChange,
-    handleToolsChange,
   } = useAgent();
-
-  useEffect(() => {
-    if (params.id && params.id !== "new") {
-      fetchAgent(params.id as string);
-    }
-  }, [fetchAgent, params.id]);
 
   if (loading) {
     return <div className="container mx-auto py-8">Loading...</div>;
@@ -56,7 +47,9 @@ export default function AgentEditPage() {
             saving={saving}
             onSubmit={handleSubmit}
             onChange={handleChange}
-            onToolsChange={handleToolsChange}
+            onToolsChange={function (): void {
+              throw new Error("Function not implemented.");
+            }}
           />
         </CardContent>
       </Card>

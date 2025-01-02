@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Edit2Icon } from "lucide-react";
-import { Agent } from "@/hooks/use-agent";
+import {  Agent } from "@/types/supabase";
 
 interface AgentProfileCardProps {
   agent: Agent;
