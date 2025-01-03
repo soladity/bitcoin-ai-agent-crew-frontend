@@ -2,8 +2,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Agent } from "@/types/supabase";
 
+interface Wallet {
+  mainnet_address: string;
+  testnet_address: string;
+}
+
+interface AgentWithWallet extends Agent {
+  wallet?: Wallet;
+}
+
 interface AgentDetailsCardProps {
-  agent: Agent;
+  agent: AgentWithWallet;
 }
 
 export function AgentDetailsCard({ agent }: AgentDetailsCardProps) {
@@ -26,10 +35,21 @@ export function AgentDetailsCard({ agent }: AgentDetailsCardProps) {
             <p>{agent.backstory}</p>
           </div>
 
-          <div>
-            <h2 className="text-xl font-semibold mb-2">Role</h2>
-            <p>{agent.role}</p>
-          </div>
+          {agent.wallet && (
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Wallet Addresses</h2>
+              <div className="space-y-2">
+                <div>
+                  <p className="font-medium">Mainnet:</p>
+                  <p className="font-mono text-sm break-all">{agent.wallet.mainnet_address}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Testnet:</p>
+                  <p className="font-mono text-sm break-all">{agent.wallet.testnet_address}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div>
             <h2 className="text-xl font-semibold mb-2">Tools</h2>

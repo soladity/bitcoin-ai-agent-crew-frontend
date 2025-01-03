@@ -3,26 +3,32 @@ import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Agent } from "@/types/supabase";
+interface Wallet {
+  mainnet_address: string;
+  testnet_address: string;
+}
+
+interface AgentWithWallet extends Agent {
+  wallet?: Wallet;
+}
 
 export function useAgentDetails() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
-  const [agent, setAgent] = useState<Agent | null>(null);
+  const [agent, setAgent] = useState<AgentWithWallet | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAgent = async (id: string) => {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data: agentData, error: agentError } = await supabase
         .from("agents")
         .select("*")
         .eq("id", id)
         .single();
 
-      const agentData = data as Agent;
-
-      if (error) {
+      if (agentError) {
         toast({
           title: "Error",
           description: "Failed to fetch agent details",
@@ -32,7 +38,22 @@ export function useAgentDetails() {
         return;
       }
 
-      setAgent(agentData);
+      // Fetch wallet information
+      const { data: walletData, error: walletError } = await supabase
+        .from("wallets")
+        .select("mainnet_address, testnet_address")
+        .eq("profile_id", agentData.profile_id)
+        .single();
+
+      if (walletError && walletError.code !== "PGRST116") { // Ignore not found error
+        toast({
+          title: "Warning",
+          description: "Failed to fetch wallet details",
+          variant: "destructive",
+        });
+      }
+
+      setAgent({ ...agentData, wallet: walletData || undefined });
       setLoading(false);
     };
 
