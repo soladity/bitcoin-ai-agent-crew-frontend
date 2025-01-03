@@ -77,7 +77,7 @@ export function ScheduleSelector({ value, onChange }: ScheduleSelectorProps) {
         </Select>
       </div>
 
-      {config.frequency !== "once" && config.frequency !== "hourly" && (
+      {config.frequency !== "once" && config.frequency !== "hourly" && config.frequency !== "custom" && (
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label>Hour (0-23)</Label>

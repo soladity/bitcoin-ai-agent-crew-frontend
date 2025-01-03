@@ -9,6 +9,7 @@ import { TaskEditModal } from "./task-edit-modal";
 import { supabase } from "@/utils/supabase/client";
 import { Task} from "@/types/supabase";
 import { useProfile } from "@/hooks/use-profile";
+import cronstrue from 'cronstrue';
 
 interface TasksTableProps {
   agentId: string;
@@ -61,8 +62,8 @@ export function TasksTable({ agentId }: TasksTableProps) {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Task</TableHead>
-              <TableHead>Status</TableHead>
               <TableHead>Schedule</TableHead>
+              <TableHead className="w-[100px]">Status</TableHead>
               <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -72,11 +73,15 @@ export function TasksTable({ agentId }: TasksTableProps) {
                 <TableCell className="font-medium">{task.name}</TableCell>
                 <TableCell className="max-w-md truncate">{task.prompt}</TableCell>
                 <TableCell>
+                  <span className="text-sm">
+                    {cronstrue.toString(task.cron, { locale: "en" })}
+                  </span>
+                </TableCell>
+                <TableCell>
                   <Badge variant={task.is_scheduled ? "default" : "destructive"}>
                     {task.is_scheduled ? "Enabled" : "Disabled"}
                   </Badge>
                 </TableCell>
-                <TableCell>{task.cron}</TableCell>
                 <TableCell>
                   <Button
                     variant="ghost"
@@ -116,7 +121,9 @@ export function TasksTable({ agentId }: TasksTableProps) {
               <Badge variant={task.is_scheduled ? "default" : "destructive"}>
                 {task.is_scheduled ? "Enabled" : "Disabled"}
               </Badge>
-              <span className="text-sm">{task.cron}</span>
+              <span className="text-sm">
+                {cronstrue.toString(task.cron, { locale: "en" })}
+              </span>
             </div>
           </div>
         ))}

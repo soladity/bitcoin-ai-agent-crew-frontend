@@ -60,6 +60,7 @@ export function AgentForm({
   };
 
   const filteredTools = availableTools.filter((tool) =>
+    tool.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
     tool.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 

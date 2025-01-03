@@ -10,7 +10,7 @@ export function AgentProfileCard({ agent }: AgentProfileCardProps) {
   return (
     <Card>
       <CardContent className="pt-6">
-        <div className="relative h-64 mb-4">
+        <div className="relative aspect-square  mb-4">
           <Image
             src={agent.image_url || "/placeholder-agent.png"}
             alt={agent.name}
@@ -18,8 +18,8 @@ export function AgentProfileCard({ agent }: AgentProfileCardProps) {
             className="object-cover rounded-lg"
           />
         </div>
-        <div className="flex">
-          <h1 className="text-3xl font-bold mb-2">{agent.name}</h1>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-3xl font-bold">{agent.name}</h1>
         </div>
       </CardContent>
     </Card>

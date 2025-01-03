@@ -12,7 +12,7 @@ export function AgentCard({ agent }: AgentCardProps) {
     <Card className="flex flex-col group relative transition-colors duration-200 hover:bg-muted">
       <Link href={`/agents/${agent.id}`} className="flex-1">
         <div className="cursor-pointer">
-          <CardHeader className="relative h-40">
+          <CardHeader className="relative aspect-square">
             <div className="w-full h-full relative rounded-t-lg overflow-hidden">
               <Image
                 src={agent.image_url || "/placeholder-agent.png"}
