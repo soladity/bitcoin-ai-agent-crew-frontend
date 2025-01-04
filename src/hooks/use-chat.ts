@@ -10,12 +10,14 @@ export interface Message {
   tool?: string;
   tool_input?: string;
   tool_output?: string;
+  agent_id?: string;
 }
 
 export function useChat() {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -257,6 +259,7 @@ export function useChat() {
                 tool: msg.tool,
                 tool_input: msg.tool_input,
                 tool_output: msg.tool_output,
+                agent_id: msg.agent_id,
               };
               console.log('Processed message:', processedMsg);
               return processedMsg;
@@ -291,6 +294,7 @@ export function useChat() {
               tool: data.tool,
               tool_input: data.tool_input,
               tool_output: data.tool_output,
+              agent_id: data.agent_id,
             };
 
             switch (data.stream_type) {
@@ -468,6 +472,7 @@ export function useChat() {
                 tool: msg.tool,
                 tool_input: msg.tool_input,
                 tool_output: msg.tool_output,
+                agent_id: msg.agent_id,
               };
               console.log('Processed message:', processedMsg);
               return processedMsg;
@@ -502,6 +507,7 @@ export function useChat() {
               tool: data.tool,
               tool_input: data.tool_input,
               tool_output: data.tool_output,
+              agent_id: data.agent_id,
             };
 
             switch (data.stream_type) {
@@ -630,6 +636,7 @@ export function useChat() {
         type: null,
         content: input,
         timestamp: new Date(),
+        agent_id: selectedAgentId || undefined,
       };
 
       setMessages((prev) => [...prev, userMessage]);
@@ -639,7 +646,8 @@ export function useChat() {
       try {
         ws.send(JSON.stringify({
           type: 'chat_message',
-          message: input
+          message: input,
+          agent_id: selectedAgentId
         }));
       } catch (error) {
         console.error("Error sending message:", error);
@@ -651,7 +659,7 @@ export function useChat() {
         setIsLoading(false);
       }
     },
-    [input, isLoading, ws, toast]
+    [input, isLoading, ws, toast, selectedAgentId]
   );
 
   return {
@@ -664,5 +672,7 @@ export function useChat() {
     handleReconnect,
     messagesEndRef,
     isConnected,
+    selectedAgentId,
+    setSelectedAgentId,
   };
 }

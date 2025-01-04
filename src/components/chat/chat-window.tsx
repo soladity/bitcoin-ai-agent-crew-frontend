@@ -17,6 +17,8 @@ export default function Chat() {
     handleReconnect,
     messagesEndRef,
     isConnected,
+    selectedAgentId,
+    setSelectedAgentId,
   } = useChat();
 
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -41,12 +43,6 @@ export default function Chat() {
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = container;
       const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-      console.log({
-        scrollTop,
-        scrollHeight,
-        clientHeight,
-        distanceFromBottom,
-      });
       setShowScrollButton(distanceFromBottom > 100);
     };
 
@@ -126,6 +122,8 @@ export default function Chat() {
           setInput={setInput}
           isLoading={isLoading}
           isConnected={isConnected}
+          selectedAgentId={selectedAgentId}
+          onSelectAgent={setSelectedAgentId}
           onSubmit={handleSubmit}
           onReset={handleResetHistory}
           onReconnect={handleReconnect}

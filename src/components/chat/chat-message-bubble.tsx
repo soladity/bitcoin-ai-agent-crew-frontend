@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Message } from "@/hooks/use-chat";
 import { cn } from "@/lib/utils";
+import { useAgentName } from "@/hooks/use-agent-name";
 import { 
   Clock, 
   Terminal, 
@@ -18,7 +19,7 @@ import {
   CheckCircle2,
   Loader2
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface MessageBubbleProps {
   message: Message;
@@ -26,6 +27,16 @@ interface MessageBubbleProps {
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   const [showToolInfo, setShowToolInfo] = useState(false);
+  const agentName = useAgentName(message.agent_id);
+
+  useEffect(() => {
+    console.log("Message bubble rendered with:", {
+      role: message.role,
+      agentId: message.agent_id,
+      agentName,
+      content: message.content.substring(0, 50) + "..."
+    });
+  }, [message, agentName]);
 
   const getTypeIcon = () => {
     switch (message.type?.toLowerCase()) {
@@ -79,50 +90,59 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
 
   const content = (
     <>
-      <div className="flex items-center gap-2 mb-2">
-        {message.role === 'user' ? (
-          <User className="w-4 h-4 text-orange-300" />
-        ) : (
-          <Bot className="w-4 h-4 text-blue-300" />
-        )}
-        {getTypeIcon()}
-      </div>
-
-      <ReactMarkdown 
-        remarkPlugins={[remarkGfm]} 
-        className="text-sm prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/20 prose-pre:rounded-lg"
-        disallowedElements={["img"]}
-      >
-        {message.content}
-      </ReactMarkdown>
-      
-      {message.tool && (
-        <button 
-          onClick={() => setShowToolInfo(!showToolInfo)}
-          className="mt-3 flex items-center gap-1 text-xs text-white/80 hover:text-white transition-colors duration-200"
-        >
-          {showToolInfo ? (
-            <>
-              <ChevronUp className="w-4 h-4" />
-              Hide details
-            </>
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          {message.role === 'user' ? (
+            <User className="w-4 h-4 text-orange-300" />
           ) : (
             <>
-              <ChevronDown className="w-4 h-4" />
-              Show details
+              <Bot className="w-4 h-4 text-blue-300" />
+              {agentName && (
+                <span className="text-sm font-semibold text-blue-200">
+                  {agentName}
+                </span>
+              )}
             </>
           )}
-        </button>
-      )}
-      
-      {showToolInfo && renderToolInfo()}
-      
-      <div className="flex items-center gap-1 text-xs mt-3 text-white/70">
-        <Clock className="w-3 h-3" />
-        {message.timestamp?.toLocaleString(undefined, {
-          hour: "2-digit",
-          minute: "2-digit",
-        })}
+          {getTypeIcon()}
+        </div>
+
+        <ReactMarkdown 
+          remarkPlugins={[remarkGfm]} 
+          className="text-sm prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/20 prose-pre:rounded-lg"
+          disallowedElements={["img"]}
+        >
+          {message.content}
+        </ReactMarkdown>
+        
+        {message.tool && (
+          <button 
+            onClick={() => setShowToolInfo(!showToolInfo)}
+            className="mt-3 flex items-center gap-1 text-xs text-white/80 hover:text-white transition-colors duration-200"
+          >
+            {showToolInfo ? (
+              <>
+                <ChevronUp className="w-4 h-4" />
+                Hide details
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-4 h-4" />
+                Show details
+              </>
+            )}
+          </button>
+        )}
+        
+        {showToolInfo && renderToolInfo()}
+        
+        <div className="flex items-center gap-1 text-xs mt-3 text-white/70">
+          <Clock className="w-3 h-3" />
+          {message.timestamp?.toLocaleString(undefined, {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </div>
       </div>
     </>
   );

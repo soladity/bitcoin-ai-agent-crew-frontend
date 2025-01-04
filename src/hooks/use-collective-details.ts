@@ -288,6 +288,8 @@ export function useCollectiveDetails(id: string) {
     };
 
     loadData();
+    
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   return {
