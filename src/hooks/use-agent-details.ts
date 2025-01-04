@@ -42,7 +42,7 @@ export function useAgentDetails() {
       const { data: walletData, error: walletError } = await supabase
         .from("wallets")
         .select("mainnet_address, testnet_address")
-        .eq("profile_id", agentData.profile_id)
+        .eq("agent_id", id)
         .single();
 
       if (walletError && walletError.code !== "PGRST116") { // Ignore not found error
