@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { AuthProvider } from "@/components/providers/auth-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://sprint.aibtc.dev"),
@@ -101,7 +102,11 @@ export default function RootLayout({
       <body
         className={`${rocGroteskRegular.variable} ${rocGroteskWide.variable} ${rocGroteskExtraWide.variable} antialiased`}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   );

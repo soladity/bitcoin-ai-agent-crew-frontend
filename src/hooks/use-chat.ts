@@ -1,29 +1,19 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/utils/supabase/client";
+import { Message } from "@/lib/chat/types";
 
-export interface Message {
-  role: "user" | "assistant";
-  type: "task" | "step" | "result" | null;
-  content: string;
-  timestamp: Date;
-  tool?: string;
-  tool_input?: string;
-  tool_output?: string;
-  agent_id?: string;
-}
-
-export function useChat() {
+export function useChat(conversationId: string) {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [authToken, setAuthToken] = useState<string | null>(null);
-  const [conversationId, setConversationId] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentJobRef = useRef<{
     steps: Message[];
@@ -57,148 +47,6 @@ export function useChat() {
     }
     fetchUserAndProfile();
   }, []);
-
-  const handleResetHistory = useCallback(async () => {
-    if (!profileId) return;
-
-    try {
-      setIsLoading(true);
-
-      // Close existing WebSocket connection if any
-      if (ws) {
-        await new Promise<void>((resolve) => {
-          const closeHandler = () => {
-            console.log("WebSocket closed during reset");
-            resolve();
-          };
-
-          if (ws.readyState === WebSocket.CLOSED) {
-            resolve();
-          } else {
-            ws.addEventListener('close', closeHandler, { once: true });
-            ws.close();
-          }
-        });
-        setWs(null);
-      }
-
-      // Delete current conversation if it exists
-      if (conversationId) {
-        const { error: deleteError } = await supabase
-          .from('conversations')
-          .delete()
-          .eq('id', conversationId)
-          .eq('profile_id', profileId);
-
-        if (deleteError) {
-          throw deleteError;
-        }
-      }
-
-      // Create a new conversation
-      const { data: newConversation, error: insertError } = await supabase
-        .from('conversations')
-        .insert([
-          { 
-            profile_id: profileId,
-            name: "New Conversation",
-            created_at: new Date().toISOString()
-          }
-        ])
-        .select()
-        .single();
-
-      if (insertError) {
-        throw insertError;
-      }
-
-      // Reset current job state
-      currentJobRef.current = {
-        steps: [],
-        tasks: [],
-        results: [],
-      };
-
-      // Reset messages and set new conversation ID
-      const initialMessage: Message = {
-        role: "assistant",
-        type: null,
-        content: "Welcome back! Let's see what your ai can pull off today.",
-        timestamp: new Date(),
-      };
-
-      setMessages([initialMessage]);
-      setConversationId(newConversation.id);
-
-    } catch (error) {
-      console.error("Error resetting history:", error);
-      toast({
-        title: "Error",
-        description: "Failed to reset chat history",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-    }
-  }, [profileId, conversationId, ws, toast]);
-
-  useEffect(() => {
-    const fetchHistory = async () => {
-      if (!profileId) return;
-
-      try {
-        // Get the latest conversation for the user
-        const { data: conversation } = await supabase
-          .from('conversations')
-          .select('*')
-          .eq('profile_id', profileId)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
-
-        if (!conversation) {
-          // Create a new conversation if none exists
-          const { data: newConversation, error: createError } = await supabase
-            .from('conversations')
-            .insert([
-              { 
-                profile_id: profileId,
-                name: "New Conversation",
-                created_at: new Date().toISOString()
-              }
-            ])
-            .select()
-            .single();
-
-          if (createError) {
-            throw createError;
-          }
-
-          const initialMessage: Message = {
-            role: "assistant",
-            type: null,
-            content: "Welcome! Let's see what your ai can pull off today.",
-            timestamp: new Date(),
-          };
-
-          setConversationId(newConversation.id);
-          setMessages([initialMessage]);
-        } else {
-          setConversationId(conversation.id);
-        }
-
-      } catch (error) {
-        console.error("Failed to fetch history:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch chat history",
-          variant: "destructive",
-        });
-      }
-    };
-
-    fetchHistory();
-  }, [profileId, toast]);
-
 
   useEffect(() => {
     scrollToBottom();
@@ -236,159 +84,173 @@ export function useChat() {
         if (!event.data || event.data.trim() === "") return;
 
         const data = JSON.parse(event.data);
-        if (!data || typeof data !== "object") return;
+        console.log('Received message:', data);
 
-        switch (data.type) {
-          case 'history':
-            console.log('Raw history data:', data);
-            // Set initial conversation history
-            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-            const historyMessages = data.messages.map((msg: any) => {
-              console.log('Processing history message:', msg);
-              // Ensure timestamp is properly parsed from the message
-              const timestamp = msg.timestamp || msg.created_at || msg.job_started_at || new Date().toISOString();
-              // Skip step messages with empty thoughts
-              if (msg.type === "step" && (!msg.thought || msg.thought.trim() === "")) {
-                return null;
-              }
-              const processedMsg = {
-                role: msg.role,
-                type: msg.type,
-                content: msg.type === "step" ? msg.thought : msg.content,
-                timestamp: new Date(timestamp),
-                tool: msg.tool,
-                tool_input: msg.tool_input,
-                tool_output: msg.tool_output,
-                agent_id: msg.agent_id,
-              };
-              console.log('Processed message:', processedMsg);
-              return processedMsg;
-            })
-            .filter((msg: Message | null): msg is Message => msg !== null && msg.type !== "task");
-            console.log('Final history messages:', historyMessages);
-            // Sort messages by timestamp
-            historyMessages.sort((a: { timestamp: { getTime: () => number; }; }, b: { timestamp: { getTime: () => number; }; }) => a.timestamp.getTime() - b.timestamp.getTime());
-            setMessages(historyMessages);
-            break;
-
-          case 'job_started':
-            console.log('New job started:', data.job_id);
-            // Reset the current job's message groups when a new job starts
-            currentJobRef.current = {
-              steps: [],
-              tasks: [],
-              results: [],
-            };
-            break;
-
-          case 'stream':
-            // Skip step messages with empty thoughts
-            if (data.stream_type === "step" && (!data.thought || data.thought.trim() === "")) {
-              break;
-            }
-            const newMessage: Message = {
-              role: "assistant",
-              type: data.stream_type,
-              content: data.stream_type === "step" ? data.thought : data.content,
-              timestamp: new Date(data.timestamp),
-              tool: data.tool,
-              tool_input: data.tool_input,
-              tool_output: data.tool_output,
-              agent_id: data.agent_id,
-            };
-
-            switch (data.stream_type) {
-              case "token":
-                // Accumulate tokens instead of replacing
-                lastStreamedContentRef.current = (lastStreamedContentRef.current || '') + data.content;
-                // For token streams, we update the last message's content
-                setMessages((prev) => {
-                  const newMessages = [...prev];
-                  const lastMessage = newMessages[newMessages.length - 1];
-                  
-                  if (newMessages.length > 0 && lastMessage.role === "assistant" && !lastMessage.type) {
-                    // Update existing message
-                    newMessages[newMessages.length - 1] = {
-                      ...lastMessage,
-                      content: lastMessage.content + data.content
-                    };
-                  } else {
-                    // Create new message
-                    newMessages.push({
-                      role: "assistant",
-                      type: null,
-                      content: data.content,
-                      timestamp: new Date(data.timestamp),
-                    });
-                  }
-                  return newMessages;
-                });
-                break;
-              case "step":
-                // Reset the streamed content when we get a new step
-                lastStreamedContentRef.current = null;
-                currentJobRef.current.steps.push(newMessage);
-                break;
-              case "task":
-                // Reset the streamed content when we get a new task
-                lastStreamedContentRef.current = null;
-                // Skip storing task messages
-                break;
-              case "result":
-                // Check if the result matches the last streamed content
-                console.log('Last streamed content:', lastStreamedContentRef.current);
-                console.log('New result content:', data.content);
-                if (!lastStreamedContentRef.current || lastStreamedContentRef.current.trim() !== data.content.trim()) {
-                  currentJobRef.current.results.push(newMessage);
+        if (data.type === "stream") {
+          switch (data.stream_type) {
+            case "token":
+              setMessages((prev) => {
+                const lastMessage = prev[prev.length - 1];
+                
+                // If last message is a tool message or not an assistant message,
+                // create a new message for tokens
+                if (!lastMessage || 
+                    lastMessage.role !== "assistant" || 
+                    lastMessage.type === "tool") {
+                  return [...prev, {
+                    role: "assistant",
+                    type: null,
+                    content: data.content,
+                    timestamp: new Date(data.timestamp),
+                    agent_id: data.agent_id,
+                    tool_calls: []
+                  }];
                 }
-                setIsLoading(false);
-                // Reset the streamed content after processing the result
-                lastStreamedContentRef.current = null;
-                break;
-              default:
-                console.warn("Unknown stream type:", data.stream_type);
+                
+                // Otherwise, update the existing message with new content
+                return [
+                  ...prev.slice(0, -1),
+                  {
+                    ...lastMessage,
+                    content: lastMessage.content + data.content
+                  }
+                ];
+              });
+              break;
+            case "tool":
+              // Create a standalone tool message
+              setMessages(prev => [...prev, {
+                role: "assistant",
+                type: "tool",
+                content: "",
+                timestamp: new Date(data.timestamp),
+                agent_id: data.agent_id,
+                tool: data.tool,
+                tool_input: data.tool_input,
+                tool_output: data.tool_output || "",
+                tool_calls: []
+              }]);
+              break;
+            case "step":
+              // Reset the streamed content when we get a new step
+              lastStreamedContentRef.current = null;
+              currentJobRef.current.steps.push({
+                role: "assistant",
+                type: "step",
+                content: data.content,
+                timestamp: new Date(data.timestamp),
+                tool: data.tool,
+                tool_input: data.tool_input,
+                tool_output: data.tool_output || "",
+                agent_id: data.agent_id,
+                tool_calls: data.tool_calls || [],
+              });
+              break;
+            case "task":
+              // Reset the streamed content when we get a new task
+              lastStreamedContentRef.current = null;
+              // Skip storing task messages
+              break;
+            case "result":
+              // Check if the result matches the last streamed content
+              console.log('Last streamed content:', lastStreamedContentRef.current);
+              console.log('New result content:', data.content);
+              if (!lastStreamedContentRef.current || lastStreamedContentRef.current.trim() !== data.content.trim()) {
+                currentJobRef.current.results.push({
+                  role: "assistant",
+                  type: "result",
+                  content: data.content,
+                  timestamp: new Date(data.timestamp),
+                  tool: data.tool,
+                  tool_input: data.tool_input,
+                  tool_output: data.tool_output || "",
+                  agent_id: data.agent_id,
+                  tool_calls: undefined
+                });
+              }
+              setIsLoading(false);
+              // Reset the streamed content after processing the result
+              lastStreamedContentRef.current = null;
+              break;
+            case "end":
+              setIsLoading(false);
+              break;
+            default:
+              console.warn("Unknown stream type:", data.stream_type);
+          }
+
+          // Update messages with all current groups
+          setMessages((prev) => {
+            const withoutCurrentJob = prev.filter(
+              (msg) =>
+                msg.role !== "assistant" ||
+                !msg.type ||
+                msg.timestamp < new Date(data.job_started_at)
+            );
+
+            return [
+              ...withoutCurrentJob,
+              ...currentJobRef.current.steps,
+              ...currentJobRef.current.results,
+            ];
+          });
+        } else if (data.type === "history") {
+          console.log('Raw history data:', data);
+          // Set initial conversation history
+          // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+          const historyMessages = data.messages.map((msg: any) => {
+            console.log('Processing history message:', msg);
+            // Ensure timestamp is properly parsed from the message
+            const timestamp = msg.timestamp || msg.created_at || msg.job_started_at || new Date().toISOString();
+            // Skip step messages with empty thoughts
+            if (msg.type === "step" && (!msg.thought || msg.thought.trim() === "")) {
+              return null;
             }
-
-            // Update messages with all current groups
-            setMessages((prev) => {
-              const withoutCurrentJob = prev.filter(
-                (msg) =>
-                  msg.role !== "assistant" ||
-                  !msg.type ||
-                  msg.timestamp < new Date(data.job_started_at)
-              );
-
-              return [
-                ...withoutCurrentJob,
-                ...currentJobRef.current.steps,
-                ...currentJobRef.current.results,
-              ];
-            });
-            break;
-
-          case 'user_message':
-            // Add user message from history
-            const userMessage: Message = {
-              role: "user",
-              type: null,
-              content: data.content,
-              timestamp: new Date(data.timestamp),
+            const processedMsg = {
+              role: msg.role,
+              type: msg.type,
+              content: msg.type === "step" ? msg.thought : msg.content,
+              timestamp: new Date(timestamp),
+              tool: msg.tool,
+              tool_input: msg.tool_input,
+              tool_output: msg.tool_output,
+              agent_id: msg.agent_id,
             };
-            setMessages(prev => [...prev, userMessage]);
-            break;
-
-          case 'error':
-            console.error('Error from WebSocket:', data.message);
-            toast({
-              title: "Error",
-              description: data.message,
-              variant: "destructive",
-            });
-            setIsLoading(false);
-            break;
-
-          default:
-            console.warn("Unknown message type:", data.type);
+            console.log('Processed message:', processedMsg);
+            return processedMsg;
+          })
+          .filter((msg: Message | null): msg is Message => msg !== null && msg.type !== "task");
+          console.log('Final history messages:', historyMessages);
+          // Sort messages by timestamp
+          historyMessages.sort((a: { timestamp: { getTime: () => number; }; }, b: { timestamp: { getTime: () => number; }; }) => a.timestamp.getTime() - b.timestamp.getTime());
+          setMessages(historyMessages);
+        } else if (data.type === "job_started") {
+          console.log('New job started:', data.job_id);
+          // Reset the current job's message groups when a new job starts
+          currentJobRef.current = {
+            steps: [],
+            tasks: [],
+            results: [],
+          };
+        } else if (data.type === "user_message") {
+          // Add user message from history
+          const userMessage: Message = {
+            role: "user",
+            type: null,
+            content: data.content,
+            timestamp: new Date(data.timestamp),
+          };
+          setMessages(prev => [...prev, userMessage]);
+        } else if (data.type === "error") {
+          console.error('Error from WebSocket:', data.message);
+          toast({
+            title: "Error",
+            description: data.message,
+            variant: "destructive",
+          });
+          setIsLoading(false);
+        } else {
+          console.warn("Unknown message type:", data.type);
         }
       } catch (error) {
         console.error("Error parsing message:", error);
@@ -449,159 +311,172 @@ export function useChat() {
         if (!event.data || event.data.trim() === "") return;
 
         const data = JSON.parse(event.data);
-        if (!data || typeof data !== "object") return;
+        console.log('Received message:', data);
 
-        switch (data.type) {
-          case 'history':
-            console.log('Raw history data:', data);
-            // Set initial conversation history
-            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-            const historyMessages = data.messages.map((msg: any) => {
-              console.log('Processing history message:', msg);
-              // Ensure timestamp is properly parsed from the message
-              const timestamp = msg.timestamp || msg.created_at || msg.job_started_at || new Date().toISOString();
-              // Skip step messages with empty thoughts
-              if (msg.type === "step" && (!msg.thought || msg.thought.trim() === "")) {
-                return null;
-              }
-              const processedMsg = {
-                role: msg.role,
-                type: msg.type,
-                content: msg.type === "step" ? msg.thought : msg.content,
-                timestamp: new Date(timestamp),
-                tool: msg.tool,
-                tool_input: msg.tool_input,
-                tool_output: msg.tool_output,
-                agent_id: msg.agent_id,
-              };
-              console.log('Processed message:', processedMsg);
-              return processedMsg;
-            })
-            .filter((msg: Message | null): msg is Message => msg !== null && msg.type !== "task");
-            console.log('Final history messages:', historyMessages);
-            // Sort messages by timestamp
-            historyMessages.sort((a: { timestamp: { getTime: () => number; }; }, b: { timestamp: { getTime: () => number; }; }) => a.timestamp.getTime() - b.timestamp.getTime());
-            setMessages(historyMessages);
-            break;
-
-          case 'job_started':
-            console.log('New job started:', data.job_id);
-            // Reset the current job's message groups when a new job starts
-            currentJobRef.current = {
-              steps: [],
-              tasks: [],
-              results: [],
-            };
-            break;
-
-          case 'stream':
-            // Skip step messages with empty thoughts
-            if (data.stream_type === "step" && (!data.thought || data.thought.trim() === "")) {
-              break;
-            }
-            const newMessage: Message = {
-              role: "assistant",
-              type: data.stream_type,
-              content: data.stream_type === "step" ? data.thought : data.content,
-              timestamp: new Date(data.timestamp),
-              tool: data.tool,
-              tool_input: data.tool_input,
-              tool_output: data.tool_output,
-              agent_id: data.agent_id,
-            };
-
-            switch (data.stream_type) {
-              case "token":
-                // Accumulate tokens instead of replacing
-                lastStreamedContentRef.current = (lastStreamedContentRef.current || '') + data.content;
-                // For token streams, we update the last message's content
-                setMessages((prev) => {
-                  const newMessages = [...prev];
-                  const lastMessage = newMessages[newMessages.length - 1];
-                  
-                  if (newMessages.length > 0 && lastMessage.role === "assistant" && !lastMessage.type) {
-                    // Update existing message
-                    newMessages[newMessages.length - 1] = {
-                      ...lastMessage,
-                      content: lastMessage.content + data.content
-                    };
-                  } else {
-                    // Create new message
-                    newMessages.push({
-                      role: "assistant",
-                      type: null,
-                      content: data.content,
-                      timestamp: new Date(data.timestamp),
-                    });
-                  }
-                  return newMessages;
-                });
-                break;
-              case "step":
-                // Reset the streamed content when we get a new step
-                lastStreamedContentRef.current = null;
-                currentJobRef.current.steps.push(newMessage);
-                break;
-              case "task":
-                // Reset the streamed content when we get a new task
-                lastStreamedContentRef.current = null;
-                // Skip storing task messages
-                break;
-              case "result":
-                // Check if the result matches the last streamed content
-                console.log('Last streamed content:', lastStreamedContentRef.current);
-                console.log('New result content:', data.content);
-                if (!lastStreamedContentRef.current || lastStreamedContentRef.current.trim() !== data.content.trim()) {
-                  currentJobRef.current.results.push(newMessage);
+        if (data.type === "stream") {
+          switch (data.stream_type) {
+            case "token":
+              setMessages((prev) => {
+                const lastMessage = prev[prev.length - 1];
+                
+                // If last message is a tool message or not an assistant message,
+                // create a new message for tokens
+                if (!lastMessage || 
+                    lastMessage.role !== "assistant" || 
+                    lastMessage.type === "tool") {
+                  return [...prev, {
+                    role: "assistant",
+                    type: null,
+                    content: data.content,
+                    timestamp: new Date(data.timestamp),
+                    agent_id: data.agent_id,
+                    tool_calls: []
+                  }];
                 }
-                setIsLoading(false);
-                // Reset the streamed content after processing the result
-                lastStreamedContentRef.current = null;
-                break;
-              default:
-                console.warn("Unknown stream type:", data.stream_type);
+                
+                // Otherwise, update the existing message with new content
+                return [
+                  ...prev.slice(0, -1),
+                  {
+                    ...lastMessage,
+                    content: lastMessage.content + data.content
+                  }
+                ];
+              });
+              break;
+            case "tool":
+              // Create a standalone tool message
+              setMessages(prev => [...prev, {
+                role: "assistant",
+                type: "tool",
+                content: "",
+                timestamp: new Date(data.timestamp),
+                agent_id: data.agent_id,
+                tool: data.tool,
+                tool_input: data.tool_input,
+                tool_output: data.tool_output || "",
+                tool_calls: []
+              }]);
+              break;
+            case "step":
+              // Reset the streamed content when we get a new step
+              lastStreamedContentRef.current = null;
+              currentJobRef.current.steps.push({
+                role: "assistant",
+                type: "step",
+                content: data.content,
+                timestamp: new Date(data.timestamp),
+                tool: data.tool,
+                tool_input: data.tool_input,
+                tool_output: data.tool_output || "",
+                agent_id: data.agent_id,
+                tool_calls: data.tool_calls || [],
+              });
+              break;
+            case "task":
+              // Reset the streamed content when we get a new task
+              lastStreamedContentRef.current = null;
+              // Skip storing task messages
+              break;
+            case "result":
+              // Check if the result matches the last streamed content
+              console.log('Last streamed content:', lastStreamedContentRef.current);
+              console.log('New result content:', data.content);
+              if (!lastStreamedContentRef.current || lastStreamedContentRef.current.trim() !== data.content.trim()) {
+                currentJobRef.current.results.push({
+                  role: "assistant",
+                  type: "result",
+                  content: data.content,
+                  timestamp: new Date(data.timestamp),
+                  tool: data.tool,
+                  tool_input: data.tool_input,
+                  tool_output: data.tool_output || "",
+                  agent_id: data.agent_id,
+                });
+              }
+              setIsLoading(false);
+              // Reset the streamed content after processing the result
+              lastStreamedContentRef.current = null;
+              break;
+            case "end":
+              setIsLoading(false);
+              break;
+            default:
+              console.warn("Unknown stream type:", data.stream_type);
+          }
+
+          // Update messages with all current groups
+          setMessages((prev) => {
+            const withoutCurrentJob = prev.filter(
+              (msg) =>
+                msg.role !== "assistant" ||
+                !msg.type ||
+                msg.timestamp < new Date(data.job_started_at)
+            );
+
+            return [
+              ...withoutCurrentJob,
+              ...currentJobRef.current.steps,
+              ...currentJobRef.current.results,
+            ];
+          });
+        } else if (data.type === "history") {
+          console.log('Raw history data:', data);
+          // Set initial conversation history
+          // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+          const historyMessages = data.messages.map((msg: any) => {
+            console.log('Processing history message:', msg);
+            // Ensure timestamp is properly parsed from the message
+            const timestamp = msg.timestamp || msg.created_at || msg.job_started_at || new Date().toISOString();
+            // Skip step messages with empty thoughts
+            if (msg.type === "step" && (!msg.thought || msg.thought.trim() === "")) {
+              return null;
             }
-
-            // Update messages with all current groups
-            setMessages((prev) => {
-              const withoutCurrentJob = prev.filter(
-                (msg) =>
-                  msg.role !== "assistant" ||
-                  !msg.type ||
-                  msg.timestamp < new Date(data.job_started_at)
-              );
-
-              return [
-                ...withoutCurrentJob,
-                ...currentJobRef.current.steps,
-                ...currentJobRef.current.results,
-              ];
-            });
-            break;
-
-          case 'user_message':
-            // Add user message from history
-            const userMessage: Message = {
-              role: "user",
-              type: null,
-              content: data.content,
-              timestamp: new Date(data.timestamp),
+            const processedMsg = {
+              role: msg.role,
+              type: msg.type,
+              content: msg.type === "step" ? msg.thought : msg.content,
+              timestamp: new Date(timestamp),
+              tool: msg.tool,
+              tool_input: msg.tool_input,
+              tool_output: msg.tool_output,
+              agent_id: msg.agent_id,
             };
-            setMessages(prev => [...prev, userMessage]);
-            break;
-
-          case 'error':
-            console.error('Error from WebSocket:', data.message);
-            toast({
-              title: "Error",
-              description: data.message,
-              variant: "destructive",
-            });
-            setIsLoading(false);
-            break;
-
-          default:
-            console.warn("Unknown message type:", data.type);
+            console.log('Processed message:', processedMsg);
+            return processedMsg;
+          })
+          .filter((msg: Message | null): msg is Message => msg !== null && msg.type !== "task");
+          console.log('Final history messages:', historyMessages);
+          // Sort messages by timestamp
+          historyMessages.sort((a: { timestamp: { getTime: () => number; }; }, b: { timestamp: { getTime: () => number; }; }) => a.timestamp.getTime() - b.timestamp.getTime());
+          setMessages(historyMessages);
+        } else if (data.type === "job_started") {
+          console.log('New job started:', data.job_id);
+          // Reset the current job's message groups when a new job starts
+          currentJobRef.current = {
+            steps: [],
+            tasks: [],
+            results: [],
+          };
+        } else if (data.type === "user_message") {
+          // Add user message from history
+          const userMessage: Message = {
+            role: "user",
+            type: null,
+            content: data.content,
+            timestamp: new Date(data.timestamp),
+          };
+          setMessages(prev => [...prev, userMessage]);
+        } else if (data.type === "error") {
+          console.error('Error from WebSocket:', data.message);
+          toast({
+            title: "Error",
+            description: data.message,
+            variant: "destructive",
+          });
+          setIsLoading(false);
+        } else {
+          console.warn("Unknown message type:", data.type);
         }
       } catch (error) {
         console.error("Error parsing message:", error);
@@ -626,53 +501,74 @@ export function useChat() {
     setWs(newWs);
   }, [conversationId, authToken, ws, toast]);
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!input.trim() || isLoading || !ws || ws.readyState !== WebSocket.OPEN) return;
+  const handleInputChange = useCallback((value: string) => {
+    setInput(value);
+  }, []);
 
-      const userMessage: Message = {
-        role: "user",
-        type: null,
-        content: input,
-        timestamp: new Date(),
-        agent_id: selectedAgentId || undefined,
-      };
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || !selectedAgentId) return;
 
-      setMessages((prev) => [...prev, userMessage]);
-      setInput("");
+    try {
       setIsLoading(true);
+      const { error: msgError } = await supabase
+        .from('messages')
+        .insert([
+          {
+            conversation_id: conversationId,
+            content: input.trim(),
+            role: 'user',
+          },
+        ]);
 
-      try {
-        ws.send(JSON.stringify({
-          type: 'chat_message',
-          message: input,
-          agent_id: selectedAgentId
-        }));
-      } catch (error) {
-        console.error("Error sending message:", error);
-        toast({
-          title: "Error",
-          description: "Failed to send message",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-      }
-    },
-    [input, isLoading, ws, toast, selectedAgentId]
-  );
+      if (msgError) throw msgError;
+      setInput('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [input, selectedAgentId, conversationId, toast]);
+
+  const clearMessages = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('conversation_id', conversationId);
+
+      if (error) throw error;
+      setMessages([]);
+    } catch (error) {
+      console.error('Error clearing messages:', error);
+      toast({
+        title: "Error",
+        description: "Failed to clear messages",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [conversationId, toast]);
 
   return {
+    // State
     messages,
     input,
-    setInput,
     isLoading,
-    handleSubmit,
-    handleResetHistory,
-    handleReconnect,
-    messagesEndRef,
+    error,
     isConnected,
     selectedAgentId,
+    // Actions
     setSelectedAgentId,
+    handleInputChange,
+    handleSubmit,
+    clearMessages,
   };
 }

@@ -13,6 +13,14 @@ export interface Task {
   updated_at: string;
 }
 
+export interface Conversation {
+  id: string;
+  agent_id: string;
+  profile_id: string;
+  name: string;
+  created_at: string;
+}
+
 export interface Token {
   id: string;
   collective_id: string;

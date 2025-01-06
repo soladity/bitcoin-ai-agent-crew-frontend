@@ -1,14 +1,15 @@
-import React from "react";
-import { Metadata } from "next";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Chat",
-};
+import React from "react";
 
 export default function ChatLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <div>{children}</div>;
+  return (
+    <div className="flex-1 h-full">
+      {children}
+    </div>
+  );
 }

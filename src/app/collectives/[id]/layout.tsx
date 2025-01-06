@@ -21,36 +21,50 @@ export default function CollectiveLayout({
   const isProposals = pathname === `/collectives/${id}/proposals`;
 
   return (
-    <div className="container mx-auto p-4 space-y-4">
-      <div className="flex flex-start items-center">
-        <div className="flex gap-2">
+    <div className="container mx-auto space-y-4 px-4 py-6">
+      <nav className="rounded-lg border border-border/10 bg-[#1A1A1A] p-4">
+        <div className="flex flex-wrap gap-2">
           <Link href={`/collectives/${id}`}>
-            <Button variant={isOverview ? "default" : "ghost"}>
-              <Info className="mr-2 h-4 w-4" />
+            <Button 
+              variant={isOverview ? "default" : "ghost"}
+              className="h-8 text-sm hover:bg-white/5"
+            >
+              <Info className="mr-2 h-3.5 w-3.5" />
               Overview
             </Button>
           </Link>
           <Link href={`/collectives/${id}/capabilities`}>
-            <Button variant={isCapabilities ? "default" : "ghost"}>
-              <Blocks className="mr-2 h-4 w-4" />
+            <Button 
+              variant={isCapabilities ? "default" : "ghost"}
+              className="h-8 text-sm hover:bg-white/5"
+            >
+              <Blocks className="mr-2 h-3.5 w-3.5" />
               Capabilities
             </Button>
           </Link>
           <Link href={`/collectives/${id}/holders`}>
-            <Button variant={isHolders ? "default" : "ghost"}>
-              <Users className="mr-2 h-4 w-4" />
+            <Button 
+              variant={isHolders ? "default" : "ghost"}
+              className="h-8 text-sm hover:bg-white/5"
+            >
+              <Users className="mr-2 h-3.5 w-3.5" />
               Holders
             </Button>
           </Link>
           <Link href={`/collectives/${id}/proposals`}>
-            <Button variant={isProposals ? "default" : "ghost"}>
-              <Activity className="mr-2 h-4 w-4" />
+            <Button 
+              variant={isProposals ? "default" : "ghost"}
+              className="h-8 text-sm hover:bg-white/5"
+            >
+              <Activity className="mr-2 h-3.5 w-3.5" />
               Proposals
             </Button>
           </Link>
         </div>
-      </div>
-      {children}
+      </nav>
+      <main className="min-h-[calc(100vh-12rem)]">
+        {children}
+      </main>
     </div>
   );
 }

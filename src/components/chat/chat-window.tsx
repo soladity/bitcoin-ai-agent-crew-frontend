@@ -1,135 +1,109 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useChat } from "@/hooks/use-chat";
-import { MessageBubble } from "@/components/chat/chat-message-bubble";
-import { ChatInput } from "@/components/chat/chat-input";
-import { Bot } from "lucide-react";
+import { useEffect } from "react";
+import { ChatInput } from "./chat-input";
+import { MessageList } from "./message-list";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useChatStore } from "@/store/chat";
+import { useSessionStore } from "@/store/session";
 
-export default function Chat() {
+interface ChatWindowProps {
+  conversationId: string;
+}
+
+export function ChatWindow({ conversationId }: ChatWindowProps) {
   const {
     messages,
-    input,
-    setInput,
     isLoading,
-    handleSubmit,
-    handleResetHistory,
-    handleReconnect,
-    messagesEndRef,
+    error,
     isConnected,
     selectedAgentId,
-    setSelectedAgentId,
-  } = useChat();
+    setSelectedAgent,
+    clearMessages,
+    connect,
+    disconnect
+  } = useChatStore();
 
-  const [showScrollButton, setShowScrollButton] = useState(false);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const { accessToken } = useSessionStore();
+  const conversationMessages = messages[conversationId] || [];
 
-  const scrollToBottom = useCallback(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+  // Handle WebSocket connection
+  useEffect(() => {
+    if (!accessToken) {
+      disconnect();
+      return;
     }
-  }, [messagesEndRef]);
 
-  // Auto-scroll when new messages arrive
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading, scrollToBottom]);
+    // Connect when component mounts or conversation changes
+    connect(conversationId, accessToken);
 
-  // Handle scroll events to show/hide button
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-      setShowScrollButton(distanceFromBottom > 100);
-    };
-
-    // Initial check
-    handleScroll();
-
-    // Add scroll event listener
-    container.addEventListener("scroll", handleScroll);
-
-    // Add resize event listener to window
-    window.addEventListener("resize", handleScroll);
-
-    // Add mutation observer to detect content changes
-    const observer = new MutationObserver(handleScroll);
-    observer.observe(container, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-    });
-
+    // Cleanup when component unmounts or conversation changes
     return () => {
-      container.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
-      observer.disconnect();
+      console.log('ChatWindow unmounting, disconnecting WebSocket');
+      disconnect();
     };
-  }, []);
+  }, [conversationId, accessToken, connect, disconnect]);
+
+  if (!accessToken) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Alert>
+          <AlertDescription>
+            Please sign in to start chatting
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
-    <div className="relative flex flex-col h-[98-dvh] overflow-hidden">
-      <div
-        ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto scroll-smooth relative"
-        style={{
-          height: "calc(100vh - 8rem)",
-          maxHeight: "calc(100vh - 8rem)",
-        }}
-      >
-        <div className="space-y-4 px-4 py-2">
-          {messages.map((message, index) => (
-            <MessageBubble key={index} message={message} />
-          ))}
-          {isLoading && (
-            <div className="flex mb-4 justify-start">
-              <div className="flex flex-col max-w-[80%] p-4 rounded-2xl bg-gradient-to-br from-blue-600/90 to-blue-700/90 text-white animate-pulse">
-                <div className="flex items-center gap-2 mb-2">
-                  <Bot className="w-4 h-4 text-blue-300" />
-                  <div className="flex gap-1">
-                    <div
-                      className="w-2 h-2 rounded-full bg-blue-300/80 animate-bounce"
-                      style={{ animationDelay: "0ms" }}
-                    />
-                    <div
-                      className="w-2 h-2 rounded-full bg-blue-300/80 animate-bounce"
-                      style={{ animationDelay: "150ms" }}
-                    />
-                    <div
-                      className="w-2 h-2 rounded-full bg-blue-300/80 animate-bounce"
-                      style={{ animationDelay: "300ms" }}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="h-4 bg-blue-300/20 rounded w-24 animate-pulse" />
-                  <div className="h-4 bg-blue-300/20 rounded w-32 animate-pulse" />
-                  <div className="h-4 bg-blue-300/20 rounded w-20 animate-pulse" />
-                </div>
-              </div>
-            </div>
+    <div className="flex flex-col h-full relative">
+      {/* Header - Fixed at top */}
+      <div className="sticky top-0 z-10 bg-background flex items-center justify-between px-4 py-2 border-b border-zinc-800">
+        <div className="flex items-center gap-2">
+          {!isConnected && (
+            <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
           )}
-          <div ref={messagesEndRef} />
+          <span className={`text-sm ${isConnected ? 'text-green-500' : 'text-zinc-400'}`}>
+            {isConnected ? 'Connected' : 'Connecting...'}
+          </span>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => clearMessages(conversationId)}
+          disabled={isLoading || conversationMessages.length === 0}
+        >
+          Clear Chat
+        </Button>
       </div>
 
-      <div className="fixed bottom-0 inset-x-0 mx-4 lg:mx-0 lg:left-[17rem] lg:right-4 mb-0 md:mb-4">
-        <ChatInput
-          input={input}
-          setInput={setInput}
-          isLoading={isLoading}
-          isConnected={isConnected}
-          selectedAgentId={selectedAgentId}
-          onSelectAgent={setSelectedAgentId}
-          onSubmit={handleSubmit}
-          onReset={handleResetHistory}
-          onReconnect={handleReconnect}
-          onScrollToBottom={scrollToBottom}
-          isScrollButtonDisabled={!showScrollButton}
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="destructive" className="m-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Message List - Scrollable area */}
+      <div className="flex-1 overflow-hidden">
+        <MessageList 
+          messages={conversationMessages} 
         />
+      </div>
+
+      {/* Input - Fixed at bottom */}
+      <div className="sticky bottom-0 z-10 border-t border-zinc-800">
+        <div className="p-4">
+          <ChatInput
+            conversationId={conversationId}
+            selectedAgentId={selectedAgentId}
+            onAgentSelect={setSelectedAgent}
+            disabled={isLoading || !isConnected}
+          />
+        </div>
       </div>
     </div>
   );
