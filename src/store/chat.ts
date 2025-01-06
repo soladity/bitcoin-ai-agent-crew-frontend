@@ -113,10 +113,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   clearMessages: (conversationId) => {
     // delete conversation
-    supabase
-      .from("conversations")
-      .delete()
-      .eq("id", conversationId);
+    console.log('Clearing messages for conversation:', conversationId);
 
     // clear messages
     set((state) => ({

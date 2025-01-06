@@ -66,7 +66,7 @@ export default function ApplicationLayout({ children }: ApplicationLayoutProps) 
       {/* Main Content */}
       <main className="flex-1 min-w-0 relative">
         <ScrollArea className="h-screen">
-          <div className="p-4">
+          <div>
             {children}
           </div>
         </ScrollArea>

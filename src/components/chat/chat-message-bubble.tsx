@@ -10,46 +10,58 @@ export function ChatMessageBubble({ message }: { message: Message }) {
   return (
     <div
       className={cn(
-        "flex w-full gap-2 p-4",
+        "flex w-full gap-3 px-4 py-3 group transition-colors",
         message.role === "user"
-          ? "bg-zinc-900 flex-row"
-          : "bg-zinc-800/50 flex-row-reverse"
+          ? "hover:bg-zinc-900/50 flex-row-reverse"
+          : "hover:bg-zinc-900/30"
       )}
     >
       <div
         className={cn(
-          "flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md border",
+          "flex h-6 w-6 shrink-0 select-none items-center justify-center rounded-full",
           message.role === "user"
-            ? "bg-zinc-800 border-zinc-700"
-            : "bg-zinc-700 border-zinc-600"
+            ? "bg-gradient-to-br from-zinc-700 to-zinc-800 text-zinc-400"
+            : "bg-gradient-to-br from-indigo-500 to-indigo-600 text-white"
         )}
       >
         {message.role === "user" ? (
-          <User className="h-4 w-4" />
+          <User className="h-3 w-3" />
         ) : (
-          <Bot className="h-4 w-4" />
+          <Bot className="h-3 w-3" />
         )}
       </div>
-      <div>{message.tool}</div>
-      <div className="flex flex-col flex-1 gap-1">
-        <div className="flex items-center gap-2">
-          <p className={cn(
-            "text-sm whitespace-pre-wrap",
-            message.role === "user" ? "text-zinc-300" : "text-zinc-400"
+
+      <div className="flex flex-col flex-1 min-w-0">
+        <div className={cn(
+          "flex items-start gap-2",
+          message.role === "user" && "flex-row-reverse"
+        )}>
+          <div className={cn(
+            "flex-1",
+            message.role === "user" && "text-right"
           )}>
             {message.type === 'tool' && message.tool && (
-              <div className="text-sm font-medium text-primary">
-                Using tool: {message.tool}
+              <div className="text-xs font-medium text-indigo-400/80 mb-1">
+                {message.tool}
               </div>
             )}
-            {message.content || ''}
-          </p>
-          {message.status === "processing" && (
-            <Clock className="h-3 w-3 text-zinc-500 animate-pulse" />
-          )}
-          {message.status === "end" && (
-            <CheckCircle2 className="h-3 w-3 text-zinc-500" />
-          )}
+            <p className={cn(
+              "text-sm whitespace-pre-wrap leading-relaxed",
+              message.role === "user" 
+                ? "text-zinc-200" 
+                : "text-zinc-300"
+            )}>
+              {message.content || ''}
+            </p>
+          </div>
+          <div className="flex-shrink-0 mt-1">
+            {message.status === "processing" && (
+              <Clock className="h-3 w-3 text-indigo-400/70 animate-pulse" />
+            )}
+            {message.status === "end" && (
+              <CheckCircle2 className="h-3 w-3 text-indigo-400/70 opacity-0 group-hover:opacity-100 transition-opacity" />
+            )}
+          </div>
         </div>
         {message.created_at && (
           <p className="text-xs text-zinc-500">
