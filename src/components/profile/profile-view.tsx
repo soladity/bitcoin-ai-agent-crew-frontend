@@ -23,10 +23,6 @@ interface TelegramUser {
   profile_id: string | null;
 }
 
-const formatEmail = (email: string): string => {
-  return email.split("@")[0].toUpperCase();
-};
-
 export function ProfileView() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(null);

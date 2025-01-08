@@ -22,6 +22,7 @@ import { useThreadsStore } from "@/store/threads";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AgentSelector } from "./agent-selector";
+import { useAgents } from "@/hooks/use-agents";
 
 export function ChatWindow() {
   const {
@@ -37,6 +38,7 @@ export function ChatWindow() {
     activeThreadId,
   } = useChatStore();
 
+  const { agents, loading: agentsLoading } = useAgents();
   const { thread, clearThread } = useThread(activeThreadId || "");
   const { accessToken } = useSessionStore();
   const {
@@ -114,7 +116,7 @@ export function ChatWindow() {
     );
   }
 
-  if (!selectedAgentId) {
+  if (agents.length === 0) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-4rem)] backdrop-blur-sm">
         <div className="text-center space-y-4 p-6 max-w-md mx-auto">
@@ -137,7 +139,7 @@ export function ChatWindow() {
           </div>
           <h3 className="text-lg font-semibold">Create Your First AI Agent</h3>
           <p className="text-sm text-muted-foreground">
-            To start chatting, you'll need to create at least one AI agent.
+            To start chatting, you will need to create at least one AI agent.
             Agents are AI assistants that you can customize with specific roles
             and capabilities.
           </p>
