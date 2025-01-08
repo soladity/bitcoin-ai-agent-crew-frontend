@@ -1,156 +1,111 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
-import { Input } from "@/components/ui/input";
+import { useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowDownToLine, Loader2, RotateCcw, Send, RefreshCw } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Textarea } from "@/components/ui/textarea";
+import { Send } from "lucide-react";
 import { AgentSelector } from "./agent-selector";
+import { cn } from "@/lib/utils";
+import { useChatStore } from "@/store/chat";
+import { useSessionStore } from "@/store/session";
 
 interface ChatInputProps {
-  input: string;
-  setInput: React.Dispatch<React.SetStateAction<string>>;
-  isLoading: boolean;
-  isConnected: boolean;
   selectedAgentId: string | null;
-  onSelectAgent: (agentId: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
-  onReset: () => void;
-  onReconnect: () => void;
-  onScrollToBottom?: () => void;
-  isScrollButtonDisabled?: boolean;
+  onAgentSelect: (agentId: string | null) => void;
+  disabled?: boolean;
 }
 
-export const ChatInput: React.FC<ChatInputProps> = ({
-  input,
-  setInput,
-  isLoading,
-  isConnected,
+export function ChatInput({
   selectedAgentId,
-  onSelectAgent,
-  onSubmit,
-  onReset,
-  onReconnect,
-  onScrollToBottom,
-  isScrollButtonDisabled = false,
-}) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+  onAgentSelect,
+  disabled = false,
+}: ChatInputProps) {
+  const [input, setInput] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { sendMessage, activeThreadId } = useChatStore();
+  const { accessToken } = useSessionStore();
 
-  useEffect(() => {
-    if (!isLoading && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isLoading]);
-  
-  return (
-    <form onSubmit={onSubmit} className="flex items-center gap-4 p-4">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger>
-            <span className="relative flex h-3 w-3">
-              {isConnected ? (
-                <span className="absolute inline-flex h-full w-full animate-none rounded-full bg-green-400 opacity-75"></span>
-              ) : (
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-              )}
-              <span
-                className={`relative inline-flex h-3 w-3 rounded-full ${
-                  isConnected ? "bg-green-500" : "bg-red-500"
-                }`}
-              ></span>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{isConnected ? "Connected" : "Disconnected"}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-      <div className="flex-1 flex items-center gap-4">
-        <AgentSelector selectedAgentId={selectedAgentId} onSelect={onSelectAgent} />
-        <Input
-          ref={inputRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type a message..."
-          disabled={isLoading || !isConnected}
-          className="flex-1"
-        />
-      </div>
+      if (!input.trim() || !selectedAgentId || !accessToken || !activeThreadId)
+        return;
 
-      <div className="flex items-center gap-2">
-        {onScrollToBottom && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="outline"
-                  disabled={isScrollButtonDisabled}
-                  onClick={onScrollToBottom}
-                >
-                  <ArrowDownToLine className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Scroll to bottom</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
-
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                type="button"
-                size="icon"
-                variant="outline"
-                onClick={onReset}
-                disabled={isLoading}
-              >
-                <RotateCcw className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Reset chat</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
-        {!isConnected && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="outline"
-                  onClick={onReconnect}
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Reconnect</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
-
-        <Button type="submit" size="icon" disabled={isLoading || !isConnected}>
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Send className="h-4 w-4" />
-          )}
-        </Button>
-      </div>
-    </form>
+      try {
+        await sendMessage(activeThreadId, input.trim());
+        setInput("");
+      } catch (error) {
+        console.error("Failed to send message:", error);
+      }
+    },
+    [activeThreadId, input, selectedAgentId, sendMessage, accessToken]
   );
-};
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmit(e);
+      }
+    },
+    [handleSubmit]
+  );
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setInput(e.target.value);
+
+      // Auto-resize the textarea
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+        textareaRef.current.style.height =
+          textareaRef.current.scrollHeight + "px";
+      }
+    },
+    []
+  );
+
+  if (!accessToken) {
+    return null;
+  }
+
+  return (
+    <div className="w-full border-zinc-800">
+      <div className="mx-auto max-w-5xl px-4 py-3">
+        <form onSubmit={handleSubmit} className="flex items-end gap-2">
+          <div className="flex-shrink-0">
+            <AgentSelector
+              selectedAgentId={selectedAgentId}
+              onSelect={onAgentSelect}
+              disabled={disabled}
+            />
+          </div>
+          <div className="flex-1 flex gap-2">
+            <Textarea
+              ref={textareaRef}
+              value={input}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Type a message..."
+              disabled={disabled}
+              className={cn(
+                "min-h-[44px] max-h-[200px] resize-none",
+                "py-3 px-4 bg-zinc-800 border-zinc-700",
+                "text-white placeholder-zinc-400"
+              )}
+              rows={1}
+            />
+            <Button
+              type="submit"
+              disabled={disabled || !input.trim()}
+              className="h-11 w-11 p-0"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

@@ -25,9 +25,6 @@ export function useAgentsList() {
 
     const agents = data as Agent[];
 
-    for (const agent of agents) {
-      console.log(agent);
-    }
     setAgents(agents || []);
   }, [toast]);
 

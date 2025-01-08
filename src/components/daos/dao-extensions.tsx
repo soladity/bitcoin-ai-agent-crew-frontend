@@ -18,13 +18,13 @@ import {
   Vault,
   Building2,
 } from "lucide-react";
-import { Capability } from "@/types/supabase";
+import { Extension } from "@/types/supabase";
 
-interface CollectiveCapabilitiesProps {
-  capabilities: Capability[];
+interface DAOExtensionsProps {
+  extensions: Extension[];
 }
 
-const getCapabilityIcon = (type: Capability["type"]) => {
+const getExtensionIcon = (type: Extension["type"]) => {
   switch (type) {
     case "dex":
       return <PiggyBank className="h-5 w-5" />;
@@ -49,7 +49,7 @@ const getCapabilityIcon = (type: Capability["type"]) => {
   }
 };
 
-const getStatusColor = (status: Capability["status"]) => {
+const getStatusColor = (status: Extension["status"]) => {
   switch (status) {
     case "active":
       return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
@@ -60,33 +60,33 @@ const getStatusColor = (status: Capability["status"]) => {
   }
 };
 
-function CollectiveCapabilities({ capabilities }: CollectiveCapabilitiesProps) {
-  const [expandedCapabilities, setExpandedCapabilities] = useState<string[]>([]);
+function DAOExtensions({ extensions }: DAOExtensionsProps) {
+  const [expandedExtensions, setExpandedExtensions] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("overview");
 
-  const toggleCapability = (id: string) => {
-    setExpandedCapabilities((prev) =>
+  const toggleExtension = (id: string) => {
+    setExpandedExtensions((prev) =>
       prev.includes(id)
         ? prev.filter((capId) => capId !== id)
         : [...prev, id]
     );
   };
 
-  const activeCapabilities = capabilities.filter((cap) => cap.status === "active");
-  // const totalProgress = capabilities.reduce((acc, cap) => acc + (cap.progress || 0), 0) / capabilities.length;
-  const totalProgress = capabilities.reduce((acc, ) => acc + (24), 0) / capabilities.length;
+  const activeExtensions = extensions.filter((cap) => cap.status === "active");
+  // const totalProgress = extensions.reduce((acc, cap) => acc + (cap.progress || 0), 0) / extensions.length;
+  const totalProgress = extensions.reduce((acc, ) => acc + (24), 0) / extensions.length;
 
   return (
     <div className="space-y-6">
       {/* Overview Stats */}
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-6">
-          <div className="text-sm text-muted-foreground">Active Capabilities</div>
-          <div className="mt-2 text-2xl font-bold">{activeCapabilities.length}</div>
+          <div className="text-sm text-muted-foreground">Active Extensions</div>
+          <div className="mt-2 text-2xl font-bold">{activeExtensions.length}</div>
         </Card>
         <Card className="p-6">
-          <div className="text-sm text-muted-foreground">Total Capabilities</div>
-          <div className="mt-2 text-2xl font-bold">{capabilities.length}</div>
+          <div className="text-sm text-muted-foreground">Total Extensions</div>
+          <div className="mt-2 text-2xl font-bold">{extensions.length}</div>
         </Card>
         <Card className="p-6">
           <div className="text-sm text-muted-foreground">Overall Progress</div>
@@ -104,7 +104,7 @@ function CollectiveCapabilities({ capabilities }: CollectiveCapabilitiesProps) {
         </Card>
       </div>
 
-      {/* Capabilities List */}
+      {/* Extensions List */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -114,31 +114,31 @@ function CollectiveCapabilities({ capabilities }: CollectiveCapabilitiesProps) {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          {capabilities.map((capability) => (
-            <Card key={capability.id} className="p-6">
+          {extensions.map((extension) => (
+            <Card key={extension.id} className="p-6">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
-                  <div className={`p-2 rounded-lg ${getStatusColor(capability.status)}`}>
-                    {getCapabilityIcon(capability.type)}
+                  <div className={`p-2 rounded-lg ${getStatusColor(extension.status)}`}>
+                    {getExtensionIcon(extension.type)}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">{capability.type}</h3>
+                      <h3 className="font-semibold">{extension.type}</h3>
                       <Badge variant="outline" className="capitalize">
-                        {capability.type}
+                        {extension.type}
                       </Badge>
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {capability.description}
+                      {extension.description}
                     </p>
                   </div>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => toggleCapability(capability.id)}
+                  onClick={() => toggleExtension(extension.id)}
                 >
-                  {expandedCapabilities.includes(capability.id) ? (
+                  {expandedExtensions.includes(extension.id) ? (
                     <ChevronUp className="h-4 w-4" />
                   ) : (
                     <ChevronDown className="h-4 w-4" />
@@ -146,9 +146,9 @@ function CollectiveCapabilities({ capabilities }: CollectiveCapabilitiesProps) {
                 </Button>
               </div>
 
-              {expandedCapabilities.includes(capability.id) && (
+              {expandedExtensions.includes(extension.id) && (
                 <div className="mt-6 grid grid-cols-3 gap-4">
-                  {/* {capability.metrics.map((metric) => (
+                  {/* {extension.metrics.map((metric) => (
                     <div key={metric.name} className="space-y-1">
                       <div className="text-sm text-muted-foreground">
                         {metric.name}
@@ -176,28 +176,28 @@ function CollectiveCapabilities({ capabilities }: CollectiveCapabilitiesProps) {
         </TabsContent>
 
         <TabsContent value="active" className="space-y-4">
-          {capabilities
+          {extensions
             .filter((cap) => cap.status === "active")
-            .map((capability) => (
-              <Card key={capability.id} className="p-6">
+            .map((extension) => (
+              <Card key={extension.id} className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4">
-                    <div className={`p-2 rounded-lg ${getStatusColor(capability.status)}`}>
-                      {getCapabilityIcon(capability.type)}
+                    <div className={`p-2 rounded-lg ${getStatusColor(extension.status)}`}>
+                      {getExtensionIcon(extension.type)}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{capability.type}</h3>
+                        <h3 className="font-semibold">{extension.type}</h3>
                         <Badge variant="outline" className="capitalize">
-                          {capability.type}
+                          {extension.type}
                         </Badge>
                       </div>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        {capability.description}
+                        {extension.description}
                       </p>
-                      {capability.updated_at && (
+                      {extension.updated_at && (
                         <p className="mt-2 text-xs text-muted-foreground">
-                          Last updated: {capability.updated_at}
+                          Last updated: {extension.updated_at}
                         </p>
                       )}
                     </div>
@@ -205,9 +205,9 @@ function CollectiveCapabilities({ capabilities }: CollectiveCapabilitiesProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => toggleCapability(capability.id)}
+                    onClick={() => toggleExtension(extension.id)}
                   >
-                    {expandedCapabilities.includes(capability.id) ? (
+                    {expandedExtensions.includes(extension.id) ? (
                       <ChevronUp className="h-4 w-4" />
                     ) : (
                       <ChevronDown className="h-4 w-4" />
@@ -215,9 +215,9 @@ function CollectiveCapabilities({ capabilities }: CollectiveCapabilitiesProps) {
                   </Button>
                 </div>
 
-                {expandedCapabilities.includes(capability.id) && (
+                {expandedExtensions.includes(extension.id) && (
                   <div className="mt-6 grid grid-cols-3 gap-4">
-                    {/* {capability.metrics.map((metric) => (
+                    {/* {extension.metrics.map((metric) => (
                       <div key={metric.name} className="space-y-1">
                         <div className="text-sm text-muted-foreground">
                           {metric.name}
@@ -245,28 +245,28 @@ function CollectiveCapabilities({ capabilities }: CollectiveCapabilitiesProps) {
         </TabsContent>
 
         <TabsContent value="pending" className="space-y-4">
-          {capabilities
+          {extensions
             .filter((cap) => cap.status === "pending")
-            .map((capability) => (
-              <Card key={capability.id} className="p-6">
+            .map((extension) => (
+              <Card key={extension.id} className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4">
-                    <div className={`p-2 rounded-lg ${getStatusColor(capability.status)}`}>
-                      {getCapabilityIcon(capability.type)}
+                    <div className={`p-2 rounded-lg ${getStatusColor(extension.status)}`}>
+                      {getExtensionIcon(extension.type)}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{capability.type}</h3>
+                        <h3 className="font-semibold">{extension.type}</h3>
                         <Badge variant="outline" className="capitalize">
-                          {capability.type}
+                          {extension.type}
                         </Badge>
                       </div>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        {capability.description}
+                        {extension.description}
                       </p>
-                      {capability.updated_at && (
+                      {extension.updated_at && (
                         <p className="mt-2 text-xs text-muted-foreground">
-                          Last updated: {capability.updated_at}
+                          Last updated: {extension.updated_at}
                         </p>
                       )}
                     </div>
@@ -274,9 +274,9 @@ function CollectiveCapabilities({ capabilities }: CollectiveCapabilitiesProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => toggleCapability(capability.id)}
+                    onClick={() => toggleExtension(extension.id)}
                   >
-                    {expandedCapabilities.includes(capability.id) ? (
+                    {expandedExtensions.includes(extension.id) ? (
                       <ChevronUp className="h-4 w-4" />
                     ) : (
                       <ChevronDown className="h-4 w-4" />
@@ -284,9 +284,9 @@ function CollectiveCapabilities({ capabilities }: CollectiveCapabilitiesProps) {
                   </Button>
                 </div>
 
-                {expandedCapabilities.includes(capability.id) && (
+                {expandedExtensions.includes(extension.id) && (
                   <div className="mt-6 grid grid-cols-3 gap-4">
-                    {/* {capability.metrics.map((metric) => (
+                    {/* {extension.metrics.map((metric) => (
                       <div key={metric.name} className="space-y-1">
                         <div className="text-sm text-muted-foreground">
                           {metric.name}
@@ -314,28 +314,28 @@ function CollectiveCapabilities({ capabilities }: CollectiveCapabilitiesProps) {
         </TabsContent>
 
         <TabsContent value="inactive" className="space-y-4">
-          {capabilities
+          {extensions
             .filter((cap) => cap.status === "inactive")
-            .map((capability) => (
-              <Card key={capability.id} className="p-6">
+            .map((extension) => (
+              <Card key={extension.id} className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4">
-                    <div className={`p-2 rounded-lg ${getStatusColor(capability.status)}`}>
-                      {getCapabilityIcon(capability.type)}
+                    <div className={`p-2 rounded-lg ${getStatusColor(extension.status)}`}>
+                      {getExtensionIcon(extension.type)}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{capability.type}</h3>
+                        <h3 className="font-semibold">{extension.type}</h3>
                         <Badge variant="outline" className="capitalize">
-                          {capability.type}
+                          {extension.type}
                         </Badge>
                       </div>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        {capability.description}
+                        {extension.description}
                       </p>
-                      {capability.updated_at && (
+                      {extension.updated_at && (
                         <p className="mt-2 text-xs text-muted-foreground">
-                          Last updated: {capability.updated_at}
+                          Last updated: {extension.updated_at}
                         </p>
                       )}
                     </div>
@@ -343,9 +343,9 @@ function CollectiveCapabilities({ capabilities }: CollectiveCapabilitiesProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => toggleCapability(capability.id)}
+                    onClick={() => toggleExtension(extension.id)}
                   >
-                    {expandedCapabilities.includes(capability.id) ? (
+                    {expandedExtensions.includes(extension.id) ? (
                       <ChevronUp className="h-4 w-4" />
                     ) : (
                       <ChevronDown className="h-4 w-4" />
@@ -353,9 +353,9 @@ function CollectiveCapabilities({ capabilities }: CollectiveCapabilitiesProps) {
                   </Button>
                 </div>
 
-                {expandedCapabilities.includes(capability.id) && (
+                {expandedExtensions.includes(extension.id) && (
                   <div className="mt-6 grid grid-cols-3 gap-4">
-                    {/* {capability.metrics.map((metric) => (
+                    {/* {extension.metrics.map((metric) => (
                       <div key={metric.name} className="space-y-1">
                         <div className="text-sm text-muted-foreground">
                           {metric.name}
@@ -386,5 +386,5 @@ function CollectiveCapabilities({ capabilities }: CollectiveCapabilitiesProps) {
   );
 }
 
-export { CollectiveCapabilities };
-export default CollectiveCapabilities;
+export { DAOExtensions };
+export default DAOExtensions;

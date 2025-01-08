@@ -18,7 +18,7 @@ import { Loader2 } from "lucide-react";
 import { Heading } from "../catalyst/heading";
 import { Token } from "@/types/supabase";
 
-interface Collective {
+interface DAO {
   id: string;
   name: string;
   mission: string;
@@ -27,20 +27,20 @@ interface Collective {
   is_graduated: boolean;
   is_deployed: boolean;
   created_at: string;
-  capabilities?: Array<{
+  extensions?: Array<{
     id: string;
     type: string;
   }>;
 }
 
-export default function Collectives() {
-  const [collectives, setCollectives] = useState<Collective[]>([]);
+export default function DAOs() {
+  const [daos, setDAOs] = useState<DAO[]>([]);
   const [tokens, setTokens] = useState<Token[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    fetchCollectives();
+    fetchDAOs();
     fetchTokens();
   }, []);
 
@@ -59,41 +59,41 @@ export default function Collectives() {
     }
   };
 
-  const fetchCollectives = async () => {
+  const fetchDAOs = async () => {
     try {
       setLoading(true);
-      const { data: collectivesData, error: collectivesError } = await supabase
-        .from("collectives")
+      const { data: daosData, error: daosError } = await supabase
+        .from("daos")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (collectivesError) throw collectivesError;
-      if (!collectivesData) return;
+      if (daosError) throw daosError;
+      if (!daosData) return;
 
-      const { data: capabilitiesData, error: capabilitiesError } = await supabase
-        .from("capabilities")
+      const { data: extensionsData, error: extensionsError } = await supabase
+        .from("extensions")
         .select("*");
 
-      if (capabilitiesError) throw capabilitiesError;
+      if (extensionsError) throw extensionsError;
 
       // Combine the data
-      const enrichedCollectives = collectivesData.map(collective => ({
-        ...collective,
-        capabilities: capabilitiesData?.filter(cap => cap.collective_id === collective.id) || []
+      const enrichedDAOs = daosData.map(dao => ({
+        ...dao,
+        extensions: extensionsData?.filter(cap => cap.dao_id === dao.id) || []
       }));
 
-      setCollectives(enrichedCollectives);
+      setDAOs(enrichedDAOs);
     } catch (error) {
-      console.error("Error fetching collectives:", error);
+      console.error("Error fetching daos:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredCollectives = collectives.filter(
-    (collective) =>
-      collective.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      collective.mission.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredDAOs = daos.filter(
+    (dao) =>
+      dao.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      dao.mission.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (loading) {
@@ -107,9 +107,9 @@ export default function Collectives() {
   return (
     <div className="container mx-auto p-4">
       <div className="flex w-full flex-wrap items-end justify-between gap-4 border-zinc-950/10 pb-6 dark:border-white/10">
-        <Heading>Collectives</Heading>
+        <Heading>DAOs</Heading>
         <Input
-          placeholder="Search collectives..."
+          placeholder="Search daos..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="max-w-sm"
@@ -128,26 +128,26 @@ export default function Collectives() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredCollectives.map((collective) => {
-                const token = tokens.find((token) => token.collective_id === collective.id);
+              {filteredDAOs.map((dao) => {
+                const token = tokens.find((token) => token.dao_id === dao.id);
                 const randomPrice = (Math.random() * 100).toFixed(2);
                 return (
                   <ClickableTableRow 
-                    key={collective.id}
-                    href={`/collectives/${collective.id}`}
+                    key={dao.id}
+                    href={`/daos/${dao.id}`}
                   >
                     <TableCell className="w-[80px]">
                       {token?.image_url && (
                         <Image
-                          src={token.image_url || collective.image_url}
-                          alt={collective.name}
+                          src={token.image_url || dao.image_url}
+                          alt={dao.name}
                           width={40}
                           height={40}
                           className="rounded-lg"
                         />
                       )}
                     </TableCell>
-                    <TableCell className="w-[300px] font-medium">{collective.name}</TableCell>
+                    <TableCell className="w-[300px] font-medium">{dao.name}</TableCell>
                     <TableCell className="w-[150px]">{token?.symbol || '-'}</TableCell>
                     <TableCell className="w-[150px] text-right">${randomPrice}</TableCell>
                   </ClickableTableRow>

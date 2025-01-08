@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { AuthProvider } from "@/components/providers/auth-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://sprint.aibtc.dev"),
@@ -91,7 +92,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className="text-zinc-950 antialiased lg:bg-zinc-100 dark:bg-zinc-900 dark:text-white dark:lg:bg-zinc-950"
+      className="h-full text-zinc-950 antialiased lg:bg-zinc-100 dark:bg-zinc-900 dark:text-white dark:lg:bg-zinc-950"
       suppressHydrationWarning
     >
       <head>
@@ -99,9 +100,13 @@ export default function RootLayout({
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
       </head>
       <body
-        className={`${rocGroteskRegular.variable} ${rocGroteskWide.variable} ${rocGroteskExtraWide.variable} antialiased`}
+        className={`min-h-full flex flex-col ${rocGroteskRegular.variable} ${rocGroteskWide.variable} ${rocGroteskExtraWide.variable} antialiased`}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <AuthProvider>
+            <main className="flex-1 flex flex-col">{children}</main>
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   );

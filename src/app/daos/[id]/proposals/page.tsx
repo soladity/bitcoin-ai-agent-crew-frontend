@@ -1,15 +1,15 @@
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
-import CollectiveProposals from "@/components/collectives/collective-proposals";
+import DAOProposals from "@/components/daos/dao-proposals";
 import { supabase } from "@/utils/supabase/client";
 
 export const runtime = 'edge';
 
-async function getProposals(collectiveId: string) {
+async function getProposals(daoId: string) {
   const { data: proposals, error } = await supabase
     .from("proposals")
     .select("*")
-    .eq("collective_id", collectiveId);
+    .eq("dao_id", daoId);
 
   if (error) throw error;
   return proposals;
@@ -24,7 +24,7 @@ export default async function ProposalsPage({
 
   return (
     <Suspense fallback={<Loader2 className="h-4 w-4 animate-spin" />}>
-      <CollectiveProposals proposals={proposals} />
+      <DAOProposals proposals={proposals} />
     </Suspense>
   );
 }

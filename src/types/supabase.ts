@@ -13,9 +13,17 @@ export interface Task {
   updated_at: string;
 }
 
+export interface Thread {
+  id: string;
+  agent_id: string;
+  profile_id: string;
+  name: string;
+  created_at: string;
+}
+
 export interface Token {
   id: string;
-  collective_id: string;
+  dao_id: string;
   contract_principal: string;
   name: string;
   symbol: string;
@@ -23,7 +31,7 @@ export interface Token {
   image_url: string;
 }
 
-export interface Collective {
+export interface DAO {
   id: string;
   created_at: string;
   name: string;
@@ -43,11 +51,11 @@ export interface Holder {
   percentage: number;
 }
 
-export interface Capability {
+export interface Extension {
   id: string;                
   created_at: string; 
   updated_at: string;       
-  collective_id: string;     
+  dao_id: string;     
   type: string;              
   contract_principal: string;
   tx_id: string;             

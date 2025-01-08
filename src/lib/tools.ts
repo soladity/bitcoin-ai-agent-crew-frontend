@@ -14,7 +14,7 @@ export async function fetchTools(): Promise<Tool[]> {
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/crew/tools`
+      `${process.env.NEXT_PUBLIC_API_URL}/tools`
     );
     const data = await response.json() as Tool[];
 

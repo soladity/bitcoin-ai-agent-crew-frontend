@@ -1,10 +1,10 @@
 import { format } from "date-fns";
 
-interface CollectiveCreationDateProps {
+interface DAOCreationDateProps {
   createdAt: string;
 }
 
-export function CollectiveCreationDate({ createdAt }: CollectiveCreationDateProps) {
+export function DAOCreationDate({ createdAt }: DAOCreationDateProps) {
   return (
     <div className="text-sm text-muted-foreground mt-8">
       Created {format(new Date(createdAt), "PPpp")}

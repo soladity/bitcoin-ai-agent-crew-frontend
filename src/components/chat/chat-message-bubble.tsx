@@ -1,169 +1,74 @@
 "use client";
 
-import React from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { Message } from "@/hooks/use-chat";
 import { cn } from "@/lib/utils";
-import { useAgentName } from "@/hooks/use-agent-name";
-import { 
-  Clock, 
-  Terminal, 
-  Code, 
-  ChevronDown, 
-  ChevronUp,
-  User,
-  Bot,
-  Wrench,
-  AlertCircle,
-  CheckCircle2,
-  Loader2
-} from "lucide-react";
-import { useState, useEffect } from "react";
+import { Bot, CheckCircle2, Clock, User } from "lucide-react";
+import { Message } from "@/lib/chat/types";
 
-interface MessageBubbleProps {
-  message: Message;
-}
-
-export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
-  const [showToolInfo, setShowToolInfo] = useState(false);
-  const agentName = useAgentName(message.agent_id);
-
-  useEffect(() => {
-    console.log("Message bubble rendered with:", {
-      role: message.role,
-      agentId: message.agent_id,
-      agentName,
-      content: message.content.substring(0, 50) + "..."
-    });
-  }, [message, agentName]);
-
-  const getTypeIcon = () => {
-    switch (message.type?.toLowerCase()) {
-      case 'step':
-        return <Wrench className="w-4 h-4 text-emerald-300" />;
-      case 'result':
-        return <CheckCircle2 className="w-4 h-4 text-sky-300" />;
-      case 'error':
-        return <AlertCircle className="w-4 h-4 text-red-300" />;
-      case 'loading':
-        return <Loader2 className="w-4 h-4 text-yellow-300 animate-spin" />;
-      default:
-        return null;
-    }
-  };
-
-  const renderToolInfo = () => {
-    if (!message.tool) return null;
-
-    return (
-      <div className="mt-4 space-y-2 bg-black/10 backdrop-blur-sm p-3 rounded-lg transition-all duration-300 ease-in-out">
-        <div className="flex items-center gap-2 text-xs font-mono text-white/90">
-          <Terminal className="w-4 h-4" />
-          <span className="font-medium">{message.tool}</span>
-        </div>
-        {message.tool_input && (
-          <div className="text-xs font-mono space-y-1">
-            <div className="flex items-center gap-2 text-white/90">
-              <Code className="w-4 h-4" />
-              <span className="font-medium">Input</span>
-            </div>
-            <pre className="p-2 bg-black/20 rounded-lg overflow-x-auto">
-              {message.tool_input}
-            </pre>
-          </div>
-        )}
-        {message.tool_output && (
-          <div className="text-xs font-mono space-y-1">
-            <div className="flex items-center gap-2 text-white/90">
-              <Code className="w-4 h-4" />
-              <span className="font-medium">Output</span>
-            </div>
-            <pre className="p-2 bg-black/20 rounded-lg overflow-x-auto whitespace-pre-wrap">
-              {message.tool_output}
-            </pre>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const content = (
-    <>
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-2">
-          {message.role === 'user' ? (
-            <User className="w-4 h-4 text-orange-300" />
-          ) : (
-            <>
-              <Bot className="w-4 h-4 text-blue-300" />
-              {agentName && (
-                <span className="text-sm font-semibold text-blue-200">
-                  {agentName}
-                </span>
-              )}
-            </>
-          )}
-          {getTypeIcon()}
-        </div>
-
-        <ReactMarkdown 
-          remarkPlugins={[remarkGfm]} 
-          className="text-sm prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/20 prose-pre:rounded-lg"
-          disallowedElements={["img"]}
-        >
-          {message.content}
-        </ReactMarkdown>
-        
-        {message.tool && (
-          <button 
-            onClick={() => setShowToolInfo(!showToolInfo)}
-            className="mt-3 flex items-center gap-1 text-xs text-white/80 hover:text-white transition-colors duration-200"
-          >
-            {showToolInfo ? (
-              <>
-                <ChevronUp className="w-4 h-4" />
-                Hide details
-              </>
-            ) : (
-              <>
-                <ChevronDown className="w-4 h-4" />
-                Show details
-              </>
-            )}
-          </button>
-        )}
-        
-        {showToolInfo && renderToolInfo()}
-        
-        <div className="flex items-center gap-1 text-xs mt-3 text-white/70">
-          <Clock className="w-3 h-3" />
-          {message.timestamp?.toLocaleString(undefined, {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </div>
-      </div>
-    </>
-  );
-
+export function ChatMessageBubble({ message }: { message: Message }) {
+  console.log("ChatMessageBubble render:", message.tool);
+  
   return (
     <div
       className={cn(
-        "flex mb-4 animate-in slide-in-from-bottom duration-300",
-        message.role === "user" ? "justify-end" : "justify-start"
+        "flex w-full gap-3 px-4 py-3 group transition-colors",
+        message.role === "user"
+          ? "hover:bg-zinc-900/50 flex-row-reverse"
+          : "hover:bg-zinc-900/30"
       )}
     >
       <div
         className={cn(
-          "max-w-[80%] p-4 rounded-2xl shadow-lg break-words backdrop-blur-sm",
+          "flex h-6 w-6 shrink-0 select-none items-center justify-center rounded-full",
           message.role === "user"
-            ? "bg-gradient-to-br from-orange-500/90 to-orange-600/90 text-white"
-            : "bg-gradient-to-br from-blue-600/90 to-blue-700/90 text-white"
+            ? "bg-gradient-to-br from-zinc-700 to-zinc-800 text-zinc-400"
+            : "bg-gradient-to-br from-indigo-500 to-indigo-600 text-white"
         )}
       >
-        {content}
+        {message.role === "user" ? (
+          <User className="h-3 w-3" />
+        ) : (
+          <Bot className="h-3 w-3" />
+        )}
+      </div>
+
+      <div className="flex flex-col flex-1 min-w-0">
+        <div className={cn(
+          "flex items-start gap-2",
+          message.role === "user" && "flex-row-reverse"
+        )}>
+          <div className={cn(
+            "flex-1",
+            message.role === "user" && "text-right"
+          )}>
+            {message.type === 'tool' && message.tool && (
+              <div className="text-xs font-medium text-indigo-400/80 mb-1">
+                {message.tool}
+              </div>
+            )}
+            <p className={cn(
+              "text-sm whitespace-pre-wrap leading-relaxed",
+              message.role === "user" 
+                ? "text-zinc-200" 
+                : "text-zinc-300"
+            )}>
+              {message.content || ''}
+            </p>
+          </div>
+          <div className="flex-shrink-0 mt-1">
+            {message.status === "processing" && (
+              <Clock className="h-3 w-3 text-indigo-400/70 animate-pulse" />
+            )}
+            {message.status === "end" && (
+              <CheckCircle2 className="h-3 w-3 text-indigo-400/70 opacity-0 group-hover:opacity-100 transition-opacity" />
+            )}
+          </div>
+        </div>
+        {message.created_at && (
+          <p className="text-xs text-zinc-500">
+            {new Date(message.created_at).toLocaleTimeString()}
+          </p>
+        )}
       </div>
     </div>
   );
-};
+}

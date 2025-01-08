@@ -103,21 +103,8 @@ body {
 
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-roc-grotesk-regular), Arial, Helvetica, sans-serif;
   }
 
-  h1,
-  h2 {
-    font-family: var(--font-roc-grotesk-extra-wide), Arial, Helvetica,
-      sans-serif;
-  }
-
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-family: var(--font-roc-grotesk-wide), Arial, Helvetica, sans-serif;
-  }
 }
 
 /* Add gradient utilities to match Chakra gradients */

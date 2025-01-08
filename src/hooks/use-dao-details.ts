@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/client";
-import { Capability, Collective, Holder, Token } from "@/types/supabase";
+import { Extension, DAO, Holder, Token } from "@/types/supabase";
 
 interface MarketStats {
   price: number;
@@ -49,10 +49,10 @@ interface HiroHolderResponse {
 }
 
 // Cache for storing fetched data
-const collectiveCache = new Map<string, {
+const daoCache = new Map<string, {
   data: {
-    collective: Collective | null;
-    collectiveCapabilities: Capability[] | null;
+    dao: DAO | null;
+    daoExtensions: Extension[] | null;
     holders: Holder[];
     tokenSymbol: string;
     token: Token;
@@ -64,14 +64,14 @@ const collectiveCache = new Map<string, {
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-export function useCollectiveDetails(id: string) {
-  const [collective, setCollective] = useState<Collective | null>(null);
-  const [collectiveCapabilities, setCollectiveCapabilities] = useState<Capability[] | null>(null);
+export function useDAODetails(id: string) {
+  const [dao, setDAO] = useState<DAO | null>(null);
+  const [daoExtensions, setDAOExtensions] = useState<Extension[] | null>(null);
   const [holders, setHolders] = useState<Holder[]>([]);
   const [tokenSymbol, setTokenSymbol] = useState<string>("");
   const [token, setToken] = useState<Token>({
     id: "0",
-    collective_id: "0",
+    dao_id: "0",
     contract_principal: "",
     name: "",
     symbol: "",
@@ -182,13 +182,13 @@ export function useCollectiveDetails(id: string) {
   useEffect(() => {
     const loadData = async () => {
       // Check cache first
-      const cachedData = collectiveCache.get(id);
+      const cachedData = daoCache.get(id);
       const now = Date.now();
 
       if (cachedData && (now - cachedData.timestamp) < CACHE_DURATION) {
         // Use cached data
-        setCollective(cachedData.data.collective);
-        setCollectiveCapabilities(cachedData.data.collectiveCapabilities);
+        setDAO(cachedData.data.dao);
+        setDAOExtensions(cachedData.data.daoExtensions);
         setHolders(cachedData.data.holders);
         setTokenSymbol(cachedData.data.tokenSymbol);
         setToken(cachedData.data.token);
@@ -199,29 +199,29 @@ export function useCollectiveDetails(id: string) {
       }
 
       try {
-        // Fetch collective and capabilities
-        const { data: collectiveData, error: collectiveError } = await supabase
-          .from("collectives")
+        // Fetch dao and extensions
+        const { data: daoData, error: daoError } = await supabase
+          .from("daos")
           .select("*")
           .eq("id", id)
           .single();
 
-        if (collectiveError) throw collectiveError;
-        setCollective(collectiveData);
+        if (daoError) throw daoError;
+        setDAO(daoData);
 
-        const { data: capabilitiesData, error: capabilitiesError } = await supabase
-          .from("capabilities")
+        const { data: extensionsData, error: extensionsError } = await supabase
+          .from("extensions")
           .select("*")
-          .eq("collective_id", id);
+          .eq("dao_id", id);
 
-        if (capabilitiesError) throw capabilitiesError;
-        setCollectiveCapabilities(capabilitiesData);
+        if (extensionsError) throw extensionsError;
+        setDAOExtensions(extensionsData);
 
         // Fetch token data
         const { data: tokensData, error: tokensError } = await supabase
           .from("tokens")
           .select("*")
-          .eq("collective_id", id);
+          .eq("dao_id", id);
 
         if (tokensError) throw tokensError;
 
@@ -244,8 +244,8 @@ export function useCollectiveDetails(id: string) {
           const marketCap = price * totalSupply;
 
           // Fetch treasury tokens
-          const treasuryAddr = capabilitiesData.find(
-            (capability) => capability.type === "aibtc-ext006-treasury"
+          const treasuryAddr = extensionsData.find(
+            (extension) => extension.type === "aibtc-ext006-treasury"
           )?.contract_principal;
 
           if (!treasuryAddr) throw new Error("No treasury address found");
@@ -267,10 +267,10 @@ export function useCollectiveDetails(id: string) {
           setMarketStats(newMarketStats);
 
           // Cache the fetched data
-          collectiveCache.set(id, {
+          daoCache.set(id, {
             data: {
-              collective: collectiveData,
-              collectiveCapabilities: capabilitiesData,
+              dao: daoData,
+              daoExtensions: extensionsData,
               holders: holders,
               tokenSymbol: currentToken.symbol,
               token: currentToken,
@@ -293,8 +293,8 @@ export function useCollectiveDetails(id: string) {
   }, [id]);
 
   return {
-    collective,
-    collectiveCapabilities,
+    dao,
+    daoExtensions,
     holders,
     tokenSymbol,
     token,

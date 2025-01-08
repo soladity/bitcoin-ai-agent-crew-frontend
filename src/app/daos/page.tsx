@@ -1,14 +1,14 @@
 
 import React from "react";
-import Collectives from "@/components/collectives/collectives";
+import DAOs from "@/components/daos/daos";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Collectives",
+  title: "DAOs",
 };
 
 const page = () => {
-  return <Collectives />;
+  return <DAOs />;
 };
 
 export default page;

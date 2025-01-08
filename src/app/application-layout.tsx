@@ -1,194 +1,78 @@
 "use client";
 
 import * as React from "react";
-import { Avatar } from "@/components/catalyst/avatar";
-import {
-  Dropdown,
-  DropdownButton,
-  DropdownItem,
-  DropdownLabel,
-  DropdownMenu,
-} from "@/components/catalyst/dropdown";
-import {
-  Navbar,
-  NavbarItem,
-  NavbarSection,
-  NavbarSpacer,
-} from "@/components/catalyst/navbar";
-import {
-  Sidebar,
-  SidebarBody,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarItem,
-  SidebarLabel,
-  SidebarSection,
-  SidebarSpacer,
-} from "@/components/catalyst/sidebar";
-import { SidebarLayout } from "@/components/catalyst/sidebar-layout";
-import {
-  ChevronUpIcon,
-  WrenchScrewdriverIcon,
-} from "@heroicons/react/16/solid";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useUserData } from "@/hooks/use-user-data";
-import { Bot, CircleUser, LogOut, MessageSquareText, Scroll, TowerControl } from "lucide-react";
-import SignOut from "@/components/auth/auth-signout";
-import Image from "next/image";
+import { cn } from "@/lib/utils";
+import { Bot, Users, MessageSquare, Boxes } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { WalletPanel } from "@/components/wallet/wallet-panel";
+import { ThreadList } from "@/components/threads/thread-list";
 
-function AccountDropdownMenu({
-  anchor,
-  userData,
-}: {
-  anchor: "top start" | "bottom end";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  userData: any;
-}) {
-  return (
-    <DropdownMenu className="min-w-64" anchor={anchor}>
-      {userData?.role === "Admin" && (
-        <DropdownItem href="/admin">
-          <WrenchScrewdriverIcon />
-          <DropdownLabel>Admin</DropdownLabel>
-        </DropdownItem>
-      )}
-      <DropdownItem href="/profile">
-        <CircleUser className="mr-2 h-4 w-4" />
-        <DropdownLabel>Profile</DropdownLabel>
-      </DropdownItem>
-      <DropdownItem>
-        <LogOut className="mr-2 h-4 w-4" />
-        <DropdownLabel><SignOut /></DropdownLabel>
-      </DropdownItem>
-    </DropdownMenu>
-  );
+interface ApplicationLayoutProps {
+  children: React.ReactNode;
 }
 
-export function ApplicationLayout({ children }: { children: React.ReactNode }) {
+const navigation = [
+  { name: "Chat", href: "/chat", icon: MessageSquare },
+  { name: "Agents", href: "/agents", icon: Users },
+  { name: "DAOs", href: "/daos", icon: Boxes },
+];
+
+export default function ApplicationLayout({ children }: ApplicationLayoutProps) {
   const pathname = usePathname();
-  const { data: userData, isLoading } = useUserData();
-
-  const displayAddress = React.useMemo(() => {
-    if (!userData?.stxAddress) return "";
-    return `${userData.stxAddress.slice(0, 5)}...${userData.stxAddress.slice(
-      -5
-    )}`;
-  }, [userData?.stxAddress]);
-
-  // const displayAgentAddress = React.useMemo(() => {
-  //   if (!userData?.agentAddress) return "No agents assigned";
-  //   return `${userData.agentAddress.slice(
-  //     0,
-  //     5
-  //   )}...${userData.agentAddress.slice(-5)}`;
-  // }, [userData?.agentAddress]);
-
-  const displayRole = React.useMemo(() => {
-    if (
-      !userData?.role ||
-      userData.role === "" ||
-      userData.role.toLowerCase() === "normal"
-    ) {
-      return "Normal User";
-    }
-    return userData.role;
-  }, [userData?.role]);
 
   return (
-    <SidebarLayout
-      navbar={
-        <Navbar>
-          <NavbarSpacer />
-          <NavbarSection>
-            <Dropdown>
-              <DropdownButton as={NavbarItem}>
-                <Avatar src="/logos/aibtcdev-avatar-250px.png" square />
-              </DropdownButton>
-              <AccountDropdownMenu userData={userData} anchor="bottom end" />
-            </Dropdown>
-          </NavbarSection>
-        </Navbar>
-      }
-      sidebar={
-        <Sidebar>
-          <SidebarHeader>
-            <Dropdown>
-              <DropdownButton as={SidebarItem}>
-                <Avatar src="/logos/aibtcdev-avatar-250px.png" />
-                <SidebarLabel>
-                  <Image
-                    src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
-                    alt=""
-                    width={400}
-                    height={20}
-                  />
-                </SidebarLabel>
-              </DropdownButton>
-            </Dropdown>
-          </SidebarHeader>
+    <div className="flex h-screen bg-zinc-950">
+      {/* Left Sidebar */}
+      <aside className="w-64 flex flex-col bg-zinc-900/50">
+        {/* Header */}
+        <div className="h-14 px-4 flex items-center border-b border-zinc-800/50">
+          <div className="flex items-center gap-2">
+            <Bot className="h-5 w-5 text-blue-500" />
+            <span className="text-lg font-medium text-white">AIBTCDEV</span>
+          </div>
+        </div>
 
-          <SidebarBody>
-            <SidebarSection>
-              <SidebarItem href="/chat" current={pathname === "/chat"}>
-                <MessageSquareText />
-                Chat
-              </SidebarItem>
-              <SidebarItem href="/collectives" current={pathname.startsWith("/collectives")}>
-                <TowerControl />
-                <SidebarLabel>Collectives</SidebarLabel>
-              </SidebarItem>
-              <SidebarItem href="/agents" current={pathname.startsWith("/agents")}>
-                <Bot />
-                Agents
-              </SidebarItem>
-            </SidebarSection>
-
-            <SidebarSpacer />
-
-            <SidebarSection>
-              <SidebarItem href="/terms" current={pathname === "/terms"}>
-                <Scroll />
-                <SidebarLabel>Terms of Service</SidebarLabel>
-              </SidebarItem>
-              {/* <SidebarItem>
-                <Wallet />
-                <SidebarLabel className="flex flex-col">
-                  {isLoading ? "Loading..." : displayAgentAddress}
-                  {userData?.agentAddress && (
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                      {userData.agentBalance !== null
-                        ? `${userData.agentBalance.toFixed(5)} STX`
-                        : "Loading balance..."}
-                    </span>
+        {/* Navigation */}
+        <nav className="p-2">
+          <div className="space-y-1">
+            {navigation.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                    isActive
+                      ? "bg-zinc-800/50 text-white"
+                      : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
                   )}
-                </SidebarLabel>
-              </SidebarItem> */}
-            </SidebarSection>
-          </SidebarBody>
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.name}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
 
-          <SidebarFooter className=" p-4">
-            <Dropdown>
-              <DropdownButton as={SidebarItem}>
-                <span className="flex min-w-0 items-center gap-3">
-                  <Avatar initials="P" className="size-10" square alt="" />
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-medium text-zinc-950 dark:text-white">
-                      {isLoading ? "Loading..." : displayAddress}
-                    </span>
-                    <span className="block truncate text-xs font-normal text-zinc-500 dark:text-zinc-400">
-                      {isLoading ? "Loading..." : displayRole}
-                    </span>
-                  </span>
-                </span>
-                <ChevronUpIcon />
-              </DropdownButton>
-              <AccountDropdownMenu userData={userData} anchor="top start" />
-            </Dropdown>
-          </SidebarFooter>
-        </Sidebar>
-      }
-    >
-      {children}
-    </SidebarLayout>
+        {/* Thread List */}
+        <ThreadList />
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 min-w-0 relative">
+        <ScrollArea className="h-screen">
+          <div>
+            {children}
+          </div>
+        </ScrollArea>
+      </main>
+
+      {/* Right Wallet Panel */}
+      <WalletPanel />
+    </div>
   );
 }

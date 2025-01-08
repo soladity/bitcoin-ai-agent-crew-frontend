@@ -25,7 +25,7 @@ interface Proposal {
   quorum?: number;
 }
 
-interface CollectiveProposalsProps {
+interface DAOProposalsProps {
   proposals: Proposal[];
 }
 
@@ -55,7 +55,7 @@ function getStatusIcon(status: Proposal["status"]) {
   }
 }
 
-function CollectiveProposals({ proposals }: CollectiveProposalsProps) {
+function DAOProposals({ proposals }: DAOProposalsProps) {
   const [statusFilter, setStatusFilter] = useState<Proposal["status"] | "all">("all");
 
   const filteredProposals = proposals.filter(
@@ -193,5 +193,5 @@ function CollectiveProposals({ proposals }: CollectiveProposalsProps) {
   );
 }
 
-export { CollectiveProposals };
-export default CollectiveProposals;
+export { DAOProposals };
+export default DAOProposals;

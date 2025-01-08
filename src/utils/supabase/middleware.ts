@@ -74,7 +74,7 @@ export const updateSession = async (request: NextRequest) => {
     }
 
     if (
-      request.nextUrl.pathname.startsWith("/collectives") &&
+      request.nextUrl.pathname.startsWith("/daos") &&
       (userError || !user)
     ) {
       return NextResponse.redirect(new URL("/", request.url));
