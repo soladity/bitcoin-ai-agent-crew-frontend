@@ -11,7 +11,11 @@ import { useChatStore } from "@/store/chat";
 import { useThreadsStore } from "@/store/threads";
 import { useEffect } from "react";
 
-export function ThreadList() {
+export function ThreadList({
+  setLeftPanelOpen,
+}: {
+  setLeftPanelOpen?: (open: boolean) => void;
+}) {
   const { createThread } = useThreads();
   const { agents } = useAgents();
   const { userId } = useSessionStore();
@@ -42,6 +46,7 @@ export function ThreadList() {
   const handleThreadClick = (threadId: string) => {
     if (threadId === activeThreadId) return;
     setActiveThread(threadId);
+    setLeftPanelOpen?.(false);
   };
 
   return (

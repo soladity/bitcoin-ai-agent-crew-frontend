@@ -35,6 +35,10 @@ export function ChatInput({
       try {
         await sendMessage(activeThreadId, input.trim());
         setInput("");
+        // Reset textarea height
+        if (textareaRef.current) {
+          textareaRef.current.style.height = "auto";
+        }
       } catch (error) {
         console.error("Failed to send message:", error);
       }
@@ -60,7 +64,7 @@ export function ChatInput({
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
         textareaRef.current.style.height =
-          textareaRef.current.scrollHeight + "px";
+          Math.min(textareaRef.current.scrollHeight, 200) + "px";
       }
     },
     []
@@ -71,35 +75,43 @@ export function ChatInput({
   }
 
   return (
-    <div className="w-full border-zinc-800">
-      <div className="mx-auto max-w-5xl px-4 py-3">
-        <form onSubmit={handleSubmit} className="flex items-end gap-2">
-          <div className="flex-shrink-0">
+    <div className="w-full min-w-0 border-zinc-800">
+      <div className="mx-auto max-w-5xl px-2 py-2 w-full min-w-0">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col md:flex-row gap-2 w-full min-w-0"
+        >
+          <div className="hidden md:block flex-shrink-0">
             <AgentSelector
               selectedAgentId={selectedAgentId}
               onSelect={onAgentSelect}
               disabled={disabled}
             />
           </div>
-          <div className="flex-1 flex gap-2">
-            <Textarea
-              ref={textareaRef}
-              value={input}
-              onChange={handleChange}
-              onKeyDown={handleKeyDown}
-              placeholder="Type a message..."
-              disabled={disabled}
-              className={cn(
-                "min-h-[44px] max-h-[200px] resize-none",
-                "py-3 px-4 bg-zinc-800 border-zinc-700",
-                "text-white placeholder-zinc-400"
-              )}
-              rows={1}
-            />
+          <div className="flex flex-1 gap-2 min-w-0 w-full">
+            <div className="flex-1 min-w-0">
+              <Textarea
+                ref={textareaRef}
+                value={input}
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Type a message..."
+                disabled={disabled}
+                className={cn(
+                  "min-h-[44px] h-11 max-h-[200px] resize-none w-full",
+                  "py-2.5 px-3 bg-background/50 backdrop-blur-sm border-border/10",
+                  "text-foreground placeholder-muted-foreground",
+                  "text-sm rounded-xl",
+                  "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                  "transition-colors duration-200"
+                )}
+                rows={1}
+              />
+            </div>
             <Button
               type="submit"
               disabled={disabled || !input.trim()}
-              className="h-11 w-11 p-0"
+              className="h-11 w-11 rounded-full p-0 flex-shrink-0"
             >
               <Send className="h-4 w-4" />
             </Button>

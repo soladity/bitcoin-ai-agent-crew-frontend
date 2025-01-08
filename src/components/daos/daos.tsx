@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/utils/supabase/client";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
-import { Heading } from "../catalyst/heading";
+import { Heading } from "@/components/ui/heading";
 import { Token } from "@/types/supabase";
 
 interface DAO {
@@ -77,9 +77,10 @@ export default function DAOs() {
       if (extensionsError) throw extensionsError;
 
       // Combine the data
-      const enrichedDAOs = daosData.map(dao => ({
+      const enrichedDAOs = daosData.map((dao) => ({
         ...dao,
-        extensions: extensionsData?.filter(cap => cap.dao_id === dao.id) || []
+        extensions:
+          extensionsData?.filter((cap) => cap.dao_id === dao.id) || [],
       }));
 
       setDAOs(enrichedDAOs);
@@ -132,10 +133,7 @@ export default function DAOs() {
                 const token = tokens.find((token) => token.dao_id === dao.id);
                 const randomPrice = (Math.random() * 100).toFixed(2);
                 return (
-                  <ClickableTableRow 
-                    key={dao.id}
-                    href={`/daos/${dao.id}`}
-                  >
+                  <ClickableTableRow key={dao.id} href={`/daos/${dao.id}`}>
                     <TableCell className="w-[80px]">
                       {token?.image_url && (
                         <Image
@@ -147,9 +145,15 @@ export default function DAOs() {
                         />
                       )}
                     </TableCell>
-                    <TableCell className="w-[300px] font-medium">{dao.name}</TableCell>
-                    <TableCell className="w-[150px]">{token?.symbol || '-'}</TableCell>
-                    <TableCell className="w-[150px] text-right">${randomPrice}</TableCell>
+                    <TableCell className="w-[300px] font-medium">
+                      {dao.name}
+                    </TableCell>
+                    <TableCell className="w-[150px]">
+                      {token?.symbol || "-"}
+                    </TableCell>
+                    <TableCell className="w-[150px] text-right">
+                      ${randomPrice}
+                    </TableCell>
                   </ClickableTableRow>
                 );
               })}

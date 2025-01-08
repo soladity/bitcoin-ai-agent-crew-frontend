@@ -1,16 +1,27 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { ChatInput } from "./chat-input";
 import { MessageList } from "./message-list";
 import { Button } from "@/components/ui/button";
 import { Loader2, Pencil, Check, X, Trash2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useChatStore } from "@/store/chat";
 import { useSessionStore } from "@/store/session";
 import { useThread } from "@/hooks/use-thread";
 import { Input } from "@/components/ui/input";
 import { useThreadsStore } from "@/store/threads";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { AgentSelector } from "./agent-selector";
 
 export function ChatWindow() {
   const {
@@ -37,6 +48,8 @@ export function ChatWindow() {
     saveEdit,
   } = useThreadsStore();
   const threadMessages = activeThreadId ? messages[activeThreadId] || [] : [];
+
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const memoizedConnect = useCallback(
     (token: string) => {
@@ -85,6 +98,7 @@ export function ChatWindow() {
     try {
       await clearThread();
       clearMessages(threadId);
+      setShowDeleteDialog(false);
     } catch (error) {
       console.error("Error clearing thread:", error);
     }
@@ -102,37 +116,43 @@ export function ChatWindow() {
 
   if (!activeThreadId) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <Alert>
-          <AlertDescription>
-            Please select a thread to start chatting
-          </AlertDescription>
-        </Alert>
+      <div className="flex items-center justify-center h-[calc(100vh-4rem)] backdrop-blur-sm">
+        <div className="text-center space-y-2.5 p-4 -mt-20">
+          <p className="text-lg font-medium text-muted-foreground">
+            Select a Thread
+          </p>
+          <p className="text-sm text-muted-foreground/60">
+            Choose a thread from the sidebar to start chatting
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col relative h-full">
+    <div className="flex-1 flex flex-col relative h-full w-full min-w-0 max-w-full">
       {/* Header - Fixed at top */}
-      <div className="sticky dark:lg:bg-zinc-950 top-0 z-10 flex items-center justify-between px-4 py-3 border-b border-zinc-800">
-        <div className="flex items-center  gap-2">
+      <div className="sticky top-0 z-20 flex items-center justify-between px-2 md:px-4 h-14 border-b border-border/10 min-w-0 bg-background/80 backdrop-blur-sm w-full">
+        <div className="flex items-center gap-2 overflow-hidden min-w-0 flex-1">
           {!isConnected && (
-            <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground flex-shrink-0" />
           )}
           <span
-            className={`text-sm ${
-              isConnected ? "text-green-500" : "text-zinc-400"
-            }`}
+            className={cn(
+              "text-xs flex-shrink-0",
+              isConnected ? "text-emerald-500" : "text-muted-foreground"
+            )}
           >
             {isConnected ? "Connected" : "Connecting..."}
           </span>
-          <span className="text-sm text-zinc-400 mx-2">•</span>
-          <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground/40 mx-2 flex-shrink-0">
+            •
+          </span>
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             {isEditing ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full">
                 <Input
-                  className="h-7 w-48"
+                  className="h-8 w-full md:w-48 text-sm bg-background/50"
                   value={editedTitle}
                   onChange={(e) => setEditedTitle(e.target.value)}
                   placeholder="Enter thread name"
@@ -141,60 +161,101 @@ export function ChatWindow() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7"
+                  className="h-8 w-8 flex-shrink-0"
                   onClick={() => saveEdit(activeThreadId)}
                 >
-                  <Check className="h-4 w-4" />
+                  <Check className="h-3.5 w-3.5" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7"
+                  className="h-8 w-8 flex-shrink-0"
                   onClick={cancelEditing}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3.5 w-3.5" />
                 </Button>
               </div>
             ) : (
               <>
-                <span className="text-sm font-medium truncate">
+                <span className="text-sm font-medium truncate min-w-0 flex-1">
                   {thread?.title || "Untitled Thread"}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => startEditing(activeThreadId)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 flex-shrink-0 text-muted-foreground hover:text-foreground"
+                    onClick={() => startEditing(activeThreadId)}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 flex-shrink-0 text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowDeleteDialog(true)}
+                    disabled={isChatLoading}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </>
             )}
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7"
-          onClick={() => clearMessagesInThread(activeThreadId)}
-          disabled={isChatLoading}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="block md:hidden flex-shrink-0 ml-2">
+          <AgentSelector
+            selectedAgentId={selectedAgentId}
+            onSelect={setSelectedAgent}
+            disabled={isChatLoading || !isConnected}
+          />
+        </div>
       </div>
 
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Clear Thread Messages</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to clear all messages in this thread? This
+              action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => clearMessagesInThread(activeThreadId)}
+              disabled={isChatLoading}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Message List - Scrollable area */}
-      <div className="flex-1 overflow-y-auto min-h-0 flex flex-col justify-end">
-        {chatError && (
-          <Alert variant="destructive" className="m-4">
-            <AlertDescription>{chatError}</AlertDescription>
-          </Alert>
-        )}
-        <MessageList messages={threadMessages} />
+      <div className="flex-1 overflow-hidden w-full min-w-0 max-w-full">
+        <ScrollArea className="h-[calc(100vh-8rem)] w-full">
+          <div className="flex flex-col justify-end min-h-full w-full max-w-full">
+            {chatError && (
+              <Alert
+                variant="destructive"
+                className="mx-2 md:mx-4 my-2 md:my-4"
+              >
+                <AlertDescription>{chatError}</AlertDescription>
+              </Alert>
+            )}
+            <MessageList messages={threadMessages} />
+          </div>
+        </ScrollArea>
       </div>
 
       {/* Input - Fixed at bottom */}
-      <div className="sticky bottom-0 dark:lg:bg-zinc-950 z-10 border-t border-zinc-800">
+      <div className="sticky bottom-0 border-t border-border/10 bg-background/80 backdrop-blur-sm w-full min-w-0">
         <ChatInput
           selectedAgentId={selectedAgentId}
           onAgentSelect={setSelectedAgent}

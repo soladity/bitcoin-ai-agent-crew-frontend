@@ -12,6 +12,12 @@ export const metadata: Metadata = {
   description: "Compete with AI on Stacks, the leading Bitcoin L2",
   keywords: ["Bitcoin", "AI", "Stacks", "L2", "Trading"],
   authors: [{ name: "AIBTC Champions" }],
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
   openGraph: {
     title: "AIBTC",
     description: "Compete with AI on Stacks, the leading Bitcoin L2",
@@ -92,7 +98,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className="h-full text-zinc-950 antialiased lg:bg-zinc-100 dark:bg-zinc-900 dark:text-white dark:lg:bg-zinc-950"
+      className="h-full text-zinc-950 antialiased bg-zinc-950 dark:text-white"
       suppressHydrationWarning
     >
       <head>
@@ -100,11 +106,11 @@ export default function RootLayout({
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
       </head>
       <body
-        className={`min-h-full flex flex-col ${rocGroteskRegular.variable} ${rocGroteskWide.variable} ${rocGroteskExtraWide.variable} antialiased`}
+        className={`h-full flex flex-col ${rocGroteskRegular.variable} ${rocGroteskWide.variable} ${rocGroteskExtraWide.variable} antialiased bg-zinc-950`}
       >
         <Providers>
           <AuthProvider>
-            <main className="flex-1 flex flex-col">{children}</main>
+            <main className="flex-1 flex flex-col h-full">{children}</main>
           </AuthProvider>
         </Providers>
       </body>

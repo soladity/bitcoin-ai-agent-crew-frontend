@@ -3,70 +3,87 @@
 import { cn } from "@/lib/utils";
 import { Bot, CheckCircle2, Clock, User } from "lucide-react";
 import { Message } from "@/lib/chat/types";
+import { useAgent } from "@/hooks/use-agent";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export function ChatMessageBubble({ message }: { message: Message }) {
-  console.log("ChatMessageBubble render:", message.tool);
-  
+  const { agent } = useAgent(
+    message.role === "assistant" ? message.agent_id : null
+  );
+
   return (
     <div
       className={cn(
-        "flex w-full gap-3 px-4 py-3 group transition-colors",
-        message.role === "user"
-          ? "hover:bg-zinc-900/50 flex-row-reverse"
-          : "hover:bg-zinc-900/30"
+        "flex w-full gap-2 px-2 py-1 group min-w-0",
+        message.role === "user" ? "flex-row-reverse" : ""
       )}
     >
       <div
         className={cn(
           "flex h-6 w-6 shrink-0 select-none items-center justify-center rounded-full",
           message.role === "user"
-            ? "bg-gradient-to-br from-zinc-700 to-zinc-800 text-zinc-400"
-            : "bg-gradient-to-br from-indigo-500 to-indigo-600 text-white"
+            ? "bg-blue-600 text-white"
+            : "bg-zinc-700 text-zinc-300"
         )}
       >
         {message.role === "user" ? (
           <User className="h-3 w-3" />
         ) : (
-          <Bot className="h-3 w-3" />
+          <Avatar className="h-6 w-6">
+            <AvatarImage src={agent?.image_url} alt={agent?.name || "Bot"} />
+            <AvatarFallback>
+              <Bot className="h-3 w-3" />
+            </AvatarFallback>
+          </Avatar>
         )}
       </div>
 
-      <div className="flex flex-col flex-1 min-w-0">
-        <div className={cn(
-          "flex items-start gap-2",
-          message.role === "user" && "flex-row-reverse"
-        )}>
-          <div className={cn(
-            "flex-1",
-            message.role === "user" && "text-right"
-          )}>
-            {message.type === 'tool' && message.tool && (
-              <div className="text-xs font-medium text-indigo-400/80 mb-1">
-                {message.tool}
-              </div>
-            )}
-            <p className={cn(
-              "text-sm whitespace-pre-wrap leading-relaxed",
-              message.role === "user" 
-                ? "text-zinc-200" 
-                : "text-zinc-300"
-            )}>
-              {message.content || ''}
-            </p>
-          </div>
-          <div className="flex-shrink-0 mt-1">
-            {message.status === "processing" && (
-              <Clock className="h-3 w-3 text-indigo-400/70 animate-pulse" />
-            )}
-            {message.status === "end" && (
-              <CheckCircle2 className="h-3 w-3 text-indigo-400/70 opacity-0 group-hover:opacity-100 transition-opacity" />
-            )}
-          </div>
+      <div
+        className={cn(
+          "flex flex-col min-w-0 space-y-1",
+          message.role === "user" ? "items-end" : "items-start",
+          "max-w-[75%] w-fit"
+        )}
+      >
+        <div
+          className={cn(
+            "rounded-2xl px-3 py-2 w-fit max-w-full",
+            message.role === "user"
+              ? "bg-blue-600 text-white"
+              : "bg-zinc-800 text-zinc-200"
+          )}
+        >
+          {message.type === "tool" && message.tool && (
+            <div
+              className={cn(
+                "text-xs font-medium mb-1",
+                message.role === "user" ? "text-blue-100" : "text-indigo-400"
+              )}
+            >
+              {message.tool}
+            </div>
+          )}
+          <p className="text-sm whitespace-pre-wrap leading-relaxed break-words">
+            {message.content || ""}
+          </p>
         </div>
         {message.created_at && (
-          <p className="text-xs text-zinc-500">
-            {new Date(message.created_at).toLocaleTimeString()}
-          </p>
+          <div
+            className={cn(
+              "flex items-center gap-1.5 px-1",
+              message.role === "user" ? "flex-row-reverse" : "flex-row"
+            )}
+          >
+            <p className="text-[10px] text-zinc-500">
+              {new Date(message.created_at).toLocaleTimeString()}
+            </p>
+            {message.status === "processing" && (
+              <Clock className="h-3 w-3 text-zinc-400 animate-pulse" />
+            )}
+            {message.status === "end" && (
+              <CheckCircle2 className="h-3 w-3 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            )}
+          </div>
         )}
       </div>
     </div>

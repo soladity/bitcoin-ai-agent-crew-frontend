@@ -54,222 +54,175 @@ function DAOOverview({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="relative h-48 w-full overflow-hidden rounded-lg border border-border/10 bg-[#1A1A1A] shadow-sm">
-        <div className="absolute inset-0 flex items-center p-6">
-          <div className="flex items-center gap-6">
-            {token?.image_url && (
-              <div className="relative h-24 w-24 shrink-0">
-                <Image
-                  src={token.image_url}
-                  alt={dao.name}
-                  fill
-                  className="rounded-lg border-2 border-border/10 object-cover shadow-lg"
-                />
-              </div>
-            )}
-            <div className="space-y-1.5">
-              <h1 className="text-2xl font-semibold text-foreground">
-                {dao.name}
-              </h1>
-              <p className="text-sm text-muted-foreground">{dao.mission}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Key Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg border border-border/10 bg-[#1A1A1A] p-4">
-          <div className="text-xs font-medium text-muted-foreground">
-            Token Price
-          </div>
-          <div className="mt-1.5 text-xl font-semibold text-foreground">
-            {formatNumber(marketStats.price)}
-          </div>
-        </div>
-        <div className="rounded-lg border border-border/10 bg-[#1A1A1A] p-4">
-          <div className="text-xs font-medium text-muted-foreground">
-            Market Cap
-          </div>
-          <div className="mt-1.5 text-xl font-semibold text-foreground">
-            {formatNumber(marketStats.marketCap)}
-          </div>
-        </div>
-        <div className="rounded-lg border border-border/10 bg-[#1A1A1A] p-4">
-          <div className="text-xs font-medium text-muted-foreground">
-            Treasury Balance
-          </div>
-          <div className="mt-1.5 text-xl font-semibold text-foreground">
-            {formatNumber(marketStats.treasuryBalance)}
-          </div>
-        </div>
-        <div className="rounded-lg border border-border/10 bg-[#1A1A1A] p-4">
-          <div className="text-xs font-medium text-muted-foreground">
-            Holders
-          </div>
-          <div className="mt-1.5 text-xl font-semibold text-foreground">
-            {marketStats.holderCount.toLocaleString()}
-          </div>
-        </div>
-      </div>
-
-      {/* Description and Social Links */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <div className="rounded-lg border border-border/10 bg-[#1A1A1A]">
-            <div className="flex items-center justify-between border-b border-border/10 p-4">
-              <h2 className="text-sm font-medium text-foreground">
-                Description
-              </h2>
-              {dao.description && dao.description.length > 200 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    setIsDescriptionExpanded(!isDescriptionExpanded)
-                  }
-                  className="h-8 text-xs hover:bg-white/5"
-                >
-                  {isDescriptionExpanded ? (
-                    <>
-                      Show Less <ChevronUp className="h-3 w-3" />
-                    </>
-                  ) : (
-                    <>
-                      Show More <ChevronDown className="h-3 w-3" />
-                    </>
+    <div className="relative">
+      {/* Hero Section with Gradient Overlay */}
+      <div className="relative mb-16">
+        <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-background/50 to-background" />
+        <div className="relative z-10 px-6 py-12">
+          <div className="mx-auto max-w-screen-xl">
+            <div className="flex items-start gap-8">
+              {/* Token Image */}
+              {token?.image_url && (
+                <div className="relative h-24 w-24 shrink-0">
+                  <Image
+                    src={token.image_url}
+                    alt={dao.name}
+                    fill
+                    className="rounded-2xl object-cover ring-1 ring-border/10"
+                  />
+                </div>
+              )}
+              {/* DAO Info */}
+              <div className="flex-1 space-y-4">
+                <div>
+                  <h1 className="text-3xl font-bold tracking-tight">
+                    {dao.name}
+                  </h1>
+                  <p className="mt-2 text-lg text-muted-foreground">
+                    {dao.mission}
+                  </p>
+                </div>
+                {/* Social Links */}
+                <div className="flex gap-3">
+                  {dao.website_url && (
+                    <a
+                      href={dao.website_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <BsGlobe className="h-5 w-5" />
+                    </a>
                   )}
-                </Button>
-              )}
+                  {dao.x_url && (
+                    <a
+                      href={dao.x_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <BsTwitterX className="h-5 w-5" />
+                    </a>
+                  )}
+                  {dao.telegram_url && (
+                    <a
+                      href={dao.telegram_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <BsTelegram className="h-5 w-5" />
+                    </a>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="p-4">
-              <p
-                className={`text-sm text-muted-foreground ${
-                  !isDescriptionExpanded &&
-                  dao.description &&
-                  dao.description.length > 200
-                    ? "line-clamp-4"
-                    : ""
-                }`}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="mx-auto max-w-screen-xl px-6 space-y-12">
+        {/* Key Metrics */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          <Metric label="Token Price" value={formatNumber(marketStats.price)} />
+          <Metric
+            label="Market Cap"
+            value={formatNumber(marketStats.marketCap)}
+          />
+          <Metric
+            label="Treasury"
+            value={formatNumber(marketStats.treasuryBalance)}
+          />
+          <Metric
+            label="Holders"
+            value={marketStats.holderCount.toLocaleString()}
+          />
+        </div>
+
+        {/* Description Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">About</h2>
+            {dao.description && dao.description.length > 200 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                className="text-xs"
               >
-                {dao.description}
-              </p>
-            </div>
+                {isDescriptionExpanded ? (
+                  <>
+                    Show Less <ChevronUp className="ml-1 h-3 w-3" />
+                  </>
+                ) : (
+                  <>
+                    Show More <ChevronDown className="ml-1 h-3 w-3" />
+                  </>
+                )}
+              </Button>
+            )}
           </div>
+          <p
+            className={`text-muted-foreground leading-relaxed ${
+              !isDescriptionExpanded &&
+              dao.description &&
+              dao.description.length > 200
+                ? "line-clamp-4"
+                : ""
+            }`}
+          >
+            {dao.description}
+          </p>
         </div>
 
-        <div>
-          <div className="rounded-lg border border-border/10 bg-[#1A1A1A]">
-            <div className="border-b border-border/10 p-4">
-              <h3 className="text-sm font-medium text-foreground">Socials</h3>
-            </div>
-            <div className="flex gap-2 p-4">
-              {dao.website_url && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  asChild
-                  className="h-8 w-8 hover:bg-white/5"
-                >
-                  <a
-                    href={dao.website_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <BsGlobe className="h-3.5 w-3.5" />
-                    <span className="sr-only">Website</span>
-                  </a>
-                </Button>
-              )}
-              {dao.x_url && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  asChild
-                  className="h-8 w-8 hover:bg-white/5"
-                >
-                  <a href={dao.x_url} target="_blank" rel="noopener noreferrer">
-                    <BsTwitterX className="h-3.5 w-3.5" />
-                    <span className="sr-only">X (Twitter)</span>
-                  </a>
-                </Button>
-              )}
-              {dao.telegram_url && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  asChild
-                  className="h-8 w-8 hover:bg-white/5"
-                >
-                  <a
-                    href={dao.telegram_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <BsTelegram className="h-3.5 w-3.5" />
-                    <span className="sr-only">Telegram</span>
-                  </a>
-                </Button>
-              )}
+        {/* Treasury Section */}
+        {treasuryTokens.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">Treasury Holdings</h2>
+            <div className="rounded-lg border bg-background/50 backdrop-blur-sm">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">Type</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Symbol</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="text-right">Value</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {treasuryTokens.map((token, index) => (
+                    <TableRow key={index}>
+                      <TableCell className="font-medium">
+                        {token.type}
+                      </TableCell>
+                      <TableCell>{token.name}</TableCell>
+                      <TableCell>{token.symbol}</TableCell>
+                      <TableCell className="text-right">
+                        {token.amount.toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatNumber(token.value)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </div>
-        </div>
+        )}
       </div>
+    </div>
+  );
+}
 
-      {/* Treasury Tokens Table */}
-      <div className="rounded-lg border border-border/10 bg-[#1A1A1A]">
-        <div className="border-b border-border/10 p-4">
-          <h2 className="text-sm font-medium text-foreground">
-            Treasury Holdings
-          </h2>
-        </div>
-        <div className="p-4">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-white/5">
-                <TableHead className="text-xs font-medium text-muted-foreground">
-                  Type
-                </TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground">
-                  Name
-                </TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground">
-                  Symbol
-                </TableHead>
-                <TableHead className="text-right text-xs font-medium text-muted-foreground">
-                  Amount
-                </TableHead>
-                <TableHead className="text-right text-xs font-medium text-muted-foreground">
-                  Value
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {treasuryTokens.map((token, index) => (
-                <TableRow key={index} className="hover:bg-white/5">
-                  <TableCell className="text-sm font-medium text-foreground">
-                    {token.type}
-                  </TableCell>
-                  <TableCell className="text-sm text-foreground">
-                    {token.name}
-                  </TableCell>
-                  <TableCell className="text-sm text-foreground">
-                    {token.symbol}
-                  </TableCell>
-                  <TableCell className="text-right text-sm text-foreground">
-                    {token.amount.toLocaleString()}
-                  </TableCell>
-                  <TableCell className="text-right text-sm text-foreground">
-                    {formatNumber(token.value)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+// Metric Component
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="space-y-1">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="text-2xl font-semibold tracking-tight">{value}</p>
     </div>
   );
 }

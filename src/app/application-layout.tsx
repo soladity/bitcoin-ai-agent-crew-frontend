@@ -4,10 +4,12 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Bot, Users, MessageSquare, Boxes } from "lucide-react";
+import { Users, MessageSquare, Boxes, Menu, Wallet, X } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { WalletPanel } from "@/components/wallet/wallet-panel";
 import { ThreadList } from "@/components/threads/thread-list";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 interface ApplicationLayoutProps {
   children: React.ReactNode;
@@ -19,60 +21,146 @@ const navigation = [
   { name: "DAOs", href: "/daos", icon: Boxes },
 ];
 
-export default function ApplicationLayout({ children }: ApplicationLayoutProps) {
+export default function ApplicationLayout({
+  children,
+}: ApplicationLayoutProps) {
   const pathname = usePathname();
+  const [leftPanelOpen, setLeftPanelOpen] = React.useState(false);
+  const [rightPanelOpen, setRightPanelOpen] = React.useState(false);
 
   return (
-    <div className="flex h-screen bg-zinc-950">
-      {/* Left Sidebar */}
-      <aside className="w-64 flex flex-col bg-zinc-900/50">
-        {/* Header */}
-        <div className="h-14 px-4 flex items-center border-b border-zinc-800/50">
-          <div className="flex items-center gap-2">
-            <Bot className="h-5 w-5 text-blue-500" />
-            <span className="text-lg font-medium text-white">AIBTCDEV</span>
-          </div>
+    <div className="flex flex-col h-screen bg-zinc-950">
+      {/* Mobile Navigation Bar */}
+      <div className="md:hidden h-14 px-2 flex items-center justify-between border-b border-zinc-800/50 bg-zinc-900/50">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setLeftPanelOpen(!leftPanelOpen)}
+          className="text-zinc-400"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+        <div className="flex items-center gap-2">
+          <Image
+            src="/logos/aibtcdev-avatar-1000px.png"
+            alt="AIBTCDEV"
+            width={20}
+            height={20}
+          />
+          <span className="text-lg font-medium text-white">AIBTCDEV</span>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setRightPanelOpen(!rightPanelOpen)}
+          className="text-zinc-400"
+        >
+          <Wallet className="h-5 w-5" />
+        </Button>
+      </div>
 
-        {/* Navigation */}
-        <nav className="p-2">
-          <div className="space-y-1">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
-                    isActive
-                      ? "bg-zinc-800/50 text-white"
-                      : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
-                  )}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.name}
-                </Link>
-              );
-            })}
+      <div className="flex-1 flex min-w-0">
+        {/* Left Sidebar */}
+        <aside
+          className={cn(
+            // Base styles
+            "bg-zinc-900/50 border-r border-zinc-800/50 flex flex-col",
+            // Desktop styles
+            "hidden md:flex md:w-64",
+            // Mobile styles
+            "fixed md:relative inset-y-0 left-0 z-20 w-[min(100vw,320px)]",
+            leftPanelOpen
+              ? "flex bg-zinc-900 md:bg-zinc-900/50 md:w-64"
+              : "hidden"
+          )}
+        >
+          {/* Header */}
+          <div className="h-14 px-4 flex items-center justify-between border-b border-zinc-800/50">
+            <div className="flex items-center gap-2">
+              <Image
+                src="/logos/aibtcdev-avatar-1000px.png"
+                alt="AIBTCDEV"
+                width={20}
+                height={20}
+              />
+              <span className="text-lg font-medium text-white">AIBTCDEV</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setLeftPanelOpen(false)}
+              className="text-zinc-400 md:hidden h-8 w-8 hover:bg-zinc-800"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
-        </nav>
 
-        {/* Thread List */}
-        <ThreadList />
-      </aside>
+          {/* Navigation */}
+          <nav className="p-2">
+            <div className="space-y-1">
+              {navigation.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                      isActive
+                        ? "bg-zinc-800/50 text-white"
+                        : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
 
-      {/* Main Content */}
-      <main className="flex-1 min-w-0 relative">
-        <ScrollArea className="h-screen">
-          <div>
-            {children}
+          {/* Thread List */}
+          <div className="flex-1 overflow-hidden">
+            <ThreadList setLeftPanelOpen={setLeftPanelOpen} />
           </div>
-        </ScrollArea>
-      </main>
+        </aside>
 
-      {/* Right Wallet Panel */}
-      <WalletPanel />
+        {/* Main Content */}
+        <main className="flex-1 min-w-0 relative">
+          <ScrollArea className="h-screen w-full">{children}</ScrollArea>
+        </main>
+
+        {/* Right Wallet Panel */}
+        <aside
+          className={cn(
+            // Base styles
+            "bg-zinc-900/50 border-l border-zinc-800/50 flex flex-col",
+            // Desktop styles
+            "hidden md:flex md:w-80",
+            // Mobile styles
+            "fixed md:relative inset-y-0 right-0 z-20 w-[min(100vw,320px)]",
+            rightPanelOpen
+              ? "flex bg-zinc-900 md:bg-zinc-900/50 md:w-80"
+              : "hidden"
+          )}
+        >
+          <WalletPanel onClose={() => setRightPanelOpen(false)} />
+        </aside>
+
+        {/* Overlay for mobile when panels are open */}
+        <div
+          className={cn(
+            "fixed inset-0 bg-black/80 md:hidden transition-opacity z-10",
+            leftPanelOpen || rightPanelOpen
+              ? "opacity-100"
+              : "opacity-0 pointer-events-none"
+          )}
+          onClick={() => {
+            setLeftPanelOpen(false);
+            setRightPanelOpen(false);
+          }}
+        />
+      </div>
     </div>
   );
 }

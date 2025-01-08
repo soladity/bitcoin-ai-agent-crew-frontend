@@ -1,13 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  ChevronDown,
-  ChevronUp,
   Code2,
   Coins,
   Wallet,
@@ -17,6 +13,7 @@ import {
   PiggyBank,
   Vault,
   Building2,
+  ExternalLink,
 } from "lucide-react";
 import { Extension } from "@/types/supabase";
 
@@ -52,337 +49,163 @@ const getExtensionIcon = (type: Extension["type"]) => {
 const getStatusColor = (status: Extension["status"]) => {
   switch (status) {
     case "active":
-      return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
+      return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
     case "pending":
-      return "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20";
+      return "bg-amber-500/10 text-amber-500 border-amber-500/20";
     case "inactive":
-      return "bg-gray-500/10 text-gray-500 hover:bg-gray-500/20";
+      return "bg-zinc-500/10 text-zinc-500 border-zinc-500/20";
   }
 };
 
 function DAOExtensions({ extensions }: DAOExtensionsProps) {
-  const [expandedExtensions, setExpandedExtensions] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [selectedStatus, setSelectedStatus] = useState<
+    Extension["status"] | "all"
+  >("all");
 
-  const toggleExtension = (id: string) => {
-    setExpandedExtensions((prev) =>
-      prev.includes(id)
-        ? prev.filter((capId) => capId !== id)
-        : [...prev, id]
-    );
+  const filteredExtensions = extensions.filter((ext) =>
+    selectedStatus === "all" ? true : ext.status === selectedStatus
+  );
+
+  const stats = {
+    all: extensions.length,
+    active: extensions.filter((e) => e.status === "active").length,
+    pending: extensions.filter((e) => e.status === "pending").length,
+    inactive: extensions.filter((e) => e.status === "inactive").length,
   };
 
-  const activeExtensions = extensions.filter((cap) => cap.status === "active");
-  // const totalProgress = extensions.reduce((acc, cap) => acc + (cap.progress || 0), 0) / extensions.length;
-  const totalProgress = extensions.reduce((acc, ) => acc + (24), 0) / extensions.length;
-
   return (
-    <div className="space-y-6">
-      {/* Overview Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card className="p-6">
-          <div className="text-sm text-muted-foreground">Active Extensions</div>
-          <div className="mt-2 text-2xl font-bold">{activeExtensions.length}</div>
-        </Card>
-        <Card className="p-6">
-          <div className="text-sm text-muted-foreground">Total Extensions</div>
-          <div className="mt-2 text-2xl font-bold">{extensions.length}</div>
-        </Card>
-        <Card className="p-6">
-          <div className="text-sm text-muted-foreground">Overall Progress</div>
-          <div className="mt-2">
-            <div className="w-full bg-secondary rounded-full h-2.5">
-              <div
-                className="bg-primary h-2.5 rounded-full transition-all"
-                style={{ width: `${totalProgress}%` }}
-              />
-            </div>
-            <span className="mt-2 inline-block text-sm">
-              {totalProgress.toFixed(0)}%
-            </span>
+    <div className="relative">
+      {/* Header Section */}
+      <div className="relative mb-8">
+        <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-background/50 to-background" />
+        <div className="relative z-10 px-6 py-8">
+          <div className="mx-auto max-w-screen-xl">
+            <h1 className="text-2xl font-semibold tracking-tight mb-2">
+              Extensions
+            </h1>
+            <p className="text-muted-foreground">
+              Manage and monitor your DAO&apos;s active extensions and
+              capabilities
+            </p>
           </div>
-        </Card>
+        </div>
       </div>
 
-      {/* Extensions List */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
-          <TabsTrigger value="inactive">Inactive</TabsTrigger>
-        </TabsList>
+      {/* Main Content */}
+      <div className="mx-auto max-w-screen-xl px-6 space-y-6">
+        {/* Status Filters */}
+        <div className="flex gap-2">
+          <StatusButton
+            status="all"
+            count={stats.all}
+            selected={selectedStatus === "all"}
+            onClick={() => setSelectedStatus("all")}
+          />
+          <StatusButton
+            status="active"
+            count={stats.active}
+            selected={selectedStatus === "active"}
+            onClick={() => setSelectedStatus("active")}
+          />
+          <StatusButton
+            status="pending"
+            count={stats.pending}
+            selected={selectedStatus === "pending"}
+            onClick={() => setSelectedStatus("pending")}
+          />
+          <StatusButton
+            status="inactive"
+            count={stats.inactive}
+            selected={selectedStatus === "inactive"}
+            onClick={() => setSelectedStatus("inactive")}
+          />
+        </div>
 
-        <TabsContent value="overview" className="space-y-4">
-          {extensions.map((extension) => (
-            <Card key={extension.id} className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4">
-                  <div className={`p-2 rounded-lg ${getStatusColor(extension.status)}`}>
-                    {getExtensionIcon(extension.type)}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">{extension.type}</h3>
-                      <Badge variant="outline" className="capitalize">
-                        {extension.type}
-                      </Badge>
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {extension.description}
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => toggleExtension(extension.id)}
+        {/* Extensions List */}
+        <div className="space-y-4">
+          {filteredExtensions.map((extension) => (
+            <div
+              key={extension.id}
+              className="group relative rounded-lg border bg-background/50 backdrop-blur-sm p-4 transition-all hover:bg-background/80"
+            >
+              <div className="flex items-start gap-4">
+                <div
+                  className={`p-3 rounded-lg border ${getStatusColor(
+                    extension.status
+                  )}`}
                 >
-                  {expandedExtensions.includes(extension.id) ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
+                  {getExtensionIcon(extension.type)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h3 className="text-base font-medium capitalize">
+                      {extension.type.replace("-", " ")}
+                    </h3>
+                    <Badge
+                      variant="secondary"
+                      className={`${getStatusColor(
+                        extension.status
+                      )} border capitalize`}
+                    >
+                      {extension.status}
+                    </Badge>
+                  </div>
+                  {extension.contract_principal && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                        {extension.contract_principal}
+                      </code>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </div>
                   )}
-                </Button>
+                  {extension.tx_id && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      TX: {extension.tx_id}
+                    </p>
+                  )}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {new Date(extension.created_at).toLocaleDateString()}
+                </div>
               </div>
-
-              {expandedExtensions.includes(extension.id) && (
-                <div className="mt-6 grid grid-cols-3 gap-4">
-                  {/* {extension.metrics.map((metric) => (
-                    <div key={metric.name} className="space-y-1">
-                      <div className="text-sm text-muted-foreground">
-                        {metric.name}
-                      </div>
-                      <div className="text-lg font-semibold">{metric.value}</div>
-                      {metric.change && (
-                        <div
-                          className={`text-sm ${
-                            metric.trend === "up"
-                              ? "text-green-500"
-                              : metric.trend === "down"
-                              ? "text-red-500"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          {metric.change}
-                        </div>
-                      )}
-                    </div>
-                  ))} */}
-                </div>
-              )}
-            </Card>
+            </div>
           ))}
-        </TabsContent>
-
-        <TabsContent value="active" className="space-y-4">
-          {extensions
-            .filter((cap) => cap.status === "active")
-            .map((extension) => (
-              <Card key={extension.id} className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4">
-                    <div className={`p-2 rounded-lg ${getStatusColor(extension.status)}`}>
-                      {getExtensionIcon(extension.type)}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{extension.type}</h3>
-                        <Badge variant="outline" className="capitalize">
-                          {extension.type}
-                        </Badge>
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {extension.description}
-                      </p>
-                      {extension.updated_at && (
-                        <p className="mt-2 text-xs text-muted-foreground">
-                          Last updated: {extension.updated_at}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleExtension(extension.id)}
-                  >
-                    {expandedExtensions.includes(extension.id) ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-
-                {expandedExtensions.includes(extension.id) && (
-                  <div className="mt-6 grid grid-cols-3 gap-4">
-                    {/* {extension.metrics.map((metric) => (
-                      <div key={metric.name} className="space-y-1">
-                        <div className="text-sm text-muted-foreground">
-                          {metric.name}
-                        </div>
-                        <div className="text-lg font-semibold">{metric.value}</div>
-                        {metric.change && (
-                          <div
-                            className={`text-sm ${
-                              metric.trend === "up"
-                                ? "text-green-500"
-                                : metric.trend === "down"
-                                ? "text-red-500"
-                                : "text-gray-500"
-                            }`}
-                          >
-                            {metric.change}
-                          </div>
-                        )}
-                      </div>
-                    ))} */}
-                  </div>
-                )}
-              </Card>
-            ))}
-        </TabsContent>
-
-        <TabsContent value="pending" className="space-y-4">
-          {extensions
-            .filter((cap) => cap.status === "pending")
-            .map((extension) => (
-              <Card key={extension.id} className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4">
-                    <div className={`p-2 rounded-lg ${getStatusColor(extension.status)}`}>
-                      {getExtensionIcon(extension.type)}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{extension.type}</h3>
-                        <Badge variant="outline" className="capitalize">
-                          {extension.type}
-                        </Badge>
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {extension.description}
-                      </p>
-                      {extension.updated_at && (
-                        <p className="mt-2 text-xs text-muted-foreground">
-                          Last updated: {extension.updated_at}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleExtension(extension.id)}
-                  >
-                    {expandedExtensions.includes(extension.id) ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-
-                {expandedExtensions.includes(extension.id) && (
-                  <div className="mt-6 grid grid-cols-3 gap-4">
-                    {/* {extension.metrics.map((metric) => (
-                      <div key={metric.name} className="space-y-1">
-                        <div className="text-sm text-muted-foreground">
-                          {metric.name}
-                        </div>
-                        <div className="text-lg font-semibold">{metric.value}</div>
-                        {metric.change && (
-                          <div
-                            className={`text-sm ${
-                              metric.trend === "up"
-                                ? "text-green-500"
-                                : metric.trend === "down"
-                                ? "text-red-500"
-                                : "text-gray-500"
-                            }`}
-                          >
-                            {metric.change}
-                          </div>
-                        )}
-                      </div>
-                    ))} */}
-                  </div>
-                )}
-              </Card>
-            ))}
-        </TabsContent>
-
-        <TabsContent value="inactive" className="space-y-4">
-          {extensions
-            .filter((cap) => cap.status === "inactive")
-            .map((extension) => (
-              <Card key={extension.id} className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4">
-                    <div className={`p-2 rounded-lg ${getStatusColor(extension.status)}`}>
-                      {getExtensionIcon(extension.type)}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{extension.type}</h3>
-                        <Badge variant="outline" className="capitalize">
-                          {extension.type}
-                        </Badge>
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {extension.description}
-                      </p>
-                      {extension.updated_at && (
-                        <p className="mt-2 text-xs text-muted-foreground">
-                          Last updated: {extension.updated_at}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleExtension(extension.id)}
-                  >
-                    {expandedExtensions.includes(extension.id) ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-
-                {expandedExtensions.includes(extension.id) && (
-                  <div className="mt-6 grid grid-cols-3 gap-4">
-                    {/* {extension.metrics.map((metric) => (
-                      <div key={metric.name} className="space-y-1">
-                        <div className="text-sm text-muted-foreground">
-                          {metric.name}
-                        </div>
-                        <div className="text-lg font-semibold">{metric.value}</div>
-                        {metric.change && (
-                          <div
-                            className={`text-sm ${
-                              metric.trend === "up"
-                                ? "text-green-500"
-                                : metric.trend === "down"
-                                ? "text-red-500"
-                                : "text-gray-500"
-                            }`}
-                          >
-                            {metric.change}
-                          </div>
-                        )}
-                      </div>
-                    ))} */}
-                  </div>
-                )}
-              </Card>
-            ))}
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     </div>
+  );
+}
+
+// Status Button Component
+function StatusButton({
+  status,
+  count,
+  selected,
+  onClick,
+}: {
+  status: Extension["status"] | "all";
+  count: number;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      variant={selected ? "default" : "outline"}
+      size="sm"
+      onClick={onClick}
+      className="h-8"
+    >
+      <span className="capitalize">{status}</span>
+      <span className="ml-2 text-xs bg-primary-foreground/10 px-1.5 py-0.5 rounded-full">
+        {count}
+      </span>
+    </Button>
   );
 }
 

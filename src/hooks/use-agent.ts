@@ -4,7 +4,8 @@ import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Agent } from "@/types/supabase";
 
-export function useAgent() {
+// Hook for managing agent form state
+export function useAgentForm() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
@@ -17,6 +18,7 @@ export function useAgent() {
     backstory: "",
     image_url: "",
     agent_tools: [],
+    profile_id: "",
   });
 
   const fetchAgent = useCallback(async (id: string) => {
@@ -30,7 +32,7 @@ export function useAgent() {
       if (error) throw error;
 
       setFormData(data);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
     } catch (error: any) {
       toast({
         title: "Error",
@@ -69,13 +71,13 @@ export function useAgent() {
     try {
       const { error } = params.id && params.id !== "new"
         ? await supabase
-            .from("agents")
-            .update(formData)
-            .eq("id", params.id)
+          .from("agents")
+          .update(formData)
+          .eq("id", params.id)
         : await supabase
-            .from("agents")
-            .insert([formData])
-            .select();
+          .from("agents")
+          .insert([formData])
+          .select();
 
       if (error) throw error;
 
@@ -85,7 +87,7 @@ export function useAgent() {
       });
 
       router.push("/agents");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({
         title: "Error",
@@ -104,5 +106,50 @@ export function useAgent() {
     handleSubmit,
     handleChange,
     handleToolsChange,
+  };
+}
+
+// Hook for fetching agent data
+export function useAgent(agentId: string | null) {
+  const [agent, setAgent] = useState<Agent | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchAgent = async () => {
+      if (!agentId) {
+        setAgent(null);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from("agents")
+          .select("*")
+          .eq("id", agentId)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        setAgent(data);
+      } catch (err) {
+        setError(err as Error);
+        console.error("Error fetching agent:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAgent();
+  }, [agentId]);
+
+  return {
+    agent,
+    isLoading,
+    error
   };
 }
