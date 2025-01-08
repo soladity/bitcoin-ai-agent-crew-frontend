@@ -116,7 +116,7 @@ export function ChatWindow() {
     );
   }
 
-  if (agents.length === 0) {
+  if (!agentsLoading && agents.length === 0) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-4rem)] backdrop-blur-sm">
         <div className="text-center space-y-4 p-6 max-w-md mx-auto">

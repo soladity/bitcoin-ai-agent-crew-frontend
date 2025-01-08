@@ -39,9 +39,9 @@ export default function AgentsPage() {
               <Image
                 src={agent.image_url || "/placeholder-agent.png"}
                 alt={agent.name}
+                fill
+                unoptimized={true}
                 className="object-cover w-full h-full"
-                width={500}
-                height={500}
               />
             </div>
             <div className="p-4">

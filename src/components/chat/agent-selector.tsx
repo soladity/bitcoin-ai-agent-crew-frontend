@@ -68,6 +68,7 @@ export function AgentSelector({
                     fill
                     className="object-cover"
                     priority
+                    unoptimized={true}
                   />
                 </div>
               </div>
@@ -89,6 +90,7 @@ export function AgentSelector({
                     alt={agent.name}
                     fill
                     className="object-cover"
+                    unoptimized={true}
                   />
                 </div>
               ) : (
