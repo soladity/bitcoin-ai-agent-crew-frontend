@@ -1,32 +1,17 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useChatStore } from "@/store/chat";
 import { useSessionStore } from "@/store/session";
+import { ChatWindow } from "@/components/chat/chat-window";
 
 export default function ChatPage() {
-  const router = useRouter();
-  const { addConversation, setActiveConversation } = useChatStore();
   const { accessToken } = useSessionStore();
 
   useEffect(() => {
     if (!accessToken) {
       return;
     }
-
-    const newConversation = {
-      id: crypto.randomUUID(),
-      title: "New Chat",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      agent_id: null,
-    };
-
-    addConversation(newConversation);
-    setActiveConversation(newConversation.id);
-    router.push(`/chat/${newConversation.id}`);
-  }, [router, addConversation, setActiveConversation, accessToken]);
+  }, [accessToken]);
 
   if (!accessToken) {
     return (
@@ -36,5 +21,9 @@ export default function ChatPage() {
     );
   }
 
-  return null;
+  return (
+    <div className="flex-1 flex flex-col">
+      <ChatWindow />
+    </div>
+  );
 }

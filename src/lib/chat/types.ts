@@ -1,17 +1,17 @@
 export interface Message {
   agent_id: string | null;
-  conversation_id: string;
+  thread_id: string;
   role: 'user' | 'assistant';
   content: string;
   created_at?: string | null;
   status: 'sent' | 'processing' | 'end' | null;
-  type?: 'task' | 'step' | 'result' | 'tool' | 'token' | 'message'| null;
+  type?: 'history' | 'task' | 'step' | 'result' | 'tool' | 'token' | 'message' | null;
   tool?: string;
   tool_input?: string;
   tool_output?: string;
 }
 
-export interface Conversation {
+export interface Thread {
   id: string;
   title: string;
   last_message?: Message;

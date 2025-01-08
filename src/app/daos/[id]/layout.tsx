@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Info, Activity, Users, Blocks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function CollectiveLayout({
+export default function DAOLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -15,16 +15,16 @@ export default function CollectiveLayout({
   const id = params.id as string;
   const pathname = usePathname();
 
-  const isOverview = pathname === `/collectives/${id}`;
-  const isCapabilities = pathname === `/collectives/${id}/capabilities`;
-  const isHolders = pathname === `/collectives/${id}/holders`;
-  const isProposals = pathname === `/collectives/${id}/proposals`;
+  const isOverview = pathname === `/daos/${id}`;
+  const isExtensions = pathname === `/daos/${id}/extensions`;
+  const isHolders = pathname === `/daos/${id}/holders`;
+  const isProposals = pathname === `/daos/${id}/proposals`;
 
   return (
     <div className="container mx-auto space-y-4 px-4 py-6">
       <nav className="rounded-lg border border-border/10 bg-[#1A1A1A] p-4">
         <div className="flex flex-wrap gap-2">
-          <Link href={`/collectives/${id}`}>
+          <Link href={`/daos/${id}`}>
             <Button 
               variant={isOverview ? "default" : "ghost"}
               className="h-8 text-sm hover:bg-white/5"
@@ -33,16 +33,16 @@ export default function CollectiveLayout({
               Overview
             </Button>
           </Link>
-          <Link href={`/collectives/${id}/capabilities`}>
+          <Link href={`/daos/${id}/extensions`}>
             <Button 
-              variant={isCapabilities ? "default" : "ghost"}
+              variant={isExtensions ? "default" : "ghost"}
               className="h-8 text-sm hover:bg-white/5"
             >
               <Blocks className="mr-2 h-3.5 w-3.5" />
-              Capabilities
+              Extensions
             </Button>
           </Link>
-          <Link href={`/collectives/${id}/holders`}>
+          <Link href={`/daos/${id}/holders`}>
             <Button 
               variant={isHolders ? "default" : "ghost"}
               className="h-8 text-sm hover:bg-white/5"
@@ -51,7 +51,7 @@ export default function CollectiveLayout({
               Holders
             </Button>
           </Link>
-          <Link href={`/collectives/${id}/proposals`}>
+          <Link href={`/daos/${id}/proposals`}>
             <Button 
               variant={isProposals ? "default" : "ghost"}
               className="h-8 text-sm hover:bg-white/5"

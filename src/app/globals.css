@@ -103,7 +103,6 @@ body {
 
   body {
     @apply bg-background text-foreground;
-    /* font-family: var(--font-roc-grotesk-regular), Arial, Helvetica, sans-serif; */
   }
 
 }

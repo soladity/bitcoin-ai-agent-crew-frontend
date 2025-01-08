@@ -1,45 +1,45 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import CollectiveOverview from "@/components/collectives/collective-overview";
+import DAOOverview from "@/components/daos/dao-overview";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { CollectiveCreationDate } from "@/components/collectives/collective-creation-date";
-import { useCollectiveDetails } from "@/hooks/use-collective-details";
+import { DAOCreationDate } from "@/components/daos/dao-creation-date";
+import { useDAODetails } from "@/hooks/use-dao-details";
 
 export const runtime = "edge";
 
-export default function CollectivePage() {
+export default function DAOPage() {
   const params = useParams();
   const id = params.id as string;
   const {
-    collective,
+    dao,
     token,
     loading,
     marketStats,
     treasuryTokens
-  } = useCollectiveDetails(id);
+  } = useDAODetails(id);
 
   if (loading) {
     return <LoadingSpinner />;
   }
 
-  if (!collective) {
+  if (!dao) {
     return (
       <div className="text-center">
-        <p>Collective not found</p>
+        <p>DAO not found</p>
       </div>
     );
   }
 
   return (
     <div className="max-w-[1400px] mx-auto p-4 space-y-6">
-      <CollectiveOverview 
-        collective={collective} 
+      <DAOOverview 
+        dao={dao} 
         token={token} 
         marketStats={marketStats}
         treasuryTokens={treasuryTokens}
       />
-      <CollectiveCreationDate createdAt={collective.created_at} />
+      <DAOCreationDate createdAt={dao.created_at} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ChatInput } from "./chat-input";
 import { MessageList } from "./message-list";
 import { Button } from "@/components/ui/button";
@@ -8,14 +8,10 @@ import { Loader2, Pencil, Check, X, Trash2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useChatStore } from "@/store/chat";
 import { useSessionStore } from "@/store/session";
-import { useConversation } from "@/hooks/use-conversation";
+import { useThread } from "@/hooks/use-thread";
 import { Input } from "@/components/ui/input";
 
-interface ChatWindowProps {
-  conversationId: string;
-}
-
-export function ChatWindow({ conversationId }: ChatWindowProps) {
+export function ChatWindow() {
   const {
     messages,
     isLoading: isChatLoading,
@@ -25,26 +21,38 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
     setSelectedAgent,
     clearMessages,
     connect,
-    disconnect
+    disconnect,
+    activeThreadId,
   } = useChatStore();
 
-  const { conversation, clearConversation, updateConversation } = useConversation(conversationId);
+  const { thread, clearThread, updateThread } = useThread(activeThreadId || "");
   const { accessToken } = useSessionStore();
-  const conversationMessages = messages[conversationId] || [];
+  const threadMessages = activeThreadId ? messages[activeThreadId] || [] : [];
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState("");
 
+  const memoizedConnect = useCallback(
+    (token: string) => {
+      connect(token);
+    },
+    [connect]
+  );
+
+  const memoizedDisconnect = useCallback(() => {
+    disconnect();
+  }, [disconnect]);
+
   const handleStartEditing = () => {
-    setEditedName(conversation?.name || "");
+    setEditedName(thread?.name || "");
     setIsEditing(true);
   };
 
   const handleSaveEdit = async () => {
     try {
-      await updateConversation({ name: editedName });
+      await updateThread({ name: editedName });
       setIsEditing(false);
     } catch (error) {
-      console.error("Failed to update conversation name:", error);
+      console.error("Failed to update thread name:", error);
     }
   };
 
@@ -55,29 +63,42 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
 
   // Handle WebSocket connection
   useEffect(() => {
+    let mounted = true;
+
     if (!accessToken) {
-      disconnect();
       return;
     }
 
-    // Connect when component mounts or conversation changes
-    connect(conversationId, accessToken);
-
-    // Cleanup when component unmounts or conversation changes
-    return () => {
-      console.log('ChatWindow unmounting, disconnecting WebSocket');
-      disconnect();
+    const connectWithDelay = () => {
+      if (process.env.NODE_ENV === "development") {
+        setTimeout(() => {
+          if (mounted) {
+            memoizedConnect(accessToken);
+          }
+        }, 100);
+      } else {
+        memoizedConnect(accessToken);
+      }
     };
-  }, [conversationId, accessToken, connect, disconnect]);
 
-  // create function to clear messages for a specific conversation
-  const clearMessagesInConversation = async (conversationId: string) => {
+    connectWithDelay();
+
+    return () => {
+      mounted = false;
+      if (process.env.NODE_ENV !== "development") {
+        console.log("ChatWindow unmounting, disconnecting WebSocket");
+        memoizedDisconnect();
+      }
+    };
+  }, [accessToken, memoizedConnect, memoizedDisconnect]);
+
+  // create function to clear messages for a specific thread
+  const clearMessagesInThread = async (threadId: string) => {
     try {
-      await clearConversation();
-      clearMessages(conversationId);
-      disconnect();
+      await clearThread();
+      clearMessages(threadId);
     } catch (error) {
-      console.error("Error clearing conversation:", error);
+      console.error("Error clearing thread:", error);
     }
   };
 
@@ -85,8 +106,18 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
     return (
       <div className="flex items-center justify-center h-full">
         <Alert>
+          <AlertDescription>Please sign in to start chatting</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  if (!activeThreadId) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Alert>
           <AlertDescription>
-            Please sign in to start chatting
+            Please select a thread to start chatting
           </AlertDescription>
         </Alert>
       </div>
@@ -94,15 +125,19 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
   }
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="flex-1 flex flex-col relative h-full">
       {/* Header - Fixed at top */}
-      <div className="sticky top-0 z-10 bg-background flex items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-2">
+      <div className="sticky dark:lg:bg-zinc-950 top-0 z-10 flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+        <div className="flex items-center  gap-2">
           {!isConnected && (
             <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
           )}
-          <span className={`text-sm ${isConnected ? 'text-green-500' : 'text-zinc-400'}`}>
-            {isConnected ? 'Connected' : 'Connecting...'}
+          <span
+            className={`text-sm ${
+              isConnected ? "text-green-500" : "text-zinc-400"
+            }`}
+          >
+            {isConnected ? "Connected" : "Connecting..."}
           </span>
           <span className="text-sm text-zinc-400 mx-2">•</span>
           <div className="flex items-center gap-2">
@@ -112,7 +147,7 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
                   className="h-7 w-48"
                   value={editedName}
                   onChange={(e) => setEditedName(e.target.value)}
-                  placeholder="Enter conversation name"
+                  placeholder="Enter thread name"
                   autoFocus
                 />
                 <Button
@@ -135,7 +170,7 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
             ) : (
               <>
                 <span className="text-sm font-medium truncate">
-                  {conversation?.name || "Untitled Conversation"}
+                  {thread?.name || "Untitled Thread"}
                 </span>
                 <Button
                   variant="ghost"
@@ -153,37 +188,30 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
           variant="ghost"
           size="icon"
           className="h-7 w-7"
-          onClick={() => clearMessagesInConversation(conversationId)}
-          disabled={isChatLoading || conversationMessages.length === 0}
+          onClick={() => clearMessagesInThread(activeThreadId)}
+          disabled={isChatLoading}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
 
-      {/* Error Alert */}
-      {chatError && (
-        <Alert variant="destructive" className="m-4">
-          <AlertDescription>{chatError}</AlertDescription>
-        </Alert>
-      )}
-
       {/* Message List - Scrollable area */}
-      <div className="flex-1 overflow-y-auto min-h-0">
-        <MessageList 
-          messages={conversationMessages} 
-        />
+      <div className="flex-1 overflow-y-auto min-h-0 flex flex-col justify-end">
+        {chatError && (
+          <Alert variant="destructive" className="m-4">
+            <AlertDescription>{chatError}</AlertDescription>
+          </Alert>
+        )}
+        <MessageList messages={threadMessages} />
       </div>
 
       {/* Input - Fixed at bottom */}
-      <div className="sticky bottom-0 z-10 bg-background ">
-        <div className="p-4">
-          <ChatInput
-            conversationId={conversationId}
-            selectedAgentId={selectedAgentId}
-            onAgentSelect={setSelectedAgent}
-            disabled={isChatLoading || !isConnected}
-          />
-        </div>
+      <div className="sticky bottom-0 dark:lg:bg-zinc-950 z-10 border-t border-zinc-800">
+        <ChatInput
+          selectedAgentId={selectedAgentId}
+          onAgentSelect={setSelectedAgent}
+          disabled={isChatLoading || !isConnected}
+        />
       </div>
     </div>
   );

@@ -4,8 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Bot, Plus, ChevronRight, Users, MessageSquare, Boxes } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Bot, Users, MessageSquare, Boxes } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { WalletPanel } from "@/components/wallet/wallet-panel";
 import { ThreadList } from "@/components/threads/thread-list";
@@ -17,7 +16,7 @@ interface ApplicationLayoutProps {
 const navigation = [
   { name: "Chat", href: "/chat", icon: MessageSquare },
   { name: "Agents", href: "/agents", icon: Users },
-  { name: "Collectives", href: "/collectives", icon: Boxes },
+  { name: "DAOs", href: "/daos", icon: Boxes },
 ];
 
 export default function ApplicationLayout({ children }: ApplicationLayoutProps) {

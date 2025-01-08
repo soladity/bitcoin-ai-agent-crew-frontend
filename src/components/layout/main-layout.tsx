@@ -1,9 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
 import { Bot, Plus, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -12,8 +9,6 @@ interface MainLayoutProps {
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
-  const pathname = usePathname();
-
   return (
     <div className="flex h-screen bg-zinc-950">
       {/* Left Sidebar */}
@@ -24,7 +19,10 @@ export function MainLayout({ children }: MainLayoutProps) {
             <Bot className="h-5 w-5 text-blue-500" />
             <span className="text-lg font-medium text-white">Griffain</span>
           </div>
-          <Button size="sm" className="bg-blue-600 hover:bg-blue-500 text-white">
+          <Button
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-500 text-white"
+          >
             <Plus className="h-4 w-4 mr-1" />
             New Thread
           </Button>
@@ -45,9 +43,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 min-w-0 overflow-hidden">
-        {children}
-      </main>
+      <main className="flex-1 min-w-0 overflow-hidden">{children}</main>
 
       {/* Right Wallet Panel */}
       <aside className="w-80 bg-zinc-900/50 border-l border-zinc-800/50">
@@ -72,7 +68,9 @@ export function MainLayout({ children }: MainLayoutProps) {
                     <span className="text-white text-sm">T</span>
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-white">Token Name</div>
+                    <div className="text-sm font-medium text-white">
+                      Token Name
+                    </div>
                     <div className="text-xs text-zinc-400">0.001 BTC</div>
                   </div>
                 </div>

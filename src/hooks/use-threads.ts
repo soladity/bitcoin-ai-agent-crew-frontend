@@ -1,21 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useToast } from "./use-toast";
 import { supabase } from "@/utils/supabase/client";
-import { Conversation } from "@/types/supabase";
+import { Thread } from "@/types/supabase";
 
-export function useConversations() {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+export function useThreads() {
+  const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchConversations();
-  }, []);
-
-  const fetchConversations = async () => {
+  const fetchThreads = useCallback(async () => {
     try {
       const { data, error } = await supabase
-        .from("conversations")
+        .from("threads")
         .select("*")
         .order("created_at", { ascending: false });
 
@@ -23,27 +19,32 @@ export function useConversations() {
         throw error;
       }
 
-      setConversations(data || []);
+      setThreads(data || []);
     } catch (error) {
-      console.error("Error fetching conversations:", error);
+      console.error("Error fetching threads:", error);
       toast({
         title: "Error",
-        description: "Failed to load conversations",
+        description: "Failed to load threads",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  const createConversation = async (profileId: string) => {
+  useEffect(() => {
+    fetchThreads();
+  }, [fetchThreads]);
+
+
+  const createThread = async (profileId: string) => {
     try {
       const { data, error } = await supabase
-        .from("conversations")
+        .from("threads")
         .insert([
           {
             profile_id: profileId,
-            name: "New Conversation",
+            name: "New Thread",
           },
         ])
         .select()
@@ -53,13 +54,13 @@ export function useConversations() {
         throw error;
       }
 
-      setConversations((prev) => [data, ...prev]);
+      setThreads((prev) => [data, ...prev]);
       return data;
     } catch (error) {
-      console.error("Error creating conversation:", error);
+      console.error("Error creating thread:", error);
       toast({
         title: "Error",
-        description: "Failed to create new conversation",
+        description: "Failed to create new thread",
         variant: "destructive",
       });
       return null;
@@ -67,9 +68,9 @@ export function useConversations() {
   };
 
   return {
-    conversations,
+    threads,
     loading,
-    createConversation,
-    refreshConversations: fetchConversations,
+    createThread,
+    refreshThreads: fetchThreads,
   };
 }

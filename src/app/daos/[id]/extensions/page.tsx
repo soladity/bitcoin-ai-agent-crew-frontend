@@ -2,15 +2,15 @@
 
 import { useParams } from "next/navigation";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import CollectiveHolders from "@/components/collectives/collective-holders";
-import { useCollectiveDetails } from "@/hooks/use-collective-details";
+import DAOExtensions from "@/components/daos/dao-extensions";
+import { useDAODetails } from "@/hooks/use-dao-details";
 
 export const runtime = 'edge';
 
-export default function HoldersPage() {
+export default function ExtensionsPage() {
   const params = useParams();
   const id = params.id as string;
-  const { holders, tokenSymbol, loading } = useCollectiveDetails(id);
+  const { daoExtensions, loading } = useDAODetails(id);
 
   if (loading) {
     return <LoadingSpinner />;
@@ -18,7 +18,9 @@ export default function HoldersPage() {
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
-      <CollectiveHolders holders={holders} tokenSymbol={tokenSymbol} />
+      {daoExtensions && daoExtensions.length > 0 && (
+        <DAOExtensions extensions={daoExtensions} />
+      )}
     </div>
   );
 }

@@ -1,14 +1,14 @@
 import { create } from "zustand";
-import { Message, Conversation } from '@/lib/chat/types';
-import { supabase } from "@/utils/supabase/client";
+import { Message } from '@/lib/chat/types';
+import { useThreadsStore } from "./threads";
 
 // Global WebSocket instance
 let globalWs: WebSocket | null = null;
 
 interface ChatState {
   messages: Record<string, Message[]>;
-  conversations: Conversation[];
-  activeConversationId: string | null;
+  fetchedThreads: Set<string>;  // Track which threads we've fetched
+  activeThreadId: string | null;
   selectedAgentId: string | null;
   isConnected: boolean;
   isLoading: boolean;
@@ -16,18 +16,17 @@ interface ChatState {
   ws: WebSocket | null;
 
   // Connection
-  connect: (conversationId: string, accessToken: string) => void;
+  connect: (accessToken: string) => void;
   disconnect: () => void;
-  
-  // Messages
-  sendMessage: (conversationId: string, content: string) => void;
-  addMessage: (conversationId: string, message: Message) => void;
-  clearMessages: (conversationId: string) => void;
 
-  // Conversations
-  setActiveConversation: (conversationId: string) => void;
-  addConversation: (conversation: Conversation) => void;
-  updateConversation: (conversationId: string, update: Partial<Conversation>) => void;
+  // Messages
+  sendMessage: (threadId: string, content: string) => void;
+  addMessage: (message: Message) => void;
+  clearMessages: (threadId: string) => void;
+
+  // Threads
+  setActiveThread: (threadId: string) => void;
+  getThreadHistory: () => void;
 
   // Agent
   setSelectedAgent: (agentId: string | null) => void;
@@ -40,8 +39,8 @@ interface ChatState {
 
 export const useChatStore = create<ChatState>((set, get) => ({
   messages: {},
-  conversations: [],
-  activeConversationId: null,
+  fetchedThreads: new Set(),
+  activeThreadId: null,
   selectedAgentId: null,
   isConnected: false,
   isLoading: false,
@@ -52,11 +51,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({ selectedAgentId: agentId });
   },
 
-  connect: (conversationId: string, accessToken: string) => {
-    // Close existing connection if any
-    if (globalWs) {
-      globalWs.close();
-      globalWs = null;
+  connect: (accessToken: string) => {
+    // Don't reconnect if already connected or connecting
+    if (globalWs && (globalWs.readyState === WebSocket.OPEN || globalWs.readyState === WebSocket.CONNECTING)) {
+      console.log('WebSocket already connected or connecting, skipping connection');
+      return;
     }
 
     try {
@@ -65,16 +64,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
         throw new Error("WebSocket URL not configured");
       }
 
-      globalWs = new WebSocket(`${wsUrl}?token=${accessToken}&conversation_id=${conversationId}`);
+      console.log('Creating new WebSocket connection');
+      globalWs = new WebSocket(`${wsUrl}?token=${accessToken}`);
 
       globalWs.onopen = () => {
         console.log('WebSocket connected');
-        set({ isConnected: true, error: null });
+        set({ isConnected: true, error: null, ws: globalWs });
       };
 
       globalWs.onclose = () => {
         console.log('WebSocket disconnected');
-        set({ isConnected: false });
+        set({ isConnected: false, ws: null });
         globalWs = null;
       };
 
@@ -88,9 +88,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
           const data = JSON.parse(event.data);
           console.log('Received message:', data);
           if (data.type === "token") {
-            get().addMessage(conversationId, data);
+            get().addMessage(data);
           } else {
-            get().addMessage(conversationId, data);
+            get().addMessage(data);
           }
         } catch (error) {
           console.error('Error processing message:', error);
@@ -103,30 +103,44 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   disconnect: () => {
-    if (globalWs) {
+    if (globalWs?.readyState === WebSocket.OPEN || globalWs?.readyState === WebSocket.CONNECTING) {
       console.log('Closing WebSocket connection');
       globalWs.close();
       globalWs = null;
-      set({ isConnected: false });
+      set({ isConnected: false, ws: null });
     }
   },
 
-  clearMessages: (conversationId) => {
-    // delete conversation
-    console.log('Clearing messages for conversation:', conversationId);
+  clearMessages: (threadId) => {
+    // Send delete message through WebSocket
+    if (globalWs?.readyState === WebSocket.OPEN) {
+      try {
+        globalWs.send(JSON.stringify({
+          type: "delete_thread",
+          thread_id: threadId,
+        }));
+      } catch (error) {
+        console.error("Failed to send delete thread message:", error);
+      }
+    }
 
-    // clear messages
+    // Clear messages and remove thread from local state
     set((state) => ({
       messages: {
         ...state.messages,
-        [conversationId]: []
-      }
+        [threadId]: []
+      },
+      activeThreadId: null,
+      fetchedThreads: new Set(Array.from(state.fetchedThreads).filter(id => id !== threadId))
     }));
+
+    // Remove thread from threads store
+    useThreadsStore.getState().removeThread(threadId);
   },
 
-  addMessage: (conversationId: string, message: Message) => {
+  addMessage: (message: Message) => {
     set((state) => {
-      const messages = state.messages[conversationId] || [];
+      const messages = state.messages[message.thread_id] || [];
       const lastMessage = messages[messages.length - 1];
 
       // For token messages, try to append to last message if it's processing
@@ -141,7 +155,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           return {
             messages: {
               ...state.messages,
-              [conversationId]: updatedMessages
+              [message.thread_id]: updatedMessages
             }
           };
         }
@@ -151,37 +165,58 @@ export const useChatStore = create<ChatState>((set, get) => ({
       return {
         messages: {
           ...state.messages,
-          [conversationId]: [...messages, message]
+          [message.thread_id]: [...messages, message]
         }
       };
     });
   },
 
-  setActiveConversation: (conversationId) =>
-    set({ activeConversationId: conversationId }),
+  setActiveThread: (threadId) => {
+    set({ activeThreadId: threadId });
 
-  addConversation: (conversation) =>
-    set((state) => ({
-      conversations: [...state.conversations, conversation],
-    })),
+    // Only get thread history if we haven't fetched it before
+    const state = get();
+    if (!state.fetchedThreads.has(threadId)) {
+      setTimeout(() => {
+        get().getThreadHistory();
+        // Add thread to fetched set after getting history
+        set(state => ({
+          fetchedThreads: new Set(Array.from(state.fetchedThreads).concat([threadId]))
+        }));
+      }, 0);
+    }
+  },
 
-  updateConversation: (conversationId, update) =>
-    set((state) => ({
-      conversations: state.conversations.map((conv) =>
-        conv.id === conversationId ? { ...conv, ...update } : conv
-      ),
-    })),
+  getThreadHistory: () => {
+    if (!globalWs || globalWs.readyState !== WebSocket.OPEN) {
+      set({ error: "WebSocket not connected" });
+      return;
+    }
+    // Send message through WebSocket
+    try {
+      globalWs.send(JSON.stringify({
+        type: "history",
+        role: "user",
+        status: "sent",
+        thread_id: get().activeThreadId,
+        agent_id: get().selectedAgentId
+      }));
+    } catch (error) {
+      set({ error: "Failed to send message" });
+      console.error("Send error:", error);
+    }
+  },
 
-  sendMessage: (conversationId, content) => {
+  sendMessage: (threadId, content) => {
     if (!globalWs || globalWs.readyState !== WebSocket.OPEN) {
       set({ error: "WebSocket not connected" });
       return;
     }
 
     // Add user message immediately
-    get().addMessage(conversationId, {
+    get().addMessage({
       agent_id: get().selectedAgentId,
-      conversation_id: conversationId,
+      thread_id: threadId,
       role: "user",
       content,
       type: "message",
@@ -195,7 +230,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         role: "user",
         status: "sent",
         content,
-        conversation_id: conversationId,
+        thread_id: threadId,
         agent_id: get().selectedAgentId
       }));
     } catch (error) {

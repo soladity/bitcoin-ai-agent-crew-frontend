@@ -3,24 +3,35 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, ChevronRight } from "lucide-react";
-import { useConversations } from "@/hooks/use-conversations";
+import { useThreads } from "@/hooks/use-threads";
 import { useAgents } from "@/hooks/use-agents";
 import { format } from "date-fns";
-import { useRouter } from "next/navigation";
 import { useSessionStore } from "@/store/session";
+import { useChatStore } from "@/store/chat";
+import { useThreadsStore } from "@/store/threads";
+import { useEffect } from "react";
 
 export function ThreadList() {
-  const { conversations, loading, createConversation } = useConversations();
+  const { createThread } = useThreads();
   const { agents } = useAgents();
   const { userId } = useSessionStore();
-  const router = useRouter();
+  const { setActiveThread, activeThreadId } = useChatStore();
+  const { threads, isLoading: loading, fetchThreads } = useThreadsStore();
+
+  // Fetch threads when component mounts and userId changes
+  useEffect(() => {
+    if (userId) {
+      fetchThreads(userId);
+    }
+  }, [userId, fetchThreads]);
 
   const handleNewThread = async () => {
     if (agents.length > 0) {
       if (userId) {
-        const conversation = await createConversation(userId);
-        if (conversation) {
-          router.push(`/chat/${conversation.id}`);
+        const thread = await createThread(userId);
+        if (thread) {
+          useThreadsStore.getState().addThread(thread);
+          setActiveThread(thread.id);
         }
       }
     } else {
@@ -28,15 +39,16 @@ export function ThreadList() {
     }
   };
 
-  const handleThreadClick = (conversationId: string) => {
-    router.push(`/chat/${conversationId}`);
+  const handleThreadClick = (threadId: string) => {
+    if (threadId === activeThreadId) return;
+    setActiveThread(threadId);
   };
 
   return (
     <div className="flex flex-col flex-1">
       {/* New Thread Button */}
       <div className="px-2 pb-2">
-        <Button 
+        <Button
           className="w-full bg-blue-600 hover:bg-blue-500 text-white"
           onClick={handleNewThread}
           disabled={loading || agents.length === 0}
@@ -57,20 +69,28 @@ export function ThreadList() {
           <div className="space-y-1 pr-2">
             {loading ? (
               <div className="px-3 py-2 text-sm text-zinc-500">Loading...</div>
-            ) : conversations.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-zinc-500">No conversations yet</div>
+            ) : threads.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-zinc-500">
+                No threads yet
+              </div>
             ) : (
-              conversations.map((conversation) => (
+              threads.map((thread) => (
                 <Button
-                  key={conversation.id}
+                  key={thread.id}
                   variant="ghost"
-                  className="w-full justify-between text-zinc-400 hover:bg-zinc-800/50 hover:text-white group"
-                  onClick={() => handleThreadClick(conversation.id)}
+                  className={`w-full justify-between hover:bg-zinc-800/50 hover:text-white group ${
+                    thread.id === activeThreadId
+                      ? "bg-zinc-800/50 text-white"
+                      : "text-zinc-400"
+                  }`}
+                  onClick={() => handleThreadClick(thread.id)}
                 >
                   <div className="flex flex-col items-start">
-                    <span className="text-sm">{conversation.name}</span>
+                    <span className="text-sm">
+                      {thread.title || "Untitled Thread"}
+                    </span>
                     <span className="text-xs text-zinc-500">
-                      {format(new Date(conversation.created_at), "MMM d, h:mm a")}
+                      {format(new Date(thread.created_at), "MMM d, h:mm a")}
                     </span>
                   </div>
                   <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />

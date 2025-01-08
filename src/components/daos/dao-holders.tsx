@@ -27,12 +27,12 @@ interface Holder {
   last_transaction?: string;
 }
 
-interface CollectiveHoldersProps {
+interface DAOHoldersProps {
   holders: Holder[];
   tokenSymbol: string;
 }
 
-function CollectiveHolders({ holders, tokenSymbol }: CollectiveHoldersProps) {
+function DAOHolders({ holders, tokenSymbol }: DAOHoldersProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("balance");
 
@@ -146,5 +146,5 @@ function CollectiveHolders({ holders, tokenSymbol }: CollectiveHoldersProps) {
   );
 }
 
-export { CollectiveHolders };
-export default CollectiveHolders;
+export { DAOHolders };
+export default DAOHolders;

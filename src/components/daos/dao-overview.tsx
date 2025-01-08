@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { BsGlobe, BsTwitterX, BsTelegram } from "react-icons/bs";
-import { Collective, Token } from "@/types/supabase";
+import { DAO, Token } from "@/types/supabase";
 import {
   Table,
   TableBody,
@@ -16,11 +15,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-interface CollectiveOverviewProps {
-  collective: Collective;
+interface DAOOverviewProps {
+  dao: DAO;
   token: Token;
   treasuryTokens?: {
-    type: 'FT' | 'NFT';
+    type: "FT" | "NFT";
     name: string;
     symbol: string;
     amount: number;
@@ -34,17 +33,17 @@ interface CollectiveOverviewProps {
   };
 }
 
-function CollectiveOverview({ 
-  collective, 
-  token, 
-  treasuryTokens = [], 
+function DAOOverview({
+  dao,
+  token,
+  treasuryTokens = [],
   marketStats = {
     price: 0,
     marketCap: 0,
     treasuryBalance: 0,
-    holderCount: 0
-  }
-}: CollectiveOverviewProps) {
+    holderCount: 0,
+  },
+}: DAOOverviewProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const formatNumber = (num: number) => {
@@ -64,15 +63,17 @@ function CollectiveOverview({
               <div className="relative h-24 w-24 shrink-0">
                 <Image
                   src={token.image_url}
-                  alt={collective.name}
+                  alt={dao.name}
                   fill
                   className="rounded-lg border-2 border-border/10 object-cover shadow-lg"
                 />
               </div>
             )}
             <div className="space-y-1.5">
-              <h1 className="text-2xl font-semibold text-foreground">{collective.name}</h1>
-              <p className="text-sm text-muted-foreground">{collective.mission}</p>
+              <h1 className="text-2xl font-semibold text-foreground">
+                {dao.name}
+              </h1>
+              <p className="text-sm text-muted-foreground">{dao.mission}</p>
             </div>
           </div>
         </div>
@@ -81,20 +82,36 @@ function CollectiveOverview({
       {/* Key Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border border-border/10 bg-[#1A1A1A] p-4">
-          <div className="text-xs font-medium text-muted-foreground">Token Price</div>
-          <div className="mt-1.5 text-xl font-semibold text-foreground">{formatNumber(marketStats.price)}</div>
+          <div className="text-xs font-medium text-muted-foreground">
+            Token Price
+          </div>
+          <div className="mt-1.5 text-xl font-semibold text-foreground">
+            {formatNumber(marketStats.price)}
+          </div>
         </div>
         <div className="rounded-lg border border-border/10 bg-[#1A1A1A] p-4">
-          <div className="text-xs font-medium text-muted-foreground">Market Cap</div>
-          <div className="mt-1.5 text-xl font-semibold text-foreground">{formatNumber(marketStats.marketCap)}</div>
+          <div className="text-xs font-medium text-muted-foreground">
+            Market Cap
+          </div>
+          <div className="mt-1.5 text-xl font-semibold text-foreground">
+            {formatNumber(marketStats.marketCap)}
+          </div>
         </div>
         <div className="rounded-lg border border-border/10 bg-[#1A1A1A] p-4">
-          <div className="text-xs font-medium text-muted-foreground">Treasury Balance</div>
-          <div className="mt-1.5 text-xl font-semibold text-foreground">{formatNumber(marketStats.treasuryBalance)}</div>
+          <div className="text-xs font-medium text-muted-foreground">
+            Treasury Balance
+          </div>
+          <div className="mt-1.5 text-xl font-semibold text-foreground">
+            {formatNumber(marketStats.treasuryBalance)}
+          </div>
         </div>
         <div className="rounded-lg border border-border/10 bg-[#1A1A1A] p-4">
-          <div className="text-xs font-medium text-muted-foreground">Holders</div>
-          <div className="mt-1.5 text-xl font-semibold text-foreground">{marketStats.holderCount.toLocaleString()}</div>
+          <div className="text-xs font-medium text-muted-foreground">
+            Holders
+          </div>
+          <div className="mt-1.5 text-xl font-semibold text-foreground">
+            {marketStats.holderCount.toLocaleString()}
+          </div>
         </div>
       </div>
 
@@ -103,12 +120,16 @@ function CollectiveOverview({
         <div className="lg:col-span-2">
           <div className="rounded-lg border border-border/10 bg-[#1A1A1A]">
             <div className="flex items-center justify-between border-b border-border/10 p-4">
-              <h2 className="text-sm font-medium text-foreground">Description</h2>
-              {collective.description && collective.description.length > 200 && (
+              <h2 className="text-sm font-medium text-foreground">
+                Description
+              </h2>
+              {dao.description && dao.description.length > 200 && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                  onClick={() =>
+                    setIsDescriptionExpanded(!isDescriptionExpanded)
+                  }
                   className="h-8 text-xs hover:bg-white/5"
                 >
                   {isDescriptionExpanded ? (
@@ -124,12 +145,16 @@ function CollectiveOverview({
               )}
             </div>
             <div className="p-4">
-              <p className={`text-sm text-muted-foreground ${
-                !isDescriptionExpanded && collective.description && collective.description.length > 200
-                  ? "line-clamp-4"
-                  : ""
-              }`}>
-                {collective.description}
+              <p
+                className={`text-sm text-muted-foreground ${
+                  !isDescriptionExpanded &&
+                  dao.description &&
+                  dao.description.length > 200
+                    ? "line-clamp-4"
+                    : ""
+                }`}
+              >
+                {dao.description}
               </p>
             </div>
           </div>
@@ -141,7 +166,7 @@ function CollectiveOverview({
               <h3 className="text-sm font-medium text-foreground">Socials</h3>
             </div>
             <div className="flex gap-2 p-4">
-              {collective.website_url && (
+              {dao.website_url && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -149,7 +174,7 @@ function CollectiveOverview({
                   className="h-8 w-8 hover:bg-white/5"
                 >
                   <a
-                    href={collective.website_url}
+                    href={dao.website_url}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -158,24 +183,20 @@ function CollectiveOverview({
                   </a>
                 </Button>
               )}
-              {collective.x_url && (
+              {dao.x_url && (
                 <Button
                   variant="ghost"
                   size="sm"
                   asChild
                   className="h-8 w-8 hover:bg-white/5"
                 >
-                  <a
-                    href={collective.x_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <a href={dao.x_url} target="_blank" rel="noopener noreferrer">
                     <BsTwitterX className="h-3.5 w-3.5" />
                     <span className="sr-only">X (Twitter)</span>
                   </a>
                 </Button>
               )}
-              {collective.telegram_url && (
+              {dao.telegram_url && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -183,7 +204,7 @@ function CollectiveOverview({
                   className="h-8 w-8 hover:bg-white/5"
                 >
                   <a
-                    href={collective.telegram_url}
+                    href={dao.telegram_url}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -200,27 +221,49 @@ function CollectiveOverview({
       {/* Treasury Tokens Table */}
       <div className="rounded-lg border border-border/10 bg-[#1A1A1A]">
         <div className="border-b border-border/10 p-4">
-          <h2 className="text-sm font-medium text-foreground">Treasury Holdings</h2>
+          <h2 className="text-sm font-medium text-foreground">
+            Treasury Holdings
+          </h2>
         </div>
         <div className="p-4">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-white/5">
-                <TableHead className="text-xs font-medium text-muted-foreground">Type</TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground">Name</TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground">Symbol</TableHead>
-                <TableHead className="text-right text-xs font-medium text-muted-foreground">Amount</TableHead>
-                <TableHead className="text-right text-xs font-medium text-muted-foreground">Value</TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground">
+                  Type
+                </TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground">
+                  Name
+                </TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground">
+                  Symbol
+                </TableHead>
+                <TableHead className="text-right text-xs font-medium text-muted-foreground">
+                  Amount
+                </TableHead>
+                <TableHead className="text-right text-xs font-medium text-muted-foreground">
+                  Value
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {treasuryTokens.map((token, index) => (
                 <TableRow key={index} className="hover:bg-white/5">
-                  <TableCell className="text-sm font-medium text-foreground">{token.type}</TableCell>
-                  <TableCell className="text-sm text-foreground">{token.name}</TableCell>
-                  <TableCell className="text-sm text-foreground">{token.symbol}</TableCell>
-                  <TableCell className="text-right text-sm text-foreground">{token.amount.toLocaleString()}</TableCell>
-                  <TableCell className="text-right text-sm text-foreground">{formatNumber(token.value)}</TableCell>
+                  <TableCell className="text-sm font-medium text-foreground">
+                    {token.type}
+                  </TableCell>
+                  <TableCell className="text-sm text-foreground">
+                    {token.name}
+                  </TableCell>
+                  <TableCell className="text-sm text-foreground">
+                    {token.symbol}
+                  </TableCell>
+                  <TableCell className="text-right text-sm text-foreground">
+                    {token.amount.toLocaleString()}
+                  </TableCell>
+                  <TableCell className="text-right text-sm text-foreground">
+                    {formatNumber(token.value)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -231,5 +274,5 @@ function CollectiveOverview({
   );
 }
 
-export { CollectiveOverview };
-export default CollectiveOverview;
+export { DAOOverview };
+export default DAOOverview;

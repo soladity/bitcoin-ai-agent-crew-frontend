@@ -10,37 +10,36 @@ import { useChatStore } from "@/store/chat";
 import { useSessionStore } from "@/store/session";
 
 interface ChatInputProps {
-  conversationId: string;
   selectedAgentId: string | null;
   onAgentSelect: (agentId: string | null) => void;
   disabled?: boolean;
 }
 
 export function ChatInput({
-  conversationId,
   selectedAgentId,
   onAgentSelect,
   disabled = false,
 }: ChatInputProps) {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { sendMessage } = useChatStore();
+  const { sendMessage, activeThreadId } = useChatStore();
   const { accessToken } = useSessionStore();
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
 
-      if (!input.trim() || !selectedAgentId || !accessToken) return;
+      if (!input.trim() || !selectedAgentId || !accessToken || !activeThreadId)
+        return;
 
       try {
-        await sendMessage(conversationId, input.trim());
+        await sendMessage(activeThreadId, input.trim());
         setInput("");
       } catch (error) {
         console.error("Failed to send message:", error);
       }
     },
-    [conversationId, input, selectedAgentId, sendMessage, accessToken]
+    [activeThreadId, input, selectedAgentId, sendMessage, accessToken]
   );
 
   const handleKeyDown = useCallback(
@@ -56,11 +55,12 @@ export function ChatInput({
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       setInput(e.target.value);
-      
+
       // Auto-resize the textarea
       if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
-        textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+        textareaRef.current.style.height = "auto";
+        textareaRef.current.style.height =
+          textareaRef.current.scrollHeight + "px";
       }
     },
     []
@@ -96,8 +96,8 @@ export function ChatInput({
               )}
               rows={1}
             />
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={disabled || !input.trim()}
               className="h-11 w-11 p-0"
             >
