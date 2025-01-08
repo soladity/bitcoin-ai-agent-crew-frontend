@@ -4,12 +4,22 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Users, MessageSquare, Boxes, Menu, Wallet, X } from "lucide-react";
+import {
+  Users,
+  MessageSquare,
+  Boxes,
+  Menu,
+  Wallet,
+  X,
+  LogOut,
+} from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { WalletPanel } from "@/components/wallet/wallet-panel";
 import { ThreadList } from "@/components/threads/thread-list";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { supabase } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
 interface ApplicationLayoutProps {
   children: React.ReactNode;
@@ -19,14 +29,39 @@ const navigation = [
   { name: "Chat", href: "/chat", icon: MessageSquare },
   { name: "Agents", href: "/agents", icon: Users },
   { name: "DAOs", href: "/daos", icon: Boxes },
+  {
+    name: "Profile",
+    href: "/profile",
+    icon: ({ className }: { className?: string }) => (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+      >
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+    ),
+  },
 ];
 
 export default function ApplicationLayout({
   children,
 }: ApplicationLayoutProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [leftPanelOpen, setLeftPanelOpen] = React.useState(false);
   const [rightPanelOpen, setRightPanelOpen] = React.useState(false);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push("/");
+  };
 
   return (
     <div className="flex flex-col h-screen bg-zinc-950">
@@ -96,32 +131,45 @@ export default function ApplicationLayout({
           </div>
 
           {/* Navigation */}
-          <nav className="p-2">
-            <div className="space-y-1">
-              {navigation.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
-                      isActive
-                        ? "bg-zinc-800/50 text-white"
-                        : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
-                    )}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {item.name}
-                  </Link>
-                );
-              })}
-            </div>
-          </nav>
+          <div className="flex flex-col h-[calc(100vh-3.5rem)]">
+            <nav className="flex-none p-2">
+              <div className="space-y-1">
+                {navigation.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                        isActive
+                          ? "bg-zinc-800/50 text-white"
+                          : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                      )}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            </nav>
 
-          {/* Thread List */}
-          <div className="flex-1 overflow-hidden">
-            <ThreadList setLeftPanelOpen={setLeftPanelOpen} />
+            {/* Thread List */}
+            <div className="flex-1 overflow-y-auto">
+              <ThreadList setLeftPanelOpen={setLeftPanelOpen} />
+            </div>
+
+            {/* Sign Out Button */}
+            <div className="flex-none p-2">
+              <button
+                onClick={handleSignOut}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </button>
+            </div>
           </div>
         </aside>
 

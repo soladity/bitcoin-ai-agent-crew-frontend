@@ -5,15 +5,18 @@ import { useRouter } from "next/navigation";
 import { AgentForm } from "@/components/agents/agent-form";
 import { Agent } from "@/types/supabase";
 import { supabase } from "@/utils/supabase/client";
+import { useSessionStore } from "@/store/session";
 
 export default function NewAgentPage() {
   const router = useRouter();
+  const { userId } = useSessionStore();
   const [agent, setAgent] = useState<Partial<Agent>>({
     name: "",
     role: "",
     goal: "",
     backstory: "",
     image_url: "",
+    profile_id: userId || "",
     agent_tools: [],
   });
   const [saving, setSaving] = useState(false);

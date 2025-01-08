@@ -114,6 +114,44 @@ export function ChatWindow() {
     );
   }
 
+  if (!selectedAgentId) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-4rem)] backdrop-blur-sm">
+        <div className="text-center space-y-4 p-6 max-w-md mx-auto">
+          <div className="p-3 bg-primary/10 rounded-full w-12 h-12 mx-auto flex items-center justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-6 h-6 text-primary"
+            >
+              <path d="M12 2a5 5 0 0 1 5 5v2a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="22" />
+              <line x1="8" y1="22" x2="16" y2="22" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold">Create Your First AI Agent</h3>
+          <p className="text-sm text-muted-foreground">
+            To start chatting, you'll need to create at least one AI agent.
+            Agents are AI assistants that you can customize with specific roles
+            and capabilities.
+          </p>
+          <Button
+            onClick={() => (window.location.href = "/agents")}
+            className="bg-primary hover:bg-primary/90"
+          >
+            Create an Agent
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (!activeThreadId) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-4rem)] backdrop-blur-sm">
