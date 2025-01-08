@@ -10,6 +10,7 @@ import { useSessionStore } from "@/store/session";
 import { useChatStore } from "@/store/chat";
 import { useThreadsStore } from "@/store/threads";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export function ThreadList({
   setLeftPanelOpen,
@@ -21,6 +22,7 @@ export function ThreadList({
   const { userId } = useSessionStore();
   const { setActiveThread, activeThreadId } = useChatStore();
   const { threads, isLoading: loading, fetchThreads } = useThreadsStore();
+  const router = useRouter();
 
   // Fetch threads when component mounts and userId changes
   useEffect(() => {
@@ -47,6 +49,7 @@ export function ThreadList({
     if (threadId === activeThreadId) return;
     setActiveThread(threadId);
     setLeftPanelOpen?.(false);
+    router.push(`/chat`);
   };
 
   return (
