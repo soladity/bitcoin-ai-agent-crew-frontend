@@ -15,9 +15,12 @@ export function MessageList({ messages }: MessageListProps) {
   // Auto scroll to bottom on new messages
   useEffect(() => {
     if (lastMessageRef.current) {
-      lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
+      lastMessageRef.current.scrollIntoView({
+        behavior: messages.length <= 1 ? "auto" : "smooth",
+        block: "end",
+      });
     }
-  }, [messages]);
+  }, [messages, messages.length]);
 
   // Group messages for streaming
   const groupedMessages = messages.reduce<Message[]>((acc, message) => {

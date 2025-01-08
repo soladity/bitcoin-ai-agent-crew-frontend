@@ -9,6 +9,8 @@ import { Settings } from "lucide-react";
 import { Agent } from "@/types/supabase";
 import { supabase } from "@/utils/supabase/client";
 
+export const runtime = "edge";
+
 export default function AgentDetailsPage() {
   const router = useRouter();
   const params = useParams();

@@ -6,6 +6,8 @@ import { AgentForm } from "@/components/agents/agent-form";
 import { Agent } from "@/types/supabase";
 import { supabase } from "@/utils/supabase/client";
 
+export const runtime = "edge";
+
 export default function EditAgentPage() {
   const router = useRouter();
   const params = useParams();

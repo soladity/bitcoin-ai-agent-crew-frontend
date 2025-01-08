@@ -1,7 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/auth-provider";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://sprint.aibtc.dev"),
@@ -12,12 +19,6 @@ export const metadata: Metadata = {
   description: "Compete with AI on Stacks, the leading Bitcoin L2",
   keywords: ["Bitcoin", "AI", "Stacks", "L2", "Trading"],
   authors: [{ name: "AIBTC Champions" }],
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
   openGraph: {
     title: "AIBTC",
     description: "Compete with AI on Stacks, the leading Bitcoin L2",
