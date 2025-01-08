@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { ChatInput } from "./chat-input";
 import { MessageList } from "./message-list";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { useChatStore } from "@/store/chat";
 import { useSessionStore } from "@/store/session";
 import { useThread } from "@/hooks/use-thread";
 import { Input } from "@/components/ui/input";
+import { useThreadsStore } from "@/store/threads";
 
 export function ChatWindow() {
   const {
@@ -25,11 +26,17 @@ export function ChatWindow() {
     activeThreadId,
   } = useChatStore();
 
-  const { thread, clearThread, updateThread } = useThread(activeThreadId || "");
+  const { thread, clearThread } = useThread(activeThreadId || "");
   const { accessToken } = useSessionStore();
+  const {
+    isEditing,
+    editedTitle,
+    startEditing,
+    cancelEditing,
+    setEditedTitle,
+    saveEdit,
+  } = useThreadsStore();
   const threadMessages = activeThreadId ? messages[activeThreadId] || [] : [];
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedName, setEditedName] = useState("");
 
   const memoizedConnect = useCallback(
     (token: string) => {
@@ -41,25 +48,6 @@ export function ChatWindow() {
   const memoizedDisconnect = useCallback(() => {
     disconnect();
   }, [disconnect]);
-
-  const handleStartEditing = () => {
-    setEditedName(thread?.name || "");
-    setIsEditing(true);
-  };
-
-  const handleSaveEdit = async () => {
-    try {
-      await updateThread({ name: editedName });
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Failed to update thread name:", error);
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    setEditedName("");
-  };
 
   // Handle WebSocket connection
   useEffect(() => {
@@ -145,8 +133,8 @@ export function ChatWindow() {
               <div className="flex items-center gap-2">
                 <Input
                   className="h-7 w-48"
-                  value={editedName}
-                  onChange={(e) => setEditedName(e.target.value)}
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
                   placeholder="Enter thread name"
                   autoFocus
                 />
@@ -154,7 +142,7 @@ export function ChatWindow() {
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7"
-                  onClick={handleSaveEdit}
+                  onClick={() => saveEdit(activeThreadId)}
                 >
                   <Check className="h-4 w-4" />
                 </Button>
@@ -162,7 +150,7 @@ export function ChatWindow() {
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7"
-                  onClick={handleCancelEdit}
+                  onClick={cancelEditing}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -170,13 +158,13 @@ export function ChatWindow() {
             ) : (
               <>
                 <span className="text-sm font-medium truncate">
-                  {thread?.name || "Untitled Thread"}
+                  {thread?.title || "Untitled Thread"}
                 </span>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7"
-                  onClick={handleStartEditing}
+                  onClick={() => startEditing(activeThreadId)}
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>

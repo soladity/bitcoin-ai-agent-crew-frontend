@@ -3,7 +3,7 @@ import { supabase } from "@/utils/supabase/client";
 
 interface Thread {
   id: string;
-  name: string;
+  title: string;
   created_at: string;
 }
 
@@ -61,7 +61,7 @@ export function useThread(threadId: string) {
 
       if (error) throw error;
       if (data) setThread(data);
-      
+
       return data;
     } catch (err) {
       console.error("Error updating thread:", err);

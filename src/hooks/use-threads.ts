@@ -44,7 +44,7 @@ export function useThreads() {
         .insert([
           {
             profile_id: profileId,
-            name: "New Thread",
+            title: "New Thread",
           },
         ])
         .select()
