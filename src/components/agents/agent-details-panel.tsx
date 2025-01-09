@@ -32,6 +32,7 @@ export function AgentDetailsPanel({ agent }: AgentDetailsPanelProps) {
                 <Image
                   src={agent.image_url || ""}
                   alt={agent.name}
+                  fill
                   unoptimized={true}
                   className="h-full w-full object-cover"
                   onError={(e) => {

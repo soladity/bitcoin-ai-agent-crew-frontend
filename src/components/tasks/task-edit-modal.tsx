@@ -155,7 +155,6 @@ export function TaskEditModal({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Schedule</Label>
                 <ScheduleSelector
                   value={formData.cron || ""}
                   onChange={(cron) => setFormData({ ...formData, cron: cron })}
