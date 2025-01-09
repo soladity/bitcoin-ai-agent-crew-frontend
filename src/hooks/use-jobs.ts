@@ -8,7 +8,7 @@ export interface Job {
     agent_id: string;
     profile_id: string;
     status: string;
-    result?: any;
+    result?: string;
     error?: string;
     task_name?: string;
 }

@@ -2,6 +2,7 @@ import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Agent } from "@/types/supabase";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface AgentDetailsPanelProps {
   agent: Agent;
@@ -28,9 +29,10 @@ export function AgentDetailsPanel({ agent }: AgentDetailsPanelProps) {
           <div className="flex-shrink-0">
             <div className="sticky top-8">
               <div className="aspect-square w-full overflow-hidden rounded-2xl border border-zinc-800/40 bg-zinc-900/50">
-                <img
-                  src={agent.image_url || undefined}
+                <Image
+                  src={agent.image_url || ""}
                   alt={agent.name}
+                  unoptimized={true}
                   className="h-full w-full object-cover"
                   onError={(e) => {
                     e.currentTarget.src = `https://avatar.vercel.sh/${agent.name}`;
