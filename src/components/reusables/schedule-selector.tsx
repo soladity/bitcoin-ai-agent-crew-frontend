@@ -87,8 +87,12 @@ export function ScheduleSelector({ value, onChange }: ScheduleSelectorProps) {
       setIsCustomMode(true);
       setConfig({ ...config, frequency: "custom" });
       onChange(customCron);
-    } catch (error) {
-      setCustomError("Invalid cron expression");
+    } catch (error: unknown) {
+      setCustomError(
+        `Invalid cron expression: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 
