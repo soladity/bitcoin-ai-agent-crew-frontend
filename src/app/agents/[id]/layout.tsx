@@ -3,7 +3,13 @@
 import React, { useState } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, Info, ListChecks, Trash2 } from "lucide-react";
+import {
+  ChevronRight,
+  Info,
+  ListChecks,
+  Trash2,
+  PlayCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -32,6 +38,7 @@ export default function AgentLayout({
 
   const isOverview = pathname === `/agents/${id}`;
   const isTasks = pathname === `/agents/${id}/tasks`;
+  const isJobs = pathname === `/agents/${id}/logs`;
 
   const handleDelete = async () => {
     try {
@@ -106,7 +113,7 @@ export default function AgentLayout({
               <span className="text-sm font-medium">Overview</span>
             </div>
           </Link>
-          <Link href={`/agents/${id}/tasks`}>
+          <Link href={`/agents/${id}/tasks`} className="mr-6">
             <div
               className={`flex items-center gap-2 pb-2 ${
                 isTasks
@@ -116,6 +123,18 @@ export default function AgentLayout({
             >
               <ListChecks className="h-4 w-4" />
               <span className="text-sm font-medium">Tasks</span>
+            </div>
+          </Link>
+          <Link href={`/agents/${id}/jobs`} className="mr-6">
+            <div
+              className={`flex items-center gap-2 pb-2 ${
+                isJobs
+                  ? "border-b-2 border-primary text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <PlayCircle className="h-4 w-4" />
+              <span className="text-sm font-medium">Jobs</span>
             </div>
           </Link>
         </div>
