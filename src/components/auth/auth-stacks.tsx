@@ -203,7 +203,7 @@ export default function StacksAuth() {
       </Button>
 
       <Dialog open={showTerms} onOpenChange={setShowTerms}>
-        <DialogContent className="sm:max-w-[800px] h-[90vh]">
+        <DialogContent className="sm:max-w-[800px] h-[90vh] overflow-auto">
           <DialogHeader>
             <DialogTitle className="text-3xl font-bold">
               Disclaimer and Terms of Use
