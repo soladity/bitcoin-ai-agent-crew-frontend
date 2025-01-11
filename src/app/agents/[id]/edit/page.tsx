@@ -42,11 +42,19 @@ export default function EditAgentPage() {
     e.preventDefault();
     if (!agent) return;
 
+    // update the image based on the updated agent name
+    const updatedAgent = {
+      ...agent,
+      image_url: `https://bitcoinfaces.xyz/api/get-image?name=${encodeURIComponent(
+        agent.name
+      )}`,
+    };
+
     setSaving(true);
     try {
       const { error } = await supabase
         .from("agents")
-        .update(agent)
+        .update(updatedAgent)
         .eq("id", agent.id);
 
       if (error) throw error;
@@ -62,7 +70,23 @@ export default function EditAgentPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setAgent((prev) => (prev ? { ...prev, [name]: value } : null));
+    setAgent((prev) => {
+      if (!prev) return null;
+
+      // If the name is being updated, also update the image_url
+      if (name === "name") {
+        return {
+          ...prev,
+          [name]: value,
+          image_url: `https://bitcoinfaces.xyz/api/get-image?name=${encodeURIComponent(
+            value
+          )}`,
+        };
+      }
+
+      // For other fields, just update normally
+      return { ...prev, [name]: value };
+    });
   };
 
   const handleToolsChange = (tools: string[]) => {

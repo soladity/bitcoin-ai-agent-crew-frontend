@@ -145,13 +145,7 @@ export function AgentForm({
           />
         </div>
 
-        <div>
-          <Label
-            htmlFor="image_url"
-            className="text-xs font-medium text-zinc-400"
-          >
-            Image URL
-          </Label>
+        <div className="hidden">
           <Input
             id="image_url"
             name="image_url"

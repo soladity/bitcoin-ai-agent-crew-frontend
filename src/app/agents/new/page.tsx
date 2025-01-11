@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AgentForm } from "@/components/agents/agent-form";
 import { Agent } from "@/types/supabase";
@@ -24,9 +24,17 @@ export default function NewAgentPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Set the image URL based on the agent's name
+    const updatedAgent = {
+      ...agent,
+      image_url: `https://bitcoinfaces.xyz/api/get-image?name=${encodeURIComponent(
+        agent.name || ""
+      )}`,
+    };
+
     setSaving(true);
     try {
-      const { error } = await supabase.from("agents").insert(agent);
+      const { error } = await supabase.from("agents").insert(updatedAgent);
 
       if (error) throw error;
       router.push("/agents");
