@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { AgentForm } from "@/components/agents/agent-form";
 import { Agent } from "@/types/supabase";
 import { supabase } from "@/utils/supabase/client";
+import { useSessionStore } from "@/store/session";
 
 export const runtime = "edge";
 
@@ -18,6 +19,7 @@ export default function EditAgentPage() {
     testnet: string;
     mainnet: string;
   }>({ testnet: "", mainnet: "" });
+  const { network } = useSessionStore();
 
   useEffect(() => {
     try {
@@ -64,8 +66,9 @@ export default function EditAgentPage() {
     e.preventDefault();
     if (!agent) return;
 
-    const imageUrlName = `${agent.name}_${stxAddresses.testnet}`;
-    // const imageUrlName = `${agent.name}_${stxAddresses.mainnet}`; // Alternate version with mainnet
+    const imageUrlName = `${agent.name}_${
+      stxAddresses[network as keyof typeof stxAddresses]
+    }`;
 
     const updatedAgent = {
       ...agent,
@@ -99,8 +102,10 @@ export default function EditAgentPage() {
 
       // If the name is being updated, also update the image_url with the combined name
       if (name === "name") {
-        const imageUrlName = `${value}_${stxAddresses.testnet}`;
-        // const imageUrlName = `${value}_${stxAddresses.mainnet}`; // Alternate version with mainnet
+        // select the correct stx address based on the network
+        const imageUrlName = `${value}_${
+          stxAddresses[network as keyof typeof stxAddresses]
+        }`;
 
         return {
           ...prev,
