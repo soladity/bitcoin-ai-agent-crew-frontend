@@ -79,7 +79,7 @@ export function AgentSelector({
             ))}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent align="end" className="w-[200px]">
+      <SelectContent align="end" className="w-[300px]">
         {agents.map((agent) => (
           <SelectItem key={agent.id} value={agent.id} className="py-2">
             <div className="flex items-center gap-2.5">
