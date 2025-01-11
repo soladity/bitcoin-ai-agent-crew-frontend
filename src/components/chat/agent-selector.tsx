@@ -44,9 +44,7 @@ export function AgentSelector({
   }, [loading, agents, internalSelectedId, onSelect]);
 
   React.useEffect(() => {
-    if (selectedAgentId !== internalSelectedId) {
-      setInternalSelectedId(selectedAgentId);
-    }
+    setInternalSelectedId(selectedAgentId);
   }, [selectedAgentId]);
 
   const handleSelect = (value: string) => {
