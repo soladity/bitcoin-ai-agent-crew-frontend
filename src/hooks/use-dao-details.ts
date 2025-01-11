@@ -89,8 +89,9 @@ export function useDAODetails(id: string) {
 
   const fetchHolders = async (contractPrincipal: string, tokenSymbol: string) => {
     try {
+      const network = process.env.NEXT_PUBLIC_STACKS_NETWORK;
       const response = await fetch(
-        `https://api.testnet.hiro.so/extended/v1/tokens/ft/${contractPrincipal}::${tokenSymbol}/holders`
+        `https://api.${network}.hiro.so/extended/v1/tokens/ft/${contractPrincipal}::${tokenSymbol}/holders`
       );
       const data: HiroHolderResponse = await response.json();
 
@@ -125,8 +126,9 @@ export function useDAODetails(id: string) {
   const fetchTreasuryTokens = async (treasuryAddress: string) => {
     try {
       // Fetch balances
+      const network = process.env.NEXT_PUBLIC_STACKS_NETWORK;
       const response = await fetch(
-        `https://api.testnet.hiro.so/extended/v1/address/${treasuryAddress}/balances`
+        `https://api.${network}.hiro.so/extended/v1/address/${treasuryAddress}/balances`
       );
       const data = (await response.json()) as HiroBalanceResponse;
 
@@ -160,7 +162,7 @@ export function useDAODetails(id: string) {
 
       // Add non-fungible tokens if any
       if (data.non_fungible_tokens) {
-        for (const [assetIdentifier, ] of Object.entries(data.non_fungible_tokens)) {
+        for (const [assetIdentifier,] of Object.entries(data.non_fungible_tokens)) {
           const [, nftInfo] = assetIdentifier.split('::');
           tokens.push({
             type: 'NFT',
@@ -288,8 +290,8 @@ export function useDAODetails(id: string) {
     };
 
     loadData();
-    
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   return {

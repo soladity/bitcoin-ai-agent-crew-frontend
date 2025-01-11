@@ -11,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useEffect } from "react";
 
 interface AgentSelectorProps {
   selectedAgentId: string | null;
@@ -25,13 +24,35 @@ export function AgentSelector({
   disabled,
 }: AgentSelectorProps) {
   const { agents, loading } = useAgents();
-  const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
+  const [internalSelectedId, setInternalSelectedId] = React.useState<
+    string | null
+  >(selectedAgentId);
 
-  useEffect(() => {
-    if (!loading && agents.length > 0 && !selectedAgentId) {
-      onSelect(agents[0].id);
+  React.useEffect(() => {
+    if (!loading && agents.length > 0) {
+      if (!internalSelectedId) {
+        const newSelectedId = agents[0].id;
+        setInternalSelectedId(newSelectedId);
+        onSelect(newSelectedId);
+      } else if (!agents.some((agent) => agent.id === internalSelectedId)) {
+        // If the current selected ID is not in the agents list, select the first agent
+        const newSelectedId = agents[0].id;
+        setInternalSelectedId(newSelectedId);
+        onSelect(newSelectedId);
+      }
     }
-  }, [loading, agents, selectedAgentId, onSelect]);
+  }, [loading, agents, internalSelectedId, onSelect]);
+
+  React.useEffect(() => {
+    setInternalSelectedId(selectedAgentId);
+  }, [selectedAgentId]);
+
+  const handleSelect = (value: string) => {
+    setInternalSelectedId(value);
+    onSelect(value);
+  };
+
+  const selectedAgent = agents.find((agent) => agent.id === internalSelectedId);
 
   if (loading) {
     return (
@@ -43,8 +64,8 @@ export function AgentSelector({
 
   return (
     <Select
-      value={selectedAgentId || undefined}
-      onValueChange={onSelect}
+      value={internalSelectedId || undefined}
+      onValueChange={handleSelect}
       disabled={disabled}
     >
       <SelectTrigger
@@ -79,7 +100,7 @@ export function AgentSelector({
             ))}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent align="end" className="w-[200px]">
+      <SelectContent align="end" className="w-[300px]">
         {agents.map((agent) => (
           <SelectItem key={agent.id} value={agent.id} className="py-2">
             <div className="flex items-center gap-2.5">

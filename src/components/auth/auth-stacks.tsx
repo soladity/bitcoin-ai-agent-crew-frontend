@@ -168,9 +168,11 @@ export default function StacksAuth() {
 
       if (success) {
         // Delay redirect to show success message
-        setTimeout(() => {
-          router.push("/chat");
-        }, 2000);
+        router.push("/chat");
+
+        // BETTER WITHOUT TIMEOUT...FEELS MORE SMOOTH
+        // setTimeout(() => {
+        // }, 2000);
       }
     } catch (error) {
       console.error("Authentication error:", error);
@@ -178,9 +180,11 @@ export default function StacksAuth() {
         description: "Authentication failed. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
+    /*COMMENTING THIS OUT BECAUSE IT SHOWS CONNECT WALLET AFTER ACCEPTING THE TERMS...NOT GOOD FOR UX */
+    //  finally {
+    //   setIsLoading(false);
+    // }
   };
 
   if (!mounted) return null;
@@ -203,7 +207,7 @@ export default function StacksAuth() {
       </Button>
 
       <Dialog open={showTerms} onOpenChange={setShowTerms}>
-        <DialogContent className="sm:max-w-[800px] h-[90vh]">
+        <DialogContent className="sm:max-w-[800px] h-[90vh] overflow-auto">
           <DialogHeader>
             <DialogTitle className="text-3xl font-bold">
               Disclaimer and Terms of Use

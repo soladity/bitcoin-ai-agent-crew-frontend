@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { AgentForm } from "@/components/agents/agent-form";
 import { Agent } from "@/types/supabase";
 import { supabase } from "@/utils/supabase/client";
+import { useSessionStore } from "@/store/session";
 
 export const runtime = "edge";
 
@@ -14,6 +15,29 @@ export default function EditAgentPage() {
   const [agent, setAgent] = useState<Agent | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [stxAddresses, setStxAddresses] = useState<{
+    testnet: string;
+    mainnet: string;
+  }>({ testnet: "", mainnet: "" });
+  const { network } = useSessionStore();
+
+  useEffect(() => {
+    try {
+      const blockstackSession = localStorage.getItem("blockstack-session");
+      if (blockstackSession) {
+        const sessionData = JSON.parse(blockstackSession);
+        const addresses = sessionData?.userData?.profile?.stxAddress;
+        if (addresses) {
+          setStxAddresses({
+            testnet: addresses.testnet,
+            mainnet: addresses.mainnet,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error reading blockstack session:", error);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchAgent = async () => {
@@ -42,11 +66,22 @@ export default function EditAgentPage() {
     e.preventDefault();
     if (!agent) return;
 
+    const imageUrlName = `${agent.name}_${
+      stxAddresses[network as keyof typeof stxAddresses]
+    }`;
+
+    const updatedAgent = {
+      ...agent,
+      image_url: `https://bitcoinfaces.xyz/api/get-image?name=${encodeURIComponent(
+        imageUrlName
+      )}`,
+    };
+
     setSaving(true);
     try {
       const { error } = await supabase
         .from("agents")
-        .update(agent)
+        .update(updatedAgent)
         .eq("id", agent.id);
 
       if (error) throw error;
@@ -62,7 +97,28 @@ export default function EditAgentPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setAgent((prev) => (prev ? { ...prev, [name]: value } : null));
+    setAgent((prev) => {
+      if (!prev) return null;
+
+      // If the name is being updated, also update the image_url with the combined name
+      if (name === "name") {
+        // select the correct stx address based on the network
+        const imageUrlName = `${value}_${
+          stxAddresses[network as keyof typeof stxAddresses]
+        }`;
+
+        return {
+          ...prev,
+          [name]: value,
+          image_url: `https://bitcoinfaces.xyz/api/get-image?name=${encodeURIComponent(
+            imageUrlName
+          )}`,
+        };
+      }
+
+      // For other fields, just update normally
+      return { ...prev, [name]: value };
+    });
   };
 
   const handleToolsChange = (tools: string[]) => {

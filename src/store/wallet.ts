@@ -39,8 +39,9 @@ export const useWalletStore = create<WalletState>((set) => ({
             set({ isLoading: true, error: null });
 
             const balancePromises = addresses.map(async (address) => {
+                const network = process.env.NEXT_PUBLIC_STACKS_NETWORK;
                 const response = await fetch(
-                    `https://api.testnet.hiro.so/extended/v1/address/${address}/balances`
+                    `https://api.${network}.hiro.so/extended/v1/address/${address}/balances`
                 );
                 if (!response.ok) {
                     throw new Error(`Failed to fetch balance for ${address}`);

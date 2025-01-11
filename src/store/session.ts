@@ -6,6 +6,7 @@ interface SessionState {
   userId: string | null;
   isLoading: boolean;
   error: Error | null;
+  network: string;
   initialize: () => Promise<void>;
   setSession: (token: string | null, userId: string | null) => void;
   clearSession: () => void;
@@ -16,14 +17,19 @@ export const useSessionStore = create<SessionState>((set) => ({
   userId: null,
   isLoading: true,
   error: null,
+  network: process.env.NEXT_PUBLIC_STACKS_NETWORK || "testnet",
 
   initialize: async () => {
     try {
-      set({ isLoading: true, error: null });
+      set({
+        isLoading: true,
+        error: null,
+      });
+
       const { data: { session }, error } = await supabase.auth.getSession();
-      
+
       if (error) throw error;
-      
+
       if (session) {
         set({
           accessToken: session.access_token,
