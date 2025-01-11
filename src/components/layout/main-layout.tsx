@@ -16,7 +16,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="flex flex-col h-screen bg-zinc-950">
       {/* Mobile Navigation Bar */}
-      <div className="block md:hidden h-14 px-4 flex items-center justify-between border-b border-zinc-800/50 bg-zinc-900/50">
+      <div className=" md:hidden h-14 px-4 flex items-center justify-between border-b border-zinc-800/50 bg-zinc-900/50">
         <Button
           variant="ghost"
           size="sm"
