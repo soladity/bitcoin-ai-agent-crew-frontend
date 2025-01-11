@@ -14,6 +14,28 @@ export default function EditAgentPage() {
   const [agent, setAgent] = useState<Agent | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [stxAddresses, setStxAddresses] = useState<{
+    testnet: string;
+    mainnet: string;
+  }>({ testnet: "", mainnet: "" });
+
+  useEffect(() => {
+    try {
+      const blockstackSession = localStorage.getItem("blockstack-session");
+      if (blockstackSession) {
+        const sessionData = JSON.parse(blockstackSession);
+        const addresses = sessionData?.userData?.profile?.stxAddress;
+        if (addresses) {
+          setStxAddresses({
+            testnet: addresses.testnet,
+            mainnet: addresses.mainnet,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error reading blockstack session:", error);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchAgent = async () => {
@@ -42,11 +64,13 @@ export default function EditAgentPage() {
     e.preventDefault();
     if (!agent) return;
 
-    // update the image based on the updated agent name
+    const imageUrlName = `${agent.name}_${stxAddresses.testnet}`;
+    // const imageUrlName = `${agent.name}_${stxAddresses.mainnet}`; // Alternate version with mainnet
+
     const updatedAgent = {
       ...agent,
       image_url: `https://bitcoinfaces.xyz/api/get-image?name=${encodeURIComponent(
-        agent.name
+        imageUrlName
       )}`,
     };
 
@@ -73,13 +97,16 @@ export default function EditAgentPage() {
     setAgent((prev) => {
       if (!prev) return null;
 
-      // If the name is being updated, also update the image_url
+      // If the name is being updated, also update the image_url with the combined name
       if (name === "name") {
+        const imageUrlName = `${value}_${stxAddresses.testnet}`;
+        // const imageUrlName = `${value}_${stxAddresses.mainnet}`; // Alternate version with mainnet
+
         return {
           ...prev,
           [name]: value,
           image_url: `https://bitcoinfaces.xyz/api/get-image?name=${encodeURIComponent(
-            value
+            imageUrlName
           )}`,
         };
       }

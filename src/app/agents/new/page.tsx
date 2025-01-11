@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AgentForm } from "@/components/agents/agent-form";
 import { Agent } from "@/types/supabase";
@@ -10,6 +10,11 @@ import { useSessionStore } from "@/store/session";
 export default function NewAgentPage() {
   const router = useRouter();
   const { userId } = useSessionStore();
+  const [stxAddresses, setStxAddresses] = useState<{
+    testnet: string;
+    mainnet: string;
+  }>({ testnet: "", mainnet: "" });
+
   const [agent, setAgent] = useState<Partial<Agent>>({
     name: "",
     role: "",
@@ -21,14 +26,34 @@ export default function NewAgentPage() {
   });
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    try {
+      const blockstackSession = localStorage.getItem("blockstack-session");
+      if (blockstackSession) {
+        const sessionData = JSON.parse(blockstackSession);
+        const addresses = sessionData?.userData?.profile?.stxAddress;
+        if (addresses) {
+          setStxAddresses({
+            testnet: addresses.testnet,
+            mainnet: addresses.mainnet,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error reading blockstack session:", error);
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Set the image URL based on the agent's name
+    // Create combined name for image URL only
+    const imageUrlName = `${agent.name}_${stxAddresses.testnet}`;
+    // const imageUrlName = `${agent.name}_${stxAddresses.mainnet}`; In case we need mainnet
     const updatedAgent = {
       ...agent,
       image_url: `https://bitcoinfaces.xyz/api/get-image?name=${encodeURIComponent(
-        agent.name || ""
+        imageUrlName
       )}`,
     };
 
