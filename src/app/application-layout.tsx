@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { useNextStep } from "nextstepjs";
 
 interface ApplicationLayoutProps {
   children: React.ReactNode;
@@ -57,6 +58,19 @@ export default function ApplicationLayout({
   const router = useRouter();
   const [leftPanelOpen, setLeftPanelOpen] = React.useState(false);
   const [rightPanelOpen, setRightPanelOpen] = React.useState(false);
+
+  const {
+    startNextStep,
+    closeNextStep,
+    currentTour,
+    currentStep,
+    setCurrentStep,
+    isNextStepVisible,
+  } = useNextStep();
+
+  const handleStartTour = () => {
+    startNextStep("mainTour");
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -156,7 +170,7 @@ export default function ApplicationLayout({
             </nav>
 
             {/* Thread List */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto" id="step1">
               <ThreadList setLeftPanelOpen={setLeftPanelOpen} />
             </div>
 
@@ -209,6 +223,8 @@ export default function ApplicationLayout({
           }}
         />
       </div>
+
+      <button onClick={handleStartTour}>Start Tour</button>
     </div>
   );
 }
