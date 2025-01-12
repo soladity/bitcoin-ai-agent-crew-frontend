@@ -3,11 +3,14 @@
 import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, X, Wallet } from "lucide-react";
+import { Copy, Check, X, Wallet, Send } from "lucide-react";
 import { useWalletStore } from "@/store/wallet";
 import { useSessionStore } from "@/store/session";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useNextStep } from "nextstepjs";
+import { STACKS_TESTNET } from "@stacks/network";
+import { openSTXTransfer } from "@stacks/connect";
+import { Input } from "../ui/input";
 
 interface WalletPanelProps {
   onClose?: () => void;
@@ -18,6 +21,7 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
     useWalletStore();
   const { userId } = useSessionStore();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const [stxAmounts, setStxAmounts] = useState<{ [key: string]: string }>({});
 
   const truncateAddress = (address: string) => {
     if (!address) return "";
@@ -54,6 +58,50 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
 
   const handleStartMainTour = () => {
     startNextStep("mainTour");
+  };
+
+  const sendSTX = (recipientAddress: string, amountInSTX: string) => {
+    const network = STACKS_TESTNET;
+
+    openSTXTransfer({
+      recipient: recipientAddress,
+      amount: amountInSTX,
+      memo: "Agent funding",
+      network: network,
+      onFinish: (data) => {
+        const explorerUrl = `https://explorer.stacks.co/txid/${data.txId}`;
+        console.log("Transaction ID:", data.txId);
+        console.log("View transaction:", explorerUrl);
+        // Clear the input field after successful transaction
+        setStxAmounts((prev) => ({ ...prev, [recipientAddress]: "" }));
+        return {
+          txId: data.txId,
+          explorerUrl: explorerUrl,
+          rawTx: data.txRaw,
+        };
+      },
+      onCancel: () => {
+        console.log("Transaction was canceled");
+      },
+    });
+  };
+
+  const handleSendSTX = (address: string) => {
+    const amount = stxAmounts[address];
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      alert("Please enter a valid STX amount");
+      return;
+    }
+    // Convert STX to microSTX (1 STX = 1,000,000 microSTX)
+    const microSTX = (Number(amount) * 1_000_000).toString();
+    sendSTX(address, microSTX);
+  };
+
+  const handleAmountChange = (address: string, value: string) => {
+    // Only allow numbers and decimals
+    if (value === "" || /^\d*\.?\d*$/.test(value)) {
+      setStxAmounts((prev) => ({ ...prev, [address]: value }));
+    }
   };
 
   return (
@@ -202,6 +250,30 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
                           {wallet.agent?.name || "Agent"}
                         </span>
                       </div>
+
+                      {address && (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="text"
+                            placeholder="Amount in STX"
+                            value={stxAmounts[address] || ""}
+                            onChange={(e) =>
+                              handleAmountChange(address, e.target.value)
+                            }
+                            className="w-32 text-sm"
+                          />
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleSendSTX(address)}
+                            className="text-zinc-400 hover:text-white"
+                          >
+                            <Send className="h-4 w-4 mr-2" />
+                            Send STX
+                          </Button>
+                        </div>
+                      )}
+
                       {address ? (
                         <button
                           onClick={() => copyToClipboard(address)}
