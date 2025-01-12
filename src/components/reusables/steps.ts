@@ -6,7 +6,7 @@ export const tourSteps: Tour[] = [
         steps: [
             {
                 icon: "👋",
-                title: "Welcome to Aibtcdev",
+                title: "Welcome to AIBTC.DEV.",
                 content: "I'm your guide to help you get started..",
                 selector: "#step1",
                 side: "bottom",
