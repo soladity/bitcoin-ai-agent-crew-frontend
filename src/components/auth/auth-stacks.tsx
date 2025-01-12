@@ -1,12 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  AppConfig,
-  showConnect,
-  UserSession,
-  openSignatureRequestPopup,
-} from "@stacks/connect";
+import { showConnect, openSignatureRequestPopup } from "@stacks/connect";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -21,9 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-const appConfig = new AppConfig(["store_write", "publish_data"]);
-const userSession = new UserSession({ appConfig });
+import { userSession } from "@/lib/userSession";
 
 export default function StacksAuth() {
   const [mounted, setMounted] = useState(false);
