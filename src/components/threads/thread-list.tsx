@@ -58,6 +58,7 @@ export function ThreadList({
       <div className="px-2 pb-2">
         <Button
           className="w-full bg-blue-600 hover:bg-blue-500 text-white"
+          id="step3"
           onClick={handleNewThread}
           disabled={loading || agents.length === 0}
         >
@@ -67,7 +68,7 @@ export function ThreadList({
       </div>
 
       {/* Recent Threads */}
-      <div className="flex-1 p-2 border-t border-zinc-800/50">
+      <div className="flex-1 p-2 border-t border-zinc-800/50" id="step2">
         <div className="px-3 py-2">
           <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
             Recent Threads

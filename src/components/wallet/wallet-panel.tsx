@@ -85,7 +85,7 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
               {userWallet && (
                 <div
                   className="bg-zinc-800/50 rounded-lg p-4 space-y-3"
-                  id="step4"
+                  id="step5"
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 flex items-center justify-center bg-zinc-900 rounded-full border border-zinc-800/40">
@@ -176,7 +176,7 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
               )}
 
               {/* Display active agent wallets below */}
-              <div id="step5">
+              <div id="step6">
                 {activeAgentWallets.map((wallet) => {
                   const walletBalance = wallet.testnet_address
                     ? balances[wallet.testnet_address]
