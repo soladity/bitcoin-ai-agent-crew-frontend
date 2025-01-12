@@ -29,8 +29,7 @@ export function ChatInput({
     async (e: React.FormEvent) => {
       e.preventDefault();
 
-      if (!input.trim() || !selectedAgentId || !accessToken || !activeThreadId)
-        return;
+      if (!input.trim() || !accessToken || !activeThreadId) return;
 
       try {
         await sendMessage(activeThreadId, input.trim());
@@ -43,7 +42,7 @@ export function ChatInput({
         console.error("Failed to send message:", error);
       }
     },
-    [activeThreadId, input, selectedAgentId, sendMessage, accessToken]
+    [activeThreadId, input, sendMessage, accessToken]
   );
 
   const handleKeyDown = useCallback(

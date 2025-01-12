@@ -1,10 +1,11 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Bot, CheckCircle2, Clock, User } from "lucide-react";
+import { CheckCircle2, Clock, User } from "lucide-react";
 import { Message } from "@/lib/chat/types";
 import { useAgent } from "@/hooks/use-agent";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import Image from "next/image";
 
 export function ChatMessageBubble({ message }: { message: Message }) {
   const { agent } = useAgent(
@@ -32,7 +33,12 @@ export function ChatMessageBubble({ message }: { message: Message }) {
           <Avatar className="h-6 w-6">
             <AvatarImage src={agent?.image_url} alt={agent?.name || "Bot"} />
             <AvatarFallback>
-              <Bot className="h-3 w-3" />
+              <Image
+                src="/logos/aibtcdev-avatar-1000px.png"
+                alt="AI BTC Dev"
+                width={24}
+                height={24}
+              />
             </AvatarFallback>
           </Avatar>
         )}

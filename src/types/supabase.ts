@@ -127,6 +127,7 @@ export interface Agent {
   image_url?: string;
   agent_tools: string[];
   profile_id: string;
+  is_archived?: boolean;
 }
 
 // Interface for props of the AgentForm component

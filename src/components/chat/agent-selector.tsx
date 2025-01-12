@@ -14,7 +14,7 @@ import {
 
 interface AgentSelectorProps {
   selectedAgentId: string | null;
-  onSelect: (value: string) => void;
+  onSelect: (value: string | null) => void;
   disabled?: boolean;
 }
 
@@ -28,31 +28,40 @@ export function AgentSelector({
     string | null
   >(selectedAgentId);
 
+  // Filter out archived agents
+  const activeAgents = agents.filter((agent) => !agent.is_archived);
+
   React.useEffect(() => {
-    if (!loading && agents.length > 0) {
-      if (!internalSelectedId) {
-        const newSelectedId = agents[0].id;
+    if (!loading && activeAgents.length > 0) {
+      if (!internalSelectedId && selectedAgentId !== null) {
+        const newSelectedId = activeAgents[0].id;
         setInternalSelectedId(newSelectedId);
         onSelect(newSelectedId);
-      } else if (!agents.some((agent) => agent.id === internalSelectedId)) {
+      } else if (
+        internalSelectedId &&
+        !activeAgents.some((agent) => agent.id === internalSelectedId)
+      ) {
         // If the current selected ID is not in the agents list, select the first agent
-        const newSelectedId = agents[0].id;
+        const newSelectedId = activeAgents[0].id;
         setInternalSelectedId(newSelectedId);
         onSelect(newSelectedId);
       }
     }
-  }, [loading, agents, internalSelectedId, onSelect]);
+  }, [loading, activeAgents, internalSelectedId, onSelect, selectedAgentId]);
 
   React.useEffect(() => {
     setInternalSelectedId(selectedAgentId);
   }, [selectedAgentId]);
 
   const handleSelect = (value: string) => {
-    setInternalSelectedId(value);
-    onSelect(value);
+    const newValue = value === "none" ? null : value;
+    setInternalSelectedId(newValue);
+    onSelect(newValue);
   };
 
-  const selectedAgent = agents.find((agent) => agent.id === internalSelectedId);
+  const selectedAgent = activeAgents.find(
+    (agent) => agent.id === internalSelectedId
+  );
 
   if (loading) {
     return (
@@ -64,7 +73,9 @@ export function AgentSelector({
 
   return (
     <Select
-      value={internalSelectedId || undefined}
+      value={
+        internalSelectedId === null ? "none" : internalSelectedId || undefined
+      }
       onValueChange={handleSelect}
       disabled={disabled}
     >
@@ -74,13 +85,22 @@ export function AgentSelector({
       >
         <SelectValue
           placeholder={
-            <div className="flex h-11 w-11 items-center justify-center rounded-full">
-              <Bot className="h-4 w-4 text-foreground/50" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-full overflow-hidden ring-1 ring-border/10">
+              <div className="relative h-full w-full">
+                <Image
+                  src="./logos/aibtcdev-avatar-250px.png"
+                  alt="AI BTC Dev"
+                  fill
+                  className="object-cover"
+                  priority
+                  unoptimized={true}
+                />
+              </div>
             </div>
           }
         >
-          {selectedAgent &&
-            (selectedAgent.image_url ? (
+          {selectedAgent ? (
+            selectedAgent.image_url ? (
               <div className="flex h-11 w-11 items-center justify-center rounded-full overflow-hidden ring-1 ring-border/10">
                 <div className="relative h-full w-full">
                   <Image
@@ -97,11 +117,41 @@ export function AgentSelector({
               <div className="flex h-11 w-11 items-center justify-center rounded-full">
                 <Bot className="h-4 w-4 text-foreground/50" />
               </div>
-            ))}
+            )
+          ) : (
+            <div className="flex h-11 w-11 items-center justify-center rounded-full overflow-hidden ring-1 ring-border/10">
+              <div className="relative h-full w-full">
+                <Image
+                  src="https://bncytzyfafclmdxrwpgq.supabase.co/storage/v1/object/public/aibtcdev/aibtcdev-avatar-1000px.png"
+                  alt="AI BTC Dev"
+                  fill
+                  className="object-cover"
+                  priority
+                  unoptimized={true}
+                />
+              </div>
+            </div>
+          )}
         </SelectValue>
       </SelectTrigger>
       <SelectContent align="end" className="w-[300px]">
-        {agents.map((agent) => (
+        <SelectItem value="none" className="py-2">
+          <div className="flex items-center gap-2.5">
+            <div className="relative h-7 w-7 rounded-full overflow-hidden ring-1 ring-border/10">
+              <Image
+                src="https://bncytzyfafclmdxrwpgq.supabase.co/storage/v1/object/public/aibtcdev/aibtcdev-avatar-1000px.png"
+                alt="AI BTC Dev"
+                fill
+                className="object-cover"
+                unoptimized={true}
+              />
+            </div>
+            <span className="text-sm font-medium truncate flex-1">
+              Assistant
+            </span>
+          </div>
+        </SelectItem>
+        {activeAgents.map((agent) => (
           <SelectItem key={agent.id} value={agent.id} className="py-2">
             <div className="flex items-center gap-2.5">
               {agent.image_url ? (

@@ -50,25 +50,25 @@ export default function AgentLayout({
 
       if (tasksError) throw tasksError;
 
-      // Then delete the agent
+      // Update the agent to set archive = true instead of deleting
       const { error: agentError } = await supabase
         .from("agents")
-        .delete()
+        .update({ is_archived: true })
         .eq("id", id);
 
       if (agentError) throw agentError;
 
       toast({
         title: "Success",
-        description: "Agent and associated tasks deleted successfully",
+        description: "Agent archived and associated tasks deleted successfully",
       });
 
       router.push("/agents");
     } catch (error) {
-      console.error("Error deleting agent:", error);
+      console.error("Error archiving agent:", error);
       toast({
         title: "Error",
-        description: "Failed to delete agent. Please try again.",
+        description: "Failed to archive agent. Please try again.",
         variant: "destructive",
       });
     }

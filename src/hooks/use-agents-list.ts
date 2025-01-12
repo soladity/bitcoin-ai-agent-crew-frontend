@@ -8,10 +8,11 @@ export function useAgentsList() {
   const { toast } = useToast();
 
   const fetchAgents = useCallback(async () => {
-    // need data to be in Agent[] type
     const { data, error } = await supabase
       .from("agents")
-      .select("*");
+      .select("*")
+      .order("is_archived", { ascending: true })
+      .order("name", { ascending: true });
 
     if (error) {
       toast({
@@ -22,9 +23,7 @@ export function useAgentsList() {
       return;
     }
 
-
     const agents = data as Agent[];
-
     setAgents(agents || []);
   }, [toast]);
 

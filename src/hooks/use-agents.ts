@@ -14,7 +14,8 @@ export function useAgents() {
         const { data, error } = await supabase
           .from("agents")
           .select("*")
-          .order("name");
+          .order("is_archived", { ascending: true })
+          .order("name", { ascending: true });
 
         if (error) {
           throw error;

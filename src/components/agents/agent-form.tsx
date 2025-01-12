@@ -154,6 +154,26 @@ export function AgentForm({
             className="mt-1.5 h-9 bg-black/20 border-zinc-800/40 text-sm"
           />
         </div>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="is_archived"
+            name="is_archived"
+            checked={formData.is_archived}
+            onCheckedChange={(checked) =>
+              onChange({
+                target: { name: "is_archived", value: checked },
+              } as React.ChangeEvent<HTMLInputElement>)
+            }
+            className="bg-black/20 border-zinc-800/40 data-[state=checked]:bg-zinc-700 data-[state=checked]:border-zinc-700"
+          />
+          <Label
+            htmlFor="is_archived"
+            className="text-xs font-medium text-zinc-400 cursor-pointer"
+          >
+            Archive this agent
+          </Label>
+        </div>
       </div>
 
       <div>

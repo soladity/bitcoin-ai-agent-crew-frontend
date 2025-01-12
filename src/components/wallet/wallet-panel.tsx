@@ -44,6 +44,11 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
     return (Number(balance) / 1_000_000).toFixed(6); // Convert from microSTX to STX
   };
 
+  // Filter out wallets of archived agents
+  const activeAgentWallets = agentWallets.filter(
+    (wallet) => !wallet.agent?.is_archived
+  );
+
   return (
     <div className="h-full flex flex-col w-full md:max-w-sm">
       <div className="h-14 px-4 flex items-center justify-between border-b border-zinc-800/50">
@@ -159,8 +164,8 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
                 </div>
               )}
 
-              {/* Display agent wallets below */}
-              {agentWallets.map((wallet) => {
+              {/* Display active agent wallets below */}
+              {activeAgentWallets.map((wallet) => {
                 const walletBalance = wallet.testnet_address
                   ? balances[wallet.testnet_address]
                   : null;
