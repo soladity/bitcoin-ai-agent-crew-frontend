@@ -8,42 +8,8 @@ import ApplicationLayout from "./application-layout";
 import { usePathname } from "next/navigation";
 import { NextStepProvider, NextStep, Tour } from "nextstepjs";
 import CustomCard from "@/components/reusables/CustomCard";
-
+import { tourSteps } from "@/components/reusables/steps";
 const queryClient = new QueryClient();
-const steps: Tour[] = [
-  {
-    tour: "mainTour",
-    steps: [
-      {
-        icon: "👋",
-        title: "Welcome to Aibtcdev",
-        content: "I'm your guide to help you get started..",
-        selector: "#step1",
-        side: "bottom",
-        showControls: true,
-        showSkip: true,
-      },
-      {
-        icon: "👋",
-        title: "This is second step",
-        content: "I'm your guide to help you get started. second step.",
-        selector: "#step2",
-        side: "right",
-        showControls: true,
-        showSkip: true,
-      },
-      {
-        icon: "👋",
-        title: "This is second step",
-        content: "I'm your guide to help you get started. second step.",
-        selector: "#step3",
-        side: "right",
-        showControls: true,
-        showSkip: true,
-      },
-    ],
-  },
-];
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -63,7 +29,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     >
       <QueryClientProvider client={queryClient}>
         <NextStepProvider>
-          <NextStep steps={steps} cardComponent={CustomCard}>
+          <NextStep steps={tourSteps} cardComponent={CustomCard}>
             {content}
           </NextStep>
         </NextStepProvider>
