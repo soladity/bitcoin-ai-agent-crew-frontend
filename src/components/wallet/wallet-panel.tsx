@@ -3,16 +3,18 @@
 import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, X, Wallet, Send } from "lucide-react";
+import { Copy, Check, X, Wallet } from "lucide-react";
 import { useWalletStore } from "@/store/wallet";
 import { useSessionStore } from "@/store/session";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useNextStep } from "nextstepjs";
-import { STACKS_TESTNET } from "@stacks/network";
-import { openSTXTransfer } from "@stacks/connect";
-import { Input } from "../ui/input";
-import { BsRobot } from "react-icons/bs";
 import { useToast } from "@/hooks/use-toast";
+import dynamic from "next/dynamic";
+
+// Dynamically import Stacks components with ssr: false
+const StacksComponents = dynamic(() => import("./stacks-component"), {
+  ssr: false,
+});
 
 interface WalletPanelProps {
   onClose?: () => void;
@@ -36,10 +38,10 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
     try {
       await navigator.clipboard.writeText(address);
       setCopiedAddress(address);
-      setTimeout(() => setCopiedAddress(null), 2000); // Reset after 2 seconds
-    } catch (err) {
+      setTimeout(() => setCopiedAddress(null), 2000);
+    } catch (error) {
       toast({
-        title: "Error",
+        title: `error: ${error}`,
         description: "Failed to copy",
         variant: "destructive",
       });
@@ -53,10 +55,9 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
   }, [userId, fetchWallets]);
 
   const formatBalance = (balance: string) => {
-    return (Number(balance) / 1_000_000).toFixed(6); // Convert from microSTX to STX
+    return (Number(balance) / 1_000_000).toFixed(6);
   };
 
-  // Filter out wallets of archived agents
   const activeAgentWallets = agentWallets.filter(
     (wallet) => !wallet.agent?.is_archived
   );
@@ -67,54 +68,7 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
     startNextStep("mainTour");
   };
 
-  const sendSTX = (recipientAddress: string, amountInSTX: string) => {
-    const network = STACKS_TESTNET;
-
-    openSTXTransfer({
-      recipient: recipientAddress,
-      amount: amountInSTX,
-      memo: "Agent funding",
-      network: network,
-      onFinish: (data) => {
-        const explorerUrl = `https://explorer.stacks.co/txid/${data.txId}`;
-        toast({
-          title: "Success",
-          description: `Transactions ID: ${data.txId}\n URL: ${explorerUrl}`,
-          variant: "default",
-        });
-
-        // Clear the input field after successful transaction
-        setStxAmounts((prev) => ({ ...prev, [recipientAddress]: "" }));
-        return {
-          txId: data.txId,
-          explorerUrl: explorerUrl,
-          rawTx: data.txRaw,
-        };
-      },
-      onCancel: () => {
-        toast({
-          title: "Transaction Canceled",
-        });
-      },
-    });
-  };
-
-  const handleSendSTX = (address: string) => {
-    const amount = stxAmounts[address];
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      toast({
-        title: "Please enter a valid STX amount",
-        variant: "destructive",
-      });
-      return;
-    }
-    // Convert STX to microSTX (1 STX = 1,000,000 microSTX)
-    const microSTX = (Number(amount) * 1_000_000).toString();
-    sendSTX(address, microSTX);
-  };
-
   const handleAmountChange = (address: string, value: string) => {
-    // Only allow numbers and decimals
     if (value === "" || /^\d*\.?\d*$/.test(value)) {
       setStxAmounts((prev) => ({ ...prev, [address]: value }));
     }
@@ -145,7 +99,6 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
             <div className="text-sm text-red-400">{error}</div>
           ) : (
             <>
-              {/* Display user wallet first */}
               {userWallet && (
                 <div
                   className="bg-zinc-800/50 rounded-lg p-4 space-y-3"
@@ -239,7 +192,6 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
                 </div>
               )}
 
-              {/* Display active agent wallets below */}
               <div id="step6">
                 {activeAgentWallets.map((wallet) => {
                   const walletBalance = wallet.testnet_address
@@ -287,26 +239,16 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
                         </div>
                       )}
                       {address && (
-                        <div className="flex items-center gap-2">
-                          <Input
-                            type="text"
-                            placeholder="Amount in STX"
-                            value={stxAmounts[address] || ""}
-                            onChange={(e) =>
-                              handleAmountChange(address, e.target.value)
-                            }
-                            className="w-32 text-sm"
-                            required
-                          />
-                          <Button
-                            size="sm"
-                            onClick={() => handleSendSTX(address)}
-                            className="text-zinc-400 hover:text-white"
-                          >
-                            <BsRobot className="h-4 w-4 mr-2" />
-                            Fund Agent
-                          </Button>
-                        </div>
+                        <StacksComponents
+                          address={address}
+                          amount={stxAmounts[address] || ""}
+                          onAmountChange={(value) =>
+                            handleAmountChange(address, value)
+                          }
+                          onToast={(title, description, variant) =>
+                            toast({ title, description, variant })
+                          }
+                        />
                       )}
                       {walletBalance && (
                         <div className="space-y-2">

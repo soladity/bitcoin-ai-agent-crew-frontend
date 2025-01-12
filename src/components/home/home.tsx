@@ -1,7 +1,12 @@
 "use client";
 
 import React from "react";
-import SignIn from "../auth/auth-stacks";
+import dynamic from "next/dynamic";
+
+// Dynamically import SignIn component with ssr: false
+const SignIn = dynamic(() => import("../auth/auth-stacks"), {
+  ssr: false,
+});
 
 export default function Home() {
   return (
