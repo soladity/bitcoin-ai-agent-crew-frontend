@@ -7,6 +7,7 @@ import { Copy, Check, X, Wallet } from "lucide-react";
 import { useWalletStore } from "@/store/wallet";
 import { useSessionStore } from "@/store/session";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useNextStep } from "nextstepjs";
 
 interface WalletPanelProps {
   onClose?: () => void;
@@ -49,10 +50,17 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
     (wallet) => !wallet.agent?.is_archived
   );
 
+  const { startNextStep } = useNextStep();
+
+  const handleStartMainTour = () => {
+    startNextStep("mainTour");
+  };
+
   return (
     <div className="h-full flex flex-col w-full md:max-w-sm">
       <div className="h-14 px-4 flex items-center justify-between border-b border-zinc-800/50">
         <h2 className="text-lg font-medium text-white">Wallets</h2>
+        <Button onClick={handleStartMainTour}>Start Tour</Button>
         {onClose && (
           <Button
             variant="ghost"

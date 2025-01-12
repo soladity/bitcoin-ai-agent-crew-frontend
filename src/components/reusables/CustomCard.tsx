@@ -1,6 +1,14 @@
 "use client";
 
 import { CardComponentProps } from "nextstepjs";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const CustomCard: React.FC<CardComponentProps> = ({
   step,
@@ -12,42 +20,39 @@ const CustomCard: React.FC<CardComponentProps> = ({
   arrow,
 }) => {
   return (
-    <div className="bg-black p-6 rounded-lg shadow-lg flex flex-col gap-4 max-w-sm border ">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">{step.title}</h2>
-        {step.icon}
-      </div>
-      <div className="mb-4  rounded-full h-2.5">
-        <div
-          className="bg-blue-600 h-2.5 rounded-full"
-          style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
-        ></div>
-      </div>
-      <p>{step.content}</p>
-      {step.showControls && (
-        <div className="flex justify-between mt-4">
-          <button
-            onClick={prevStep}
-            disabled={currentStep === 0}
-            className="  px-4 py-2 rounded-md"
-          >
-            Previous
-          </button>
-          <button onClick={nextStep} className="px-4 py-2 rounded-md">
-            {currentStep === totalSteps - 1 ? "Finish" : "Next"}
-          </button>
-        </div>
-      )}
-      {step.showSkip && (
-        <button
-          onClick={skipTour}
-          className="px-4 py-2 rounded-md bg-slate-300 text-gray-800"
-        >
-          Skip
-        </button>
-      )}
-      {arrow}
-    </div>
+    <Card className="">
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <p>{step.title}</p>
+          {step.icon}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p>{step.content}</p>
+        {arrow}
+      </CardContent>
+      <CardFooter className="flex flex-col">
+        {step.showControls && (
+          <div className="flex justify-between w-full">
+            <Button
+              onClick={prevStep}
+              disabled={currentStep === 0}
+              variant="outline"
+            >
+              Previous
+            </Button>
+            <Button onClick={nextStep}>
+              {currentStep === totalSteps - 1 ? "Finish" : "Next"}
+            </Button>
+          </div>
+        )}
+        {step.showSkip && (
+          <Button onClick={skipTour} variant={"ghost"} className="w-full">
+            Skip Tour
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
   );
 };
 

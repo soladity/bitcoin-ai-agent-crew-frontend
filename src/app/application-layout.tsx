@@ -20,7 +20,6 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import { useNextStep } from "nextstepjs";
 
 interface ApplicationLayoutProps {
   children: React.ReactNode;
@@ -58,19 +57,6 @@ export default function ApplicationLayout({
   const router = useRouter();
   const [leftPanelOpen, setLeftPanelOpen] = React.useState(false);
   const [rightPanelOpen, setRightPanelOpen] = React.useState(false);
-
-  const {
-    startNextStep,
-    closeNextStep,
-    currentTour,
-    currentStep,
-    setCurrentStep,
-    isNextStepVisible,
-  } = useNextStep();
-
-  const handleStartTour = () => {
-    startNextStep("mainTour");
-  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -146,7 +132,7 @@ export default function ApplicationLayout({
 
           {/* Navigation */}
           <div className="flex flex-col h-[calc(100vh-3.5rem)]">
-            <nav className="flex-none p-2">
+            <nav className="flex-none p-2" id="step3">
               <div className="space-y-1">
                 {navigation.map((item) => {
                   const isActive = pathname === item.href;
@@ -170,7 +156,7 @@ export default function ApplicationLayout({
             </nav>
 
             {/* Thread List */}
-            <div className="flex-1 overflow-y-auto" id="step1">
+            <div className="flex-1 overflow-y-auto" id="step2">
               <ThreadList setLeftPanelOpen={setLeftPanelOpen} />
             </div>
 
@@ -189,6 +175,7 @@ export default function ApplicationLayout({
 
         {/* Main Content */}
         <main className="flex-1 min-w-0 relative">
+          <div id="step1"></div>
           <ScrollArea className="h-screen w-full">{children}</ScrollArea>
         </main>
 
@@ -223,8 +210,6 @@ export default function ApplicationLayout({
           }}
         />
       </div>
-
-      <button onClick={handleStartTour}>Start Tour</button>
     </div>
   );
 }
