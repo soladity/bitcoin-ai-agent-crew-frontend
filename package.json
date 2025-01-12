@@ -33,7 +33,6 @@
     "@radix-ui/react-tabs": "^1.1.2",
     "@radix-ui/react-toast": "^1.2.4",
     "@radix-ui/react-tooltip": "^1.1.6",
-    "@reactour/tour": "^3.7.0",
     "@stacks/connect": "^7.7.1",
     "@stacks/connect-react": "^22.6.0",
     "@stacks/connect-ui": "^6.4.1",
