@@ -2,16 +2,16 @@ import { Tour } from "nextstepjs";
 
 export const tourSteps: Tour[] = [
     {
-        tour: "mainTour",
+        tour: "mainTour", //main function to execute the below steps..can create more functions like this
         steps: [
             {
                 icon: "👋",
                 title: "Welcome to AIBTC.DEV.",
                 content: "I'm your guide to help you get started..",
-                selector: "#step1",
-                side: "bottom",
-                showControls: true,
-                showSkip: true,
+                selector: "#step1", //now you can assign any component this id and it will guide you to this step...
+                side: "bottom", //position where you want to show the guide card 
+                showControls: true, //default 
+                showSkip: true, //default
             },
             {
                 icon: "💬",
