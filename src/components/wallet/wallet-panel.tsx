@@ -11,6 +11,8 @@ import { useNextStep } from "nextstepjs";
 import { STACKS_TESTNET } from "@stacks/network";
 import { openSTXTransfer } from "@stacks/connect";
 import { Input } from "../ui/input";
+import { BsRobot } from "react-icons/bs";
+import { useToast } from "@/hooks/use-toast";
 
 interface WalletPanelProps {
   onClose?: () => void;
@@ -22,6 +24,7 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
   const { userId } = useSessionStore();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [stxAmounts, setStxAmounts] = useState<{ [key: string]: string }>({});
+  const { toast } = useToast();
 
   const truncateAddress = (address: string) => {
     if (!address) return "";
@@ -35,7 +38,11 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
       setCopiedAddress(address);
       setTimeout(() => setCopiedAddress(null), 2000); // Reset after 2 seconds
     } catch (err) {
-      console.error("Failed to copy address:", err);
+      toast({
+        title: "Error",
+        description: "Failed to copy",
+        variant: "destructive",
+      });
     }
   };
 
@@ -70,8 +77,12 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
       network: network,
       onFinish: (data) => {
         const explorerUrl = `https://explorer.stacks.co/txid/${data.txId}`;
-        console.log("Transaction ID:", data.txId);
-        console.log("View transaction:", explorerUrl);
+        toast({
+          title: "Success",
+          description: `Transactions ID: ${data.txId}\n URL: ${explorerUrl}`,
+          variant: "default",
+        });
+
         // Clear the input field after successful transaction
         setStxAmounts((prev) => ({ ...prev, [recipientAddress]: "" }));
         return {
@@ -81,7 +92,9 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
         };
       },
       onCancel: () => {
-        console.log("Transaction was canceled");
+        toast({
+          title: "Transaction Canceled",
+        });
       },
     });
   };
@@ -89,7 +102,10 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
   const handleSendSTX = (address: string) => {
     const amount = stxAmounts[address];
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      alert("Please enter a valid STX amount");
+      toast({
+        title: "Please enter a valid STX amount",
+        variant: "destructive",
+      });
       return;
     }
     // Convert STX to microSTX (1 STX = 1,000,000 microSTX)
@@ -121,7 +137,7 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
         )}
       </div>
 
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 overflow-auto">
         <div className="p-4 space-y-4">
           {isLoading ? (
             <div className="text-sm text-zinc-400">Loading balances...</div>
@@ -235,7 +251,7 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
                   return (
                     <div
                       key={wallet.id}
-                      className="bg-zinc-800/50 rounded-lg p-4 space-y-3"
+                      className="bg-zinc-800/50 rounded-lg p-4 space-y-3 mt-3"
                     >
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8 border border-zinc-800/40">
@@ -250,29 +266,6 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
                           {wallet.agent?.name || "Agent"}
                         </span>
                       </div>
-
-                      {address && (
-                        <div className="flex items-center gap-2">
-                          <Input
-                            type="text"
-                            placeholder="Amount in STX"
-                            value={stxAmounts[address] || ""}
-                            onChange={(e) =>
-                              handleAmountChange(address, e.target.value)
-                            }
-                            className="w-32 text-sm"
-                          />
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleSendSTX(address)}
-                            className="text-zinc-400 hover:text-white"
-                          >
-                            <Send className="h-4 w-4 mr-2" />
-                            Send STX
-                          </Button>
-                        </div>
-                      )}
 
                       {address ? (
                         <button
@@ -293,7 +286,28 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
                           No wallet address
                         </div>
                       )}
-
+                      {address && (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="text"
+                            placeholder="Amount in STX"
+                            value={stxAmounts[address] || ""}
+                            onChange={(e) =>
+                              handleAmountChange(address, e.target.value)
+                            }
+                            className="w-32 text-sm"
+                            required
+                          />
+                          <Button
+                            size="sm"
+                            onClick={() => handleSendSTX(address)}
+                            className="text-zinc-400 hover:text-white"
+                          >
+                            <BsRobot className="h-4 w-4 mr-2" />
+                            Fund Agent
+                          </Button>
+                        </div>
+                      )}
                       {walletBalance && (
                         <div className="space-y-2">
                           <div className="flex justify-between items-center gap-4">

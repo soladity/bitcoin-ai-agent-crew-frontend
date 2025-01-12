@@ -94,7 +94,7 @@ export default function ApplicationLayout({
         </Button>
       </div>
 
-      <div className="flex-1 flex min-w-0">
+      <div className="flex-1 flex min-w-0 max-h-[100vh] overflow-hidden">
         {/* Left Sidebar */}
         <aside
           className={cn(
