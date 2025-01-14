@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { useThreads } from "@/hooks/use-threads";
 import { useAgents } from "@/hooks/use-agents";
 import { useSessionStore } from "@/store/session";
