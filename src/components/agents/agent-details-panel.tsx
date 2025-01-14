@@ -2,7 +2,6 @@ import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Agent } from "@/types/supabase";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useWalletStore } from "@/store/wallet";
 import { Copy, Check } from "lucide-react";
@@ -74,17 +73,19 @@ export function AgentDetailsPanel({ agent }: AgentDetailsPanelProps) {
                   "w-40 h-40 sm:w-full sm:h-auto sm:aspect-square mx-auto overflow-hidden rounded-2xl border border-zinc-800/40 bg-zinc-900/50 relative",
                   agent.is_archived && "grayscale"
                 )}
+                style={{
+                  backgroundImage: `url(${
+                    agent.image_url || "/placeholder-agent.png"
+                  })`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
               >
-                <Image
-                  src={agent.image_url || ""}
-                  alt={agent.name}
-                  fill
-                  unoptimized={true}
-                  className="h-full w-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = `https://avatar.vercel.sh/${agent.name}`;
-                  }}
-                />
+                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                  <span className="text-6xl font-bold text-white">
+                    {agent.name ? agent.name.charAt(0).toUpperCase() : "?"}
+                  </span>
+                </div>
               </div>
               <div className="mt-4 sm:mt-6 text-center">
                 <h1 className="text-xl sm:text-2xl font-medium tracking-tight text-zinc-100">

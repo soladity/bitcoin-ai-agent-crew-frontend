@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Plus, Archive } from "lucide-react";
 import { Heading } from "@/components/ui/heading";
 import { useAgentsList } from "@/hooks/use-agents-list";
-import Image from "next/image";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -53,15 +52,21 @@ export default function AgentsPage() {
             key={agent.id}
             className="group flex items-center p-4 bg-card hover:bg-muted transition-colors duration-200 rounded-lg"
           >
-            <div className="relative w-16 h-16 flex-shrink-0">
-              <Image
-                src={agent.image_url || "/placeholder-agent.png"}
-                alt={agent.name}
-                fill
-                className="rounded-full object-cover"
-                unoptimized={true}
-                sizes="64px"
-              />
+            <div
+              className="relative w-16 h-16 flex-shrink-0 rounded-full overflow-hidden"
+              style={{
+                backgroundImage: `url(${
+                  agent.image_url || "/placeholder-agent.png"
+                })`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
+              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                <span className="text-2xl font-bold text-white">
+                  {agent.name ? agent.name.charAt(0).toUpperCase() : "?"}
+                </span>
+              </div>
             </div>
             <div className="ml-4 flex-grow">
               <h3 className="font-medium text-base">{agent.name}</h3>
@@ -88,15 +93,21 @@ export default function AgentsPage() {
                 key={agent.id}
                 className="group flex items-center p-4 bg-card hover:bg-muted transition-colors duration-200 rounded-lg opacity-75 hover:opacity-100"
               >
-                <div className="relative w-16 h-16 flex-shrink-0">
-                  <Image
-                    src={agent.image_url || "/placeholder-agent.png"}
-                    alt={agent.name}
-                    fill
-                    className="rounded-full object-cover grayscale group-hover:grayscale-0 transition-all duration-200"
-                    unoptimized={true}
-                    sizes="64px"
-                  />
+                <div
+                  className="relative w-16 h-16 flex-shrink-0 rounded-full overflow-hidden"
+                  style={{
+                    backgroundImage: `url(${
+                      agent.image_url || "/placeholder-agent.png"
+                    })`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                >
+                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center group-hover:bg-black/10 transition-colors">
+                    <span className="text-2xl font-bold text-white">
+                      {agent.name ? agent.name.charAt(0).toUpperCase() : "?"}
+                    </span>
+                  </div>
                 </div>
                 <div className="ml-4 flex-grow">
                   <div className="flex items-center gap-2">

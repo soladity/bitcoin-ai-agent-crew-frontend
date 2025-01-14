@@ -6,6 +6,7 @@ import { AgentForm } from "@/components/agents/agent-form";
 import { Agent } from "@/types/supabase";
 import { supabase } from "@/utils/supabase/client";
 import { useSessionStore } from "@/store/session";
+import { getRandomImageUrl } from "../../new/page";
 
 export const runtime = "edge";
 
@@ -66,15 +67,9 @@ export default function EditAgentPage() {
     e.preventDefault();
     if (!agent) return;
 
-    const imageUrlName = `${agent.name}_${
-      stxAddresses[network as keyof typeof stxAddresses]
-    }`;
-
     const updatedAgent = {
       ...agent,
-      image_url: `https://bitcoinfaces.xyz/api/get-image?name=${encodeURIComponent(
-        imageUrlName
-      )}`,
+      image_url: getRandomImageUrl(),
     };
 
     setSaving(true);

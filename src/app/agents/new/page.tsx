@@ -20,6 +20,14 @@ const LoadingModal = () => (
   </div>
 );
 
+export const getRandomImageUrl = () => {
+  const randomNum = Math.floor(Math.random() * 25); // 0 to 24
+  const imageName = `aibtcdev_pattern_1_tiles_${randomNum}.jpg`;
+  return `${
+    supabase.storage.from("agent-image").getPublicUrl(imageName).data.publicUrl
+  }`;
+};
+
 export default function NewAgentPage() {
   const router = useRouter();
   const { userId } = useSessionStore();
@@ -62,17 +70,9 @@ export default function NewAgentPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Create combined name for image URL only
-    const imageUrlName = `${agent.name}_${
-      process.env.NEXT_PUBLIC_STACKS_NETWORK === "mainnet"
-        ? stxAddresses.mainnet
-        : stxAddresses.testnet
-    }`;
     const updatedAgent = {
       ...agent,
-      image_url: `https://bitcoinfaces.xyz/api/get-image?name=${encodeURIComponent(
-        imageUrlName
-      )}`,
+      image_url: getRandomImageUrl(),
     };
 
     setSaving(true);
