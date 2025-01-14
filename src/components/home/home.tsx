@@ -42,7 +42,7 @@ export default function Home() {
           <SignIn />
 
           <p className="text-center text-xs text-zinc-400 mt-4 px-2 sm:px-0">
-            By connecting your wallet, you agree to our{" "}
+            By connecting your wallet, you agree to the{" "}
             <a href="#" className="text-orange-500 hover:text-orange-400">
               Terms of Service
             </a>{" "}

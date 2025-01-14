@@ -141,9 +141,8 @@ export function ChatWindow() {
           </div>
           <h3 className="text-lg font-semibold">Create Your First AI Agent</h3>
           <p className="text-sm text-muted-foreground">
-            To start chatting, you will need to create at least one AI agent.
-            Agents are AI assistants that you can customize with specific roles
-            and capabilities.
+            To start chatting, you will need to create at an AI agent. Customize
+            it with roles, backstory and capabilities.
           </p>
           <Button
             onClick={() => (window.location.href = "/agents")}
