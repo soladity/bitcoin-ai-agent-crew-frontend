@@ -46,7 +46,7 @@ export function useGuide() {
                 return;
             }
 
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from("profiles")
                 .update({ has_completed_guide: true })
                 .eq("id", user.id)
