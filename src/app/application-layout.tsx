@@ -4,15 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  Users,
-  // MessageSquare,
-  Boxes,
-  Menu,
-  Wallet,
-  X,
-  LogOut,
-} from "lucide-react";
+import { Users, Boxes, Menu, Wallet, X, LogOut } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { WalletPanel } from "@/components/wallet/wallet-panel";
 import { ThreadList } from "@/components/threads/thread-list";
@@ -26,8 +18,6 @@ interface ApplicationLayoutProps {
 }
 
 const navigation = [
-  // COMMENTING THIS OUT SINCE WE NO LONGER NEED IT.....
-  // { id: "chat", name: "Chat", href: "/chat", icon: MessageSquare },
   { id: "agents", name: "Agents", href: "/agents", icon: Users },
   { id: "daos", name: "DAOs", href: "/daos", icon: Boxes },
   {
@@ -97,7 +87,7 @@ export default function ApplicationLayout({
           onClick={() => setRightPanelOpen(!rightPanelOpen)}
           className="text-zinc-400"
         >
-          <Wallet className="h-5 w-5" /> Wallet
+          <Wallet className="h-5 w-5" />
         </Button>
       </div>
 
