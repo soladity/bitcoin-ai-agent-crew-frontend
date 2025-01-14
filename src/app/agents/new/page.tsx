@@ -63,8 +63,11 @@ export default function NewAgentPage() {
     e.preventDefault();
 
     // Create combined name for image URL only
-    const imageUrlName = `${agent.name}_${stxAddresses.testnet}`;
-    // const imageUrlName = `${agent.name}_${stxAddresses.mainnet}`; In case we need mainnet
+    const imageUrlName = `${agent.name}_${
+      process.env.NEXT_PUBLIC_STACKS_NETWORK === "mainnet"
+        ? stxAddresses.mainnet
+        : stxAddresses.testnet
+    }`;
     const updatedAgent = {
       ...agent,
       image_url: `https://bitcoinfaces.xyz/api/get-image?name=${encodeURIComponent(
