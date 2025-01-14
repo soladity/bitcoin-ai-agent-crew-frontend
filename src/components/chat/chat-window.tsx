@@ -161,9 +161,11 @@ export function ChatWindow() {
       <div className="flex items-center justify-center h-[calc(100vh-4rem)] backdrop-blur-sm">
         <div className="text-center space-y-4 p-4 sm:p-6 lg:p-8 -mt-20">
           {/* Adjust button size and spacing for different screen sizes */}
-          <div className="flex justify-center" id="step3">
+          <div className="flex justify-center gap-3" id="step3">
             <CreateThreadButton />
-            <StartGuide />
+            <div className="md:block hidden">
+              <StartGuide />
+            </div>
           </div>
         </div>
       </div>
