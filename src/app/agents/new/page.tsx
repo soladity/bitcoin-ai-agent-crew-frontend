@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AgentForm } from "@/components/agents/agent-form";
 import { Agent } from "@/types/supabase";
 import { supabase } from "@/utils/supabase/client";
 import { useSessionStore } from "@/store/session";
 import { useWalletStore } from "@/store/wallet";
+import { getRandomImageUrl } from "@/lib/generate-image";
 
 // Loading Modal Component
 const LoadingModal = () => (
@@ -20,22 +21,10 @@ const LoadingModal = () => (
   </div>
 );
 
-export const getRandomImageUrl = () => {
-  const randomNum = Math.floor(Math.random() * 25); // 0 to 24
-  const imageName = `aibtcdev_pattern_1_tiles_${randomNum}.jpg`;
-  return `${
-    supabase.storage.from("agent-image").getPublicUrl(imageName).data.publicUrl
-  }`;
-};
-
 export default function NewAgentPage() {
   const router = useRouter();
   const { userId } = useSessionStore();
   const fetchWallets = useWalletStore((state) => state.fetchWallets);
-  const [stxAddresses, setStxAddresses] = useState<{
-    testnet: string;
-    mainnet: string;
-  }>({ testnet: "", mainnet: "" });
 
   const [agent, setAgent] = useState<Partial<Agent>>({
     name: "",
@@ -48,24 +37,6 @@ export default function NewAgentPage() {
   });
   const [saving, setSaving] = useState(false);
   const [showLoadingModal, setShowLoadingModal] = useState(false);
-
-  useEffect(() => {
-    try {
-      const blockstackSession = localStorage.getItem("blockstack-session");
-      if (blockstackSession) {
-        const sessionData = JSON.parse(blockstackSession);
-        const addresses = sessionData?.userData?.profile?.stxAddress;
-        if (addresses) {
-          setStxAddresses({
-            testnet: addresses.testnet,
-            mainnet: addresses.mainnet,
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Error reading blockstack session:", error);
-    }
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

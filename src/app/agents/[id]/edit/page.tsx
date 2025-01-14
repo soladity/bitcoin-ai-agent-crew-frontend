@@ -6,7 +6,7 @@ import { AgentForm } from "@/components/agents/agent-form";
 import { Agent } from "@/types/supabase";
 import { supabase } from "@/utils/supabase/client";
 import { useSessionStore } from "@/store/session";
-import { getRandomImageUrl } from "../../new/page";
+import { getRandomImageUrl } from "@/lib/generate-image";
 
 export const runtime = "edge";
 
