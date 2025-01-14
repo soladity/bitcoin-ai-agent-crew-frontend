@@ -78,7 +78,9 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
     <div className="h-full flex flex-col w-full md:max-w-sm">
       <div className="h-14 px-4 flex items-center justify-between border-b border-zinc-800/50">
         <h2 className="text-lg font-medium text-white">Wallets</h2>
-        <Button onClick={handleStartMainTour}>Start Tour</Button>
+        <Button onClick={handleStartMainTour} className="md:block hidden">
+          Start Tour
+        </Button>
         {onClose && (
           <Button
             variant="ghost"

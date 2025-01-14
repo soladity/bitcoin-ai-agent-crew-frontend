@@ -90,7 +90,7 @@ export default function ApplicationLayout({
           onClick={() => setRightPanelOpen(!rightPanelOpen)}
           className="text-zinc-400"
         >
-          <Wallet className="h-5 w-5" />
+          <Wallet className="h-5 w-5" /> Wallet
         </Button>
       </div>
 
