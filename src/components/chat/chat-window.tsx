@@ -91,7 +91,7 @@ export function ChatWindow() {
     return () => {
       mounted = false;
       if (process.env.NODE_ENV !== "development") {
-        console.log("ChatWindow unmounting, disconnecting WebSocket");
+        // console.log("ChatWindow unmounting, disconnecting WebSocket");
         memoizedDisconnect();
       }
     };
