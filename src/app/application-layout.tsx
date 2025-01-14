@@ -26,10 +26,11 @@ interface ApplicationLayoutProps {
 }
 
 const navigation = [
-  { name: "Chat", href: "/chat", icon: MessageSquare },
-  { name: "Agents", href: "/agents", icon: Users },
-  { name: "DAOs", href: "/daos", icon: Boxes },
+  { id: "chat", name: "Chat", href: "/chat", icon: MessageSquare },
+  { id: "agents", name: "Agents", href: "/agents", icon: Users },
+  { id: "daos", name: "DAOs", href: "/daos", icon: Boxes },
   {
+    id: "profile",
     name: "Profile",
     href: "/profile",
     icon: ({ className }: { className?: string }) => (
@@ -138,8 +139,9 @@ export default function ApplicationLayout({
                   const isActive = pathname === item.href;
                   return (
                     <Link
-                      key={item.name}
+                      key={item.id}
                       href={item.href}
+                      id={item.id}
                       className={cn(
                         "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
                         isActive
@@ -175,7 +177,7 @@ export default function ApplicationLayout({
 
         {/* Main Content */}
         <main className="flex-1 min-w-0 relative">
-          <div id="step1"></div>
+          <div></div>
           <ScrollArea className="h-screen w-full">{children}</ScrollArea>
         </main>
 

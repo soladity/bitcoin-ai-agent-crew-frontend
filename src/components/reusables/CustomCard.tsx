@@ -46,11 +46,7 @@ const CustomCard: React.FC<CardComponentProps> = ({
             </Button>
           </div>
         )}
-        {step.showSkip && (
-          <Button onClick={skipTour} variant={"ghost"} className="w-full">
-            Skip Tour
-          </Button>
-        )}
+        {step.showSkip && <Button onClick={skipTour}>Skip Guide</Button>}
       </CardFooter>
     </Card>
   );
