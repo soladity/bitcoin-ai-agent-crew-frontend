@@ -2,7 +2,7 @@
 
 import React from "react";
 import { showConnect, openSignatureRequestPopup } from "@stacks/connect";
-import { STACKS_MAINNET } from "@stacks/network";
+import { STACKS_MAINNET, STACKS_TESTNET } from "@stacks/network";
 import { userSession } from "@/lib/userSession";
 
 interface ConnectWalletOptions {
@@ -27,10 +27,14 @@ export function connectWallet({ onCancel }: ConnectWalletOptions) {
 }
 
 export function requestSignature(): Promise<string> {
+  const network =
+    process.env.NEXT_PUBLIC_STACKS_NETWORK == "mainnet"
+      ? STACKS_MAINNET
+      : STACKS_TESTNET;
   return new Promise((resolve, reject) => {
     openSignatureRequestPopup({
       message: "Please sign the message to authenticate.",
-      network: STACKS_MAINNET,
+      network: network,
       appDetails: {
         name: "AIBTC",
         icon: "https://bncytzyfafclmdxrwpgq.supabase.co/storage/v1/object/public/aibtcdev/aibtcdev-avatar-250px.png",

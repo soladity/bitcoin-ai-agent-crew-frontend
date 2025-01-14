@@ -3,7 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { BsRobot } from "react-icons/bs";
-import { STACKS_TESTNET } from "@stacks/network";
+import { STACKS_TESTNET, STACKS_MAINNET } from "@stacks/network";
 import { openSTXTransfer } from "@stacks/connect";
 
 interface StacksComponentsProps {
@@ -24,8 +24,10 @@ export default function StacksComponents({
   onToast,
 }: StacksComponentsProps) {
   const sendSTX = (recipientAddress: string, amountInSTX: string) => {
-    // CHANGE IT TO MAINNET....
-    const network = STACKS_TESTNET;
+    const network =
+      process.env.NEXT_PUBLIC_STACKS_NETWORK == "mainnet"
+        ? STACKS_MAINNET
+        : STACKS_TESTNET;
 
     openSTXTransfer({
       recipient: recipientAddress,
