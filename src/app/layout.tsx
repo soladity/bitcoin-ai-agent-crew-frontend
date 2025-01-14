@@ -1,32 +1,40 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { AuthProvider } from "@/components/providers/auth-provider";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://sprint.aibtc.dev"),
   title: {
-    default: "AIBTC Champions Sprint",
-    template: "%s | AIBTC Champions Sprint",
+    default: "AIBTC",
+    template: "%s | AIBTC",
   },
   description: "Compete with AI on Stacks, the leading Bitcoin L2",
   keywords: ["Bitcoin", "AI", "Stacks", "L2", "Trading"],
   authors: [{ name: "AIBTC Champions" }],
   openGraph: {
-    title: "AIBTC Champions Sprint",
+    title: "AIBTC",
     description: "Compete with AI on Stacks, the leading Bitcoin L2",
     type: "website",
     images: [
       {
-        url: "logos/aibtcdev-champions-sprint-trading-series-800px.png",
-        width: 800,
-        height: 800,
-        alt: "AIBTC Champions Sprint",
+        url: "logos/aibtcdev-avatar-1000px.png",
+        width: 1000,
+        height: 1000,
+        alt: "AIBTC",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    images: ["logos/aibtcdev-champions-sprint-trading-series-800px.png"],
+    images: ["logos/aibtcdev-avatar-1000px.png"],
   },
 };
 
@@ -91,7 +99,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className="text-zinc-950 antialiased lg:bg-zinc-100 dark:bg-zinc-900 dark:text-white dark:lg:bg-zinc-950"
+      className="h-full text-zinc-950 antialiased bg-zinc-950 dark:text-white"
       suppressHydrationWarning
     >
       <head>
@@ -99,9 +107,13 @@ export default function RootLayout({
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
       </head>
       <body
-        className={`${rocGroteskRegular.variable} ${rocGroteskWide.variable} ${rocGroteskExtraWide.variable} antialiased`}
+        className={`h-full flex flex-col ${rocGroteskRegular.variable} ${rocGroteskWide.variable} ${rocGroteskExtraWide.variable} antialiased bg-zinc-950`}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <AuthProvider>
+            <main className="flex-1 flex flex-col h-full">{children}</main>
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   );

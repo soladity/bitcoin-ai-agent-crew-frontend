@@ -1,4 +1,4 @@
-import { Loader } from "@/components/reusables/Loader";
+import { Loader } from "@/components/reusables/loader";
 import React from "react";
 
 const loading = () => {

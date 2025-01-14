@@ -1,225 +1,215 @@
 "use client";
 
 import * as React from "react";
-import { Avatar } from "@/components/catalyst/avatar";
-import {
-  Dropdown,
-  DropdownButton,
-  DropdownItem,
-  DropdownLabel,
-  DropdownMenu,
-} from "@/components/catalyst/dropdown";
-import {
-  Navbar,
-  NavbarItem,
-  NavbarSection,
-  NavbarSpacer,
-} from "@/components/catalyst/navbar";
-import {
-  Sidebar,
-  SidebarBody,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarItem,
-  SidebarLabel,
-  SidebarSection,
-  SidebarSpacer,
-} from "@/components/catalyst/sidebar";
-import { SidebarLayout } from "@/components/catalyst/sidebar-layout";
-import {
-  ArrowRightStartOnRectangleIcon,
-  ChevronUpIcon,
-  WrenchScrewdriverIcon,
-  ChartBarIcon,
-  UserGroupIcon,
-  ChartPieIcon,
-  ChatBubbleBottomCenterTextIcon,
-  BuildingStorefrontIcon,
-  DocumentTextIcon,
-} from "@heroicons/react/16/solid";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useUserData } from "@/hooks/useUserData";
-import { Wallet } from "lucide-react";
-import SignOut from "@/components/auth/SignOut";
+import { cn } from "@/lib/utils";
+import {
+  Users,
+  MessageSquare,
+  Boxes,
+  Menu,
+  Wallet,
+  X,
+  LogOut,
+} from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { WalletPanel } from "@/components/wallet/wallet-panel";
+import { ThreadList } from "@/components/threads/thread-list";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { supabase } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
-function AccountDropdownMenu({
-  anchor,
-  userData,
-}: {
-  anchor: "top start" | "bottom end";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  userData: any;
-}) {
-  return (
-    <DropdownMenu className="min-w-64" anchor={anchor}>
-      {userData?.role === "Admin" && (
-        <DropdownItem href="/admin">
-          <WrenchScrewdriverIcon />
-          <DropdownLabel>Admin</DropdownLabel>
-        </DropdownItem>
-      )}
-      <DropdownItem href="/profile">
-        <Avatar initials="P" className="size-4" />
-        <DropdownLabel>Profile Settings</DropdownLabel>
-      </DropdownItem>
-      <DropdownItem>
-        <ArrowRightStartOnRectangleIcon />
-        <SignOut />
-      </DropdownItem>
-    </DropdownMenu>
-  );
+interface ApplicationLayoutProps {
+  children: React.ReactNode;
 }
 
-export function ApplicationLayout({ children }: { children: React.ReactNode }) {
+const navigation = [
+  { name: "Chat", href: "/chat", icon: MessageSquare },
+  { name: "Agents", href: "/agents", icon: Users },
+  { name: "DAOs", href: "/daos", icon: Boxes },
+  {
+    name: "Profile",
+    href: "/profile",
+    icon: ({ className }: { className?: string }) => (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+      >
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+    ),
+  },
+];
+
+export default function ApplicationLayout({
+  children,
+}: ApplicationLayoutProps) {
   const pathname = usePathname();
-  const { data: userData, isLoading } = useUserData();
+  const router = useRouter();
+  const [leftPanelOpen, setLeftPanelOpen] = React.useState(false);
+  const [rightPanelOpen, setRightPanelOpen] = React.useState(false);
 
-  const displayAddress = React.useMemo(() => {
-    if (!userData?.stxAddress) return "";
-    return `${userData.stxAddress.slice(0, 5)}...${userData.stxAddress.slice(
-      -5
-    )}`;
-  }, [userData?.stxAddress]);
-
-  const displayAgentAddress = React.useMemo(() => {
-    if (!userData?.agentAddress) return "No agents assigned";
-    return `${userData.agentAddress.slice(
-      0,
-      5
-    )}...${userData.agentAddress.slice(-5)}`;
-  }, [userData?.agentAddress]);
-
-  const displayRole = React.useMemo(() => {
-    if (
-      !userData?.role ||
-      userData.role === "" ||
-      userData.role.toLowerCase() === "normal"
-    ) {
-      return "Normal User";
-    }
-    return userData.role;
-  }, [userData?.role]);
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push("/");
+  };
 
   return (
-    <SidebarLayout
-      navbar={
-        <Navbar>
-          <NavbarSpacer />
-          <NavbarSection>
-            <Dropdown>
-              <DropdownButton as={NavbarItem}>
-                <Avatar src="/logos/aibtcdev-avatar-250px.png" square />
-              </DropdownButton>
-              <AccountDropdownMenu userData={userData} anchor="bottom end" />
-            </Dropdown>
-          </NavbarSection>
-        </Navbar>
-      }
-      sidebar={
-        <Sidebar>
-          <SidebarHeader>
-            <Dropdown>
-              <DropdownButton as={SidebarItem}>
-                <Avatar src="/logos/aibtcdev-avatar-250px.png" />
-                <SidebarLabel>
-                  <Image
-                    src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
-                    alt=""
-                    width={400}
-                    height={20}
-                  />
-                </SidebarLabel>
-              </DropdownButton>
-            </Dropdown>
-          </SidebarHeader>
+    <div className="flex flex-col h-screen bg-zinc-950">
+      {/* Mobile Navigation Bar */}
+      <div className="md:hidden h-14 px-2 flex items-center justify-between border-b border-zinc-800/50 bg-zinc-900/50">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setLeftPanelOpen(!leftPanelOpen)}
+          className="text-zinc-400"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+        <div className="flex items-center gap-2">
+          <Image
+            src="/logos/aibtcdev-avatar-1000px.png"
+            alt="AIBTCDEV"
+            width={20}
+            height={20}
+          />
+          <span className="text-lg font-medium text-white">AIBTCDEV</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setRightPanelOpen(!rightPanelOpen)}
+          className="text-zinc-400"
+        >
+          <Wallet className="h-5 w-5" />
+        </Button>
+      </div>
 
-          <SidebarBody>
-            <SidebarSection>
-              {/* <SidebarItem href="/dashboard" current={pathname === "/"}>
-                <DashboardIcon />
-                <SidebarLabel>Dashboard</SidebarLabel>
-              </SidebarItem> */}
-              <SidebarItem href="/chat" current={pathname === "/chat"}>
-                <ChatBubbleBottomCenterTextIcon />
-                <SidebarLabel>Chat</SidebarLabel>
-              </SidebarItem>
-              <SidebarItem
-                href="/crews"
-                current={pathname.startsWith("/crews")}
-              >
-                <UserGroupIcon />
-                <SidebarLabel>Crews</SidebarLabel>
-              </SidebarItem>
-              <SidebarItem
-                href="/marketplace"
-                current={pathname.startsWith("/marketplace")}
-              >
-                <BuildingStorefrontIcon />
-                <SidebarLabel>Marketplace</SidebarLabel>
-              </SidebarItem>
-              <SidebarItem
-                href="/leaderboard"
-                current={pathname.startsWith("/leaderboard")}
-              >
-                <ChartBarIcon />
-                <SidebarLabel>Leaderboard</SidebarLabel>
-              </SidebarItem>
-              <SidebarItem
-                href="/stats"
-                current={pathname.startsWith("/stats")}
-              >
-                <ChartPieIcon />
-                <SidebarLabel>Stats</SidebarLabel>
-              </SidebarItem>
-            </SidebarSection>
+      <div className="flex-1 flex min-w-0 max-h-[100vh] overflow-hidden">
+        {/* Left Sidebar */}
+        <aside
+          className={cn(
+            // Base styles
+            "bg-zinc-900/50 border-r border-zinc-800/50 flex flex-col",
+            // Desktop styles
+            "hidden md:flex md:w-64",
+            // Mobile styles
+            "fixed md:relative inset-y-0 left-0 z-20 w-[min(100vw,320px)]",
+            leftPanelOpen
+              ? "flex bg-zinc-900 md:bg-zinc-900/50 md:w-64"
+              : "hidden"
+          )}
+        >
+          {/* Header */}
+          <div className="h-14 px-4 flex items-center justify-between border-b border-zinc-800/50">
+            <div className="flex items-center gap-2">
+              <Image
+                src="/logos/aibtcdev-avatar-1000px.png"
+                alt="AIBTCDEV"
+                width={20}
+                height={20}
+              />
+              <span className="text-lg font-medium text-white">AIBTCDEV</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setLeftPanelOpen(false)}
+              className="text-zinc-400 md:hidden h-8 w-8 hover:bg-zinc-800"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
 
-            <SidebarSpacer />
+          {/* Navigation */}
+          <div className="flex flex-col h-[calc(100vh-3.5rem)]">
+            <nav className="flex-none p-2" id="step4">
+              <div className="space-y-1">
+                {navigation.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                        isActive
+                          ? "bg-zinc-800/50 text-white"
+                          : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                      )}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            </nav>
 
-            <SidebarSection>
-              <SidebarItem href="/terms" current={pathname === "/terms"}>
-                <DocumentTextIcon />
-                <SidebarLabel>Terms of Service</SidebarLabel>
-              </SidebarItem>
-              <SidebarItem>
-                <Wallet />
-                <SidebarLabel className="flex flex-col">
-                  {isLoading ? "Loading..." : displayAgentAddress}
-                  {userData?.agentAddress && (
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                      {userData.agentBalance !== null
-                        ? `${userData.agentBalance.toFixed(5)} STX`
-                        : "Loading balance..."}
-                    </span>
-                  )}
-                </SidebarLabel>
-              </SidebarItem>
-            </SidebarSection>
-          </SidebarBody>
+            {/* Thread List */}
+            <div className="flex-1 overflow-y-auto">
+              <ThreadList setLeftPanelOpen={setLeftPanelOpen} />
+            </div>
 
-          <SidebarFooter className=" p-4">
-            <Dropdown>
-              <DropdownButton as={SidebarItem}>
-                <span className="flex min-w-0 items-center gap-3">
-                  <Avatar initials="P" className="size-10" square alt="" />
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-medium text-zinc-950 dark:text-white">
-                      {isLoading ? "Loading..." : displayAddress}
-                    </span>
-                    <span className="block truncate text-xs font-normal text-zinc-500 dark:text-zinc-400">
-                      {isLoading ? "Loading..." : displayRole}
-                    </span>
-                  </span>
-                </span>
-                <ChevronUpIcon />
-              </DropdownButton>
-              <AccountDropdownMenu userData={userData} anchor="top start" />
-            </Dropdown>
-          </SidebarFooter>
-        </Sidebar>
-      }
-    >
-      {children}
-    </SidebarLayout>
+            {/* Sign Out Button */}
+            <div className="flex-none p-2">
+              <button
+                onClick={handleSignOut}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 min-w-0 relative">
+          <div id="step1"></div>
+          <ScrollArea className="h-screen w-full">{children}</ScrollArea>
+        </main>
+
+        {/* Right Wallet Panel */}
+        <aside
+          className={cn(
+            // Base styles
+            "bg-zinc-900/50 border-l border-zinc-800/50 flex flex-col",
+            // Desktop styles
+            "hidden md:flex md:w-80",
+            // Mobile styles
+            "fixed md:relative inset-y-0 right-0 z-20 w-[min(100vw,320px)]",
+            rightPanelOpen
+              ? "flex bg-zinc-900 md:bg-zinc-900/50 md:w-80"
+              : "hidden"
+          )}
+        >
+          <WalletPanel onClose={() => setRightPanelOpen(false)} />
+        </aside>
+
+        {/* Overlay for mobile when panels are open */}
+        <div
+          className={cn(
+            "fixed inset-0 bg-black/80 md:hidden transition-opacity z-10",
+            leftPanelOpen || rightPanelOpen
+              ? "opacity-100"
+              : "opacity-0 pointer-events-none"
+          )}
+          onClick={() => {
+            setLeftPanelOpen(false);
+            setRightPanelOpen(false);
+          }}
+        />
+      </div>
+    </div>
   );
 }

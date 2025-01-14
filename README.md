@@ -1,4 +1,4 @@
-# Aibtcdev Frontend
+# AIBTCDEV Frontend
 
 ## Prerequisites
 - Node.js (recommended version 18+)
@@ -20,8 +20,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://addyourown.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=add_your_anon_key
 HIRO_API_KEY=hiro_api_key
 NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
-NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000   
-SENTRY_AUTH_TOKEN="sntrys_add_your_own"
+NEXT_PUBLIC_STACKS_NETWORK=testnet
 ```
 
 ### 3. Install Dependencies
