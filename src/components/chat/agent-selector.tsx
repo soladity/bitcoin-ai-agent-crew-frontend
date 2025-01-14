@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Agent } from "@/types/supabase";
 
 interface AgentSelectorProps {
   selectedAgentId: string | null;
@@ -67,7 +68,7 @@ export function AgentSelector({
     agent,
     className = "",
   }: {
-    agent?: any;
+    agent?: Agent;
     className?: string;
   }) => {
     const shouldShowOverlay =
