@@ -178,7 +178,6 @@ export default function ApplicationLayout({
 
         {/* Main Content */}
         <main className="flex-1 min-w-0 relative">
-          <div></div>
           <ScrollArea className="h-screen w-full">{children}</ScrollArea>
         </main>
 
