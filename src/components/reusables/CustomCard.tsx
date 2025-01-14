@@ -23,16 +23,14 @@ const CustomCard: React.FC<CardComponentProps> = ({
   const { updateGuideCompletion } = useGuide();
 
   const handleFinish = async () => {
-    console.log("Finishing guide...");
     await updateGuideCompletion();
-    console.log("Guide completion updated, moving to next step");
+
     nextStep();
   };
 
   const handleSkip = async () => {
-    console.log("Skipping guide...");
     await updateGuideCompletion();
-    console.log("Guide completion updated, skipping tour");
+
     if (skipTour) {
       skipTour();
     }
