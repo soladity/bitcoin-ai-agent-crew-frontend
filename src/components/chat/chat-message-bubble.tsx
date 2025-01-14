@@ -12,32 +12,6 @@ export function ChatMessageBubble({ message }: { message: Message }) {
     message.role === "assistant" ? message.agent_id : null
   );
 
-  const AgentAvatar = () => {
-    const shouldShowOverlay =
-      agent?.name && agent.name.toLowerCase() !== "assistant";
-
-    return (
-      <Avatar className="h-6 w-6 relative">
-        <AvatarImage src={agent?.image_url} alt={agent?.name || "Bot"} />
-        <AvatarFallback>
-          <Image
-            src="/logos/aibtcdev-avatar-1000px.png"
-            alt="AI BTC Dev"
-            width={24}
-            height={24}
-          />
-        </AvatarFallback>
-        {shouldShowOverlay && (
-          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-            <span className="text-xs font-bold text-white">
-              {agent.name.charAt(0).toUpperCase()}
-            </span>
-          </div>
-        )}
-      </Avatar>
-    );
-  };
-
   return (
     <div
       className={cn(
@@ -56,7 +30,17 @@ export function ChatMessageBubble({ message }: { message: Message }) {
         {message.role === "user" ? (
           <User className="h-3 w-3" />
         ) : (
-          <AgentAvatar />
+          <Avatar className="h-6 w-6">
+            <AvatarImage src={agent?.image_url} alt={agent?.name || "Bot"} />
+            <AvatarFallback>
+              <Image
+                src="/logos/aibtcdev-avatar-1000px.png"
+                alt="AI BTC Dev"
+                width={24}
+                height={24}
+              />
+            </AvatarFallback>
+          </Avatar>
         )}
       </div>
 
