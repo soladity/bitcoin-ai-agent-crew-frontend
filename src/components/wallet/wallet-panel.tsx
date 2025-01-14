@@ -3,13 +3,18 @@
 import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, X, Wallet } from "lucide-react";
+import { Copy, Check, X, Wallet as WalletIcon } from "lucide-react";
 import { useWalletStore } from "@/store/wallet";
 import { useSessionStore } from "@/store/session";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useNextStep } from "nextstepjs";
 import { useToast } from "@/hooks/use-toast";
 import dynamic from "next/dynamic";
+import type { Wallet, Agent } from "@/types/supabase";
+
+interface WalletWithAgent extends Wallet {
+  agent?: Agent;
+}
 
 // Dynamically import Stacks components with ssr: false
 const StacksComponents = dynamic(() => import("./stacks-component"), {
@@ -74,6 +79,12 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
     }
   };
 
+  const getWalletAddress = (wallet: WalletWithAgent) => {
+    return process.env.NEXT_PUBLIC_STACKS_NETWORK === "mainnet"
+      ? wallet.mainnet_address
+      : wallet.testnet_address;
+  };
+
   return (
     <div className="h-full flex flex-col w-full md:max-w-sm">
       <div className="h-14 px-4 flex items-center justify-between border-b border-zinc-800/50">
@@ -108,22 +119,24 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 flex items-center justify-center bg-zinc-900 rounded-full border border-zinc-800/40">
-                      <Wallet className="h-4 w-4 text-zinc-500" />
+                      <WalletIcon className="h-4 w-4 text-zinc-500" />
                     </div>
                     <span className="text-sm font-medium text-white">
                       My Wallet
                     </span>
                   </div>
-                  {userWallet.testnet_address ? (
+                  {getWalletAddress(userWallet) ? (
                     <button
                       onClick={() =>
-                        copyToClipboard(userWallet.testnet_address!)
+                        copyToClipboard(getWalletAddress(userWallet))
                       }
                       className="w-full flex items-center justify-between text-xs text-zinc-500 font-mono hover:text-zinc-300 transition-colors group"
                     >
-                      <span>{truncateAddress(userWallet.testnet_address)}</span>
+                      <span>
+                        {truncateAddress(getWalletAddress(userWallet))}
+                      </span>
                       <span className="text-zinc-600 group-hover:text-zinc-400">
-                        {copiedAddress === userWallet.testnet_address ? (
+                        {copiedAddress === getWalletAddress(userWallet) ? (
                           <Check className="h-3.5 w-3.5" />
                         ) : (
                           <Copy className="h-3.5 w-3.5" />
@@ -136,8 +149,8 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
                     </div>
                   )}
 
-                  {userWallet.testnet_address &&
-                    balances[userWallet.testnet_address] && (
+                  {getWalletAddress(userWallet) &&
+                    balances[getWalletAddress(userWallet)] && (
                       <div className="space-y-2">
                         <div className="flex justify-between items-center gap-4">
                           <span className="text-sm text-zinc-400 min-w-[80px]">
@@ -145,14 +158,14 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
                           </span>
                           <span className="text-white font-medium text-right">
                             {formatBalance(
-                              balances[userWallet.testnet_address].stx.balance
+                              balances[getWalletAddress(userWallet)].stx.balance
                             )}{" "}
                             STX
                           </span>
                         </div>
 
                         {Object.entries(
-                          balances[userWallet.testnet_address].fungible_tokens
+                          balances[getWalletAddress(userWallet)].fungible_tokens
                         ).map(([tokenId, token]) => {
                           const [, tokenSymbol] = tokenId.split("::");
                           return (
@@ -171,7 +184,7 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
                         })}
 
                         {Object.entries(
-                          balances[userWallet.testnet_address]
+                          balances[getWalletAddress(userWallet)]
                             .non_fungible_tokens
                         ).map(([tokenId, token]) => {
                           const [, tokenSymbol] = tokenId.split("::");
@@ -196,10 +209,10 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
 
               <div id="step6">
                 {activeAgentWallets.map((wallet) => {
-                  const walletBalance = wallet.testnet_address
-                    ? balances[wallet.testnet_address]
+                  const walletBalance = getWalletAddress(wallet)
+                    ? balances[getWalletAddress(wallet)]
                     : null;
-                  const address = wallet.testnet_address;
+                  const address = getWalletAddress(wallet);
                   const isCopied = address === copiedAddress;
 
                   return (
