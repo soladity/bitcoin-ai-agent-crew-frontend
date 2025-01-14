@@ -34,7 +34,11 @@ export default function StacksComponents({
       network: network,
       onFinish: (data) => {
         const explorerUrl = `https://explorer.stacks.co/txid/${data.txId}`;
-        onToast("Success", "Fund will appear soon.", "default");
+        onToast(
+          "Success",
+          "Transfer sent to agent, funds will arrive soon.",
+          "default"
+        );
         return {
           txId: data.txId,
           explorerUrl: explorerUrl,

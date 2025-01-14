@@ -7,7 +7,7 @@ export const tourSteps: Tour[] = [
             {
                 icon: "",
                 title: "Welcome to AIBTC.DEV. 👋",
-                content: "I'll guide your through the basics to get started. Let's dive in!",
+                content: "I'll guide you through the basics to get started. Let's dive in!",
                 selector: "#step1", //now you can assign any component this id and it will guide you to this step...
                 side: "bottom", //position where you want to show the guide card 
                 showControls: true, //default 
