@@ -1,18 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  AppConfig,
-  showConnect,
-  UserSession,
-  openSignatureRequestPopup,
-} from "@stacks/connect";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { STACKS_MAINNET } from "@stacks/network";
 import {
   Dialog,
   DialogContent,
@@ -21,9 +14,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import dynamic from "next/dynamic";
+import { connectWallet, requestSignature } from "./stacks-provider";
 
-const appConfig = new AppConfig(["store_write", "publish_data"]);
-const userSession = new UserSession({ appConfig });
+// Dynamically import StacksProvider component
+const StacksProvider = dynamic(() => import("./stacks-provider"), {
+  ssr: false,
+});
 
 export default function StacksAuth() {
   const [mounted, setMounted] = useState(false);
@@ -43,14 +40,12 @@ export default function StacksAuth() {
     signature: string
   ) => {
     try {
-      // Try to sign in first
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: `${stxAddress}@stacks.id`,
         password: signature,
       });
 
       if (signInError && signInError.status === 400) {
-        // User doesn't exist, proceed with sign up
         toast({
           description: "Creating your account...",
         });
@@ -95,25 +90,15 @@ export default function StacksAuth() {
         description: "Connecting wallet...",
       });
 
-      // Connect wallet
-      await new Promise<void>((resolve) => {
-        showConnect({
-          appDetails: {
-            name: "AIBTC",
-            icon: "https://bncytzyfafclmdxrwpgq.supabase.co/storage/v1/object/public/aibtcdev/aibtcdev-avatar-250px.png",
-          },
-          onCancel: () => {
-            toast({
-              description: "Wallet connection cancelled.",
-            });
-            setIsLoading(false);
-          },
-          onFinish: () => resolve(),
-          userSession,
-        });
+      const data = await connectWallet({
+        onCancel: () => {
+          toast({
+            description: "Wallet connection cancelled.",
+          });
+          setIsLoading(false);
+        },
       });
 
-      const data = userSession.loadUserData();
       setUserData(data);
       setShowTerms(true);
       setIsLoading(false);
@@ -141,38 +126,16 @@ export default function StacksAuth() {
         description: "Please sign the message to authenticate...",
       });
 
-      let signature: string;
-      await new Promise<void>((resolve, reject) => {
-        openSignatureRequestPopup({
-          message: "Please sign the message to authenticate.",
-          network: STACKS_MAINNET,
-          appDetails: {
-            name: "AIBTC",
-            icon: "https://bncytzyfafclmdxrwpgq.supabase.co/storage/v1/object/public/aibtcdev/aibtcdev-avatar-250px.png",
-          },
-          onFinish: (data) => {
-            signature = data.signature.slice(0, 72);
-            resolve();
-          },
-          onCancel: () => {
-            reject(new Error("Signature request cancelled"));
-          },
-        });
-      });
+      const signature = await requestSignature();
 
       toast({
         description: "Signature received. Authenticating...",
       });
 
-      const success = await handleAuthentication(stxAddress, signature!);
+      const success = await handleAuthentication(stxAddress, signature);
 
       if (success) {
-        // Delay redirect to show success message
         router.push("/chat");
-
-        // BETTER WITHOUT TIMEOUT...FEELS MORE SMOOTH
-        // setTimeout(() => {
-        // }, 2000);
       }
     } catch (error) {
       console.error("Authentication error:", error);
@@ -181,16 +144,12 @@ export default function StacksAuth() {
         variant: "destructive",
       });
     }
-    /*COMMENTING THIS OUT BECAUSE IT SHOWS CONNECT WALLET AFTER ACCEPTING THE TERMS...NOT GOOD FOR UX */
-    //  finally {
-    //   setIsLoading(false);
-    // }
   };
 
   if (!mounted) return null;
 
   return (
-    <>
+    <StacksProvider>
       <Button
         onClick={handleAuth}
         disabled={isLoading}
@@ -408,6 +367,6 @@ export default function StacksAuth() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </StacksProvider>
   );
 }

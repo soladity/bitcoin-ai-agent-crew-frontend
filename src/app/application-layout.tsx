@@ -94,7 +94,7 @@ export default function ApplicationLayout({
         </Button>
       </div>
 
-      <div className="flex-1 flex min-w-0">
+      <div className="flex-1 flex min-w-0 max-h-[100vh] overflow-hidden">
         {/* Left Sidebar */}
         <aside
           className={cn(
@@ -132,7 +132,7 @@ export default function ApplicationLayout({
 
           {/* Navigation */}
           <div className="flex flex-col h-[calc(100vh-3.5rem)]">
-            <nav className="flex-none p-2">
+            <nav className="flex-none p-2" id="step4">
               <div className="space-y-1">
                 {navigation.map((item) => {
                   const isActive = pathname === item.href;
@@ -175,6 +175,7 @@ export default function ApplicationLayout({
 
         {/* Main Content */}
         <main className="flex-1 min-w-0 relative">
+          <div id="step1"></div>
           <ScrollArea className="h-screen w-full">{children}</ScrollArea>
         </main>
 
