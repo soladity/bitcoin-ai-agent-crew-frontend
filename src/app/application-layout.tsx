@@ -84,7 +84,12 @@ export default function ApplicationLayout({
             width={20}
             height={20}
           />
-          <span className="text-lg font-medium text-white">AIBTCDEV</span>
+          <Image
+            src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
+            alt="AIBTCDEV"
+            width={150}
+            height={300}
+          />
         </div>
         <Button
           variant="ghost"
@@ -120,7 +125,12 @@ export default function ApplicationLayout({
                 width={20}
                 height={20}
               />
-              <span className="text-lg font-medium text-white">AIBTCDEV</span>
+              <Image
+                src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
+                alt="AIBTCDEV"
+                width={150}
+                height={300}
+              />
             </div>
             <Button
               variant="ghost"
