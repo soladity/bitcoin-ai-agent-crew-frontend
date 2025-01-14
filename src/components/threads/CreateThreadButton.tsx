@@ -44,7 +44,7 @@ export function CreateThreadButton({
       disabled={agents.length === 0}
     >
       <Plus className="h-4 w-4 mr-2" />
-      New Thread
+      New Chat
     </Button>
   );
 }

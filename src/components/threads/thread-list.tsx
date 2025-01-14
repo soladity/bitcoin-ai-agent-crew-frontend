@@ -3,14 +3,12 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
-import { useAgents } from "@/hooks/use-agents";
 import { format } from "date-fns";
 import { useSessionStore } from "@/store/session";
 import { useChatStore } from "@/store/chat";
 import { useThreadsStore } from "@/store/threads";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CreateThreadButton } from "./CreateThreadButton";
 
 export function ThreadList({
   setLeftPanelOpen,
@@ -38,16 +36,11 @@ export function ThreadList({
 
   return (
     <div className="flex flex-col flex-1">
-      {/* New Thread Button */}
-      <div className="px-2 pb-2">
-        <CreateThreadButton />
-      </div>
-
       {/* Recent Threads */}
       <div className="flex-1 p-2 border-t border-zinc-800/50" id="step2">
         <div className="px-3 py-2">
           <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
-            Recent Threads
+            Recent Chats
           </h3>
         </div>
         <ScrollArea className="h-[calc(100vh-280px)]">
@@ -56,7 +49,7 @@ export function ThreadList({
               <div className="px-3 py-2 text-sm text-zinc-500">Loading...</div>
             ) : threads.length === 0 ? (
               <div className="px-3 py-2 text-sm text-zinc-500">
-                No threads yet
+                No chats yet
               </div>
             ) : (
               threads.map((thread) => (

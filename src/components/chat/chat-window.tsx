@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AgentSelector } from "./agent-selector";
 import { useAgents } from "@/hooks/use-agents";
+import { CreateThreadButton } from "../threads/CreateThreadButton";
 
 export function ChatWindow() {
   const {
@@ -159,11 +160,9 @@ export function ChatWindow() {
       <div className="flex items-center justify-center h-[calc(100vh-4rem)] backdrop-blur-sm">
         <div className="text-center space-y-2.5 p-4 -mt-20">
           <p className="text-lg font-medium text-muted-foreground">
-            Select a Thread
+            Start a new Chat
           </p>
-          <p className="text-sm text-muted-foreground/60">
-            Choose a thread from the sidebar to start chatting
-          </p>
+          <CreateThreadButton />
         </div>
       </div>
     );
