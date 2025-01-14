@@ -5,8 +5,8 @@ export const tourSteps: Tour[] = [
         tour: "mainTour", //main function to execute the below steps..can create more functions like this
         steps: [
             {
-                icon: "👋",
-                title: "Welcome to AIBTC.DEV.",
+                icon: "",
+                title: "Welcome to AIBTC.DEV. 👋",
                 content: "I'll guide your through the basics to get started. Let's dive in!",
                 selector: "#step1", //now you can assign any component this id and it will guide you to this step...
                 side: "bottom", //position where you want to show the guide card 
