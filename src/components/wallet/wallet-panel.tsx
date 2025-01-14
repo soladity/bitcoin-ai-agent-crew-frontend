@@ -7,7 +7,6 @@ import { Copy, Check, X, Wallet as WalletIcon } from "lucide-react";
 import { useWalletStore } from "@/store/wallet";
 import { useSessionStore } from "@/store/session";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useNextStep } from "nextstepjs";
 import { useToast } from "@/hooks/use-toast";
 import dynamic from "next/dynamic";
 import type { Wallet, Agent } from "@/types/supabase";
@@ -67,12 +66,6 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
     (wallet) => !wallet.agent?.is_archived
   );
 
-  const { startNextStep } = useNextStep();
-
-  const handleStartMainTour = () => {
-    startNextStep("mainTour");
-  };
-
   const handleAmountChange = (address: string, value: string) => {
     if (value === "" || /^\d*\.?\d*$/.test(value)) {
       setStxAmounts((prev) => ({ ...prev, [address]: value }));
@@ -89,10 +82,6 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
     <div className="h-full flex flex-col w-full md:max-w-sm">
       <div className="h-14 px-4 flex items-center justify-between border-b border-zinc-800/50">
         <h2 className="text-lg font-medium text-white">Wallets</h2>
-        {/* ADD md:block to display it. HIDDEN FOR NOW..... */}
-        <Button onClick={handleStartMainTour} className=" hidden">
-          Start Tour
-        </Button>
         {onClose && (
           <Button
             variant="ghost"
