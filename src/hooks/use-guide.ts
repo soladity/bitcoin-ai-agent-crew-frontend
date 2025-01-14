@@ -12,7 +12,7 @@ export function useGuide() {
     async function checkGuideCompletion() {
         try {
             const { data: { user } } = await supabase.auth.getUser();
-            console.log("Current user:", user);
+
 
             if (user) {
                 const { data, error } = await supabase
@@ -26,10 +26,8 @@ export function useGuide() {
                     return;
                 }
 
-                console.log("Guide completion data:", data);
+
                 setHasCompletedGuide(data?.has_completed_guide || false);
-            } else {
-                console.log("No user found during check");
             }
         } catch (error) {
             console.error("Error in checkGuideCompletion:", error);
@@ -41,7 +39,7 @@ export function useGuide() {
     async function updateGuideCompletion() {
         try {
             const { data: { user } } = await supabase.auth.getUser();
-            console.log("Updating guide completion for user:", user);
+
 
             if (!user) {
                 console.error("No user found during update");
@@ -59,7 +57,7 @@ export function useGuide() {
                 throw error;
             }
 
-            console.log("Update result:", data);
+
             setHasCompletedGuide(true);
         } catch (error) {
             console.error("Error in updateGuideCompletion:", error);
