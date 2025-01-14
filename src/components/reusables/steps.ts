@@ -16,7 +16,7 @@ export const tourSteps: Tour[] = [
             {
                 icon: "",
                 title: "Chats 💬",
-                content: "All your past conversations lives here.",
+                content: "All your past conversations live here.",
                 selector: "#step2",
                 side: "right",
                 showControls: true,
@@ -61,7 +61,7 @@ export const tourSteps: Tour[] = [
             {
                 icon: "",
                 title: "Wallet 🔒",
-                content: "This is your personal wallet.",
+                content: "This is your connected wallet.",
                 selector: "#step5",
                 side: "right",
                 showControls: true,
