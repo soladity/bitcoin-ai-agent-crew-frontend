@@ -169,8 +169,8 @@ export function ChatWindow() {
   }
 
   return (
-    <div className="flex-1 flex flex-col relative h-full w-full min-w-0 max-w-full">
-      {/* Header - Fixed at top */}
+    <div className="flex flex-col relative h-[94dvh] md:h-[100dvh] w-full min-w-0 max-w-full">
+      {/* Header */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-2 md:px-4 h-14 border-b border-border/10 min-w-0 bg-background/80 backdrop-blur-sm w-full">
         <div className="flex items-center gap-2 overflow-hidden min-w-0 flex-1">
           {!isConnected && (
@@ -251,13 +251,13 @@ export function ChatWindow() {
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Clear Thread Messages</DialogTitle>
+            <DialogTitle>Clear Chat Messages</DialogTitle>
             <DialogDescription>
-              Are you sure you want to clear all messages in this thread? This
+              Are you sure you want to clear all messages in this chat? This
               action cannot be undone.
             </DialogDescription>
           </DialogHeader>
@@ -276,9 +276,9 @@ export function ChatWindow() {
         </DialogContent>
       </Dialog>
 
-      {/* Message List - Scrollable area */}
+      {/* Message List */}
       <div className="flex-1 overflow-hidden w-full min-w-0 max-w-full">
-        <ScrollArea className="h-[calc(100vh-8rem)] w-full">
+        <ScrollArea className="h-full w-full pb-4">
           <div className="flex flex-col justify-end min-h-full w-full max-w-full">
             {chatError && (
               <Alert
@@ -293,8 +293,8 @@ export function ChatWindow() {
         </ScrollArea>
       </div>
 
-      {/* Input - Fixed at bottom */}
-      <div className="sticky bottom-0 border-t border-border/10 bg-background/80 backdrop-blur-sm w-full min-w-0">
+      {/* Input */}
+      <div className="sticky bottom-0 border-t border-border/10 bg-background/80 backdrop-blur-sm w-full min-w-0 pb-safe">
         <ChatInput
           selectedAgentId={selectedAgentId}
           onAgentSelect={setSelectedAgent}
