@@ -24,6 +24,7 @@ export default function StacksComponents({
   onToast,
 }: StacksComponentsProps) {
   const sendSTX = (recipientAddress: string, amountInSTX: string) => {
+    // CHANGE IT TO MAINNET....
     const network = STACKS_TESTNET;
 
     openSTXTransfer({
@@ -33,11 +34,7 @@ export default function StacksComponents({
       network: network,
       onFinish: (data) => {
         const explorerUrl = `https://explorer.stacks.co/txid/${data.txId}`;
-        onToast(
-          "Success",
-          `Transaction ID: ${data.txId}\nURL: ${explorerUrl}`,
-          "default"
-        );
+        onToast("Success", "Fund will appear soon.", "default");
         return {
           txId: data.txId,
           explorerUrl: explorerUrl,
