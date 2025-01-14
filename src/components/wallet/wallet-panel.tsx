@@ -3,13 +3,18 @@
 import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, X, Wallet } from "lucide-react";
+import { Copy, Check, X, Wallet as WalletIcon } from "lucide-react";
 import { useWalletStore } from "@/store/wallet";
 import { useSessionStore } from "@/store/session";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useNextStep } from "nextstepjs";
 import { useToast } from "@/hooks/use-toast";
 import dynamic from "next/dynamic";
+import type { Wallet, Agent } from "@/types/supabase";
+
+interface WalletWithAgent extends Wallet {
+  agent?: Agent;
+}
 
 // Dynamically import Stacks components with ssr: false
 const StacksComponents = dynamic(() => import("./stacks-component"), {
@@ -74,7 +79,7 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
     }
   };
 
-  const getWalletAddress = (wallet: any) => {
+  const getWalletAddress = (wallet: WalletWithAgent) => {
     return process.env.NEXT_PUBLIC_STACKS_NETWORK === "mainnet"
       ? wallet.mainnet_address
       : wallet.testnet_address;
@@ -112,7 +117,7 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 flex items-center justify-center bg-zinc-900 rounded-full border border-zinc-800/40">
-                      <Wallet className="h-4 w-4 text-zinc-500" />
+                      <WalletIcon className="h-4 w-4 text-zinc-500" />
                     </div>
                     <span className="text-sm font-medium text-white">
                       My Wallet
