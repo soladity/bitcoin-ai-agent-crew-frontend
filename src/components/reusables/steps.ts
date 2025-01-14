@@ -60,7 +60,7 @@ export const tourSteps: Tour[] = [
             },
             {
                 icon: "",
-                title: "Wallet 🔒",
+                title: "Assistant Wallet 🔒",
                 content: "This is your connected wallet.",
                 selector: "#step5",
                 side: "right",
