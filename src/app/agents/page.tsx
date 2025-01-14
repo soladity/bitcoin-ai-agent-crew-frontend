@@ -58,14 +58,15 @@ export default function AgentsPage() {
                 src={agent.image_url || "/placeholder-agent.png"}
                 alt={agent.name}
                 fill
+                className="pt-5 object-contain md:object-cover md:pt-0 rounded"
                 unoptimized={true}
-                className="object-cover w-full h-full"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
               />
             </div>
             <div className="p-4">
-              <h3 className="font-medium text-lg">{agent.name}</h3>
+              <h3 className="font-bold text-lg text-center">{agent.name}</h3>
               <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                {agent.goal || agent.role}
+                {/* {agent.goal || agent.role} */}
               </p>
             </div>
           </Link>
@@ -92,8 +93,9 @@ export default function AgentsPage() {
                     src={agent.image_url || "/placeholder-agent.png"}
                     alt={agent.name}
                     fill
+                    className="object-cover"
                     unoptimized={true}
-                    className="object-cover w-full h-full"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                   />
                 </div>
                 <div className="p-4">
