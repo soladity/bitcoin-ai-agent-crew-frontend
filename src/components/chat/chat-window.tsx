@@ -171,7 +171,7 @@ export function ChatWindow() {
   return (
     <div className="flex flex-col relative h-[94dvh] md:h-[100dvh] w-full min-w-0 max-w-full">
       {/* Header */}
-      <div className="sticky top-0 z-20 flex items-center justify-between px-2 md:px-4 h-14 border-b border-border/10 min-w-0 bg-background/80 backdrop-blur-sm w-full">
+      <div className="sticky top-0  flex items-center justify-between px-2 md:px-4 h-14 border-b border-border/10 min-w-0 bg-background/80 backdrop-blur-sm w-full">
         <div className="flex items-center gap-2 overflow-hidden min-w-0 flex-1">
           {!isConnected && (
             <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground flex-shrink-0" />
