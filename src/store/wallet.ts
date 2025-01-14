@@ -63,8 +63,9 @@ export const useWalletStore = create<WalletState>((set) => ({
             const agentWallets = walletsData?.filter((wallet) => wallet.agent_id !== null) || [];
 
             // Fetch balances for all addresses
+            // if NEXT_PUBLIC_STACKS_NETWORK is mainnet, use mainnet_address, otherwise use testnet_address
             const allAddresses = walletsData
-                ?.map((wallet) => wallet.testnet_address)
+                ?.map((wallet) => process.env.NEXT_PUBLIC_STACKS_NETWORK === 'mainnet' ? wallet.mainnet_address : wallet.testnet_address)
                 .filter((address): address is string => address !== null);
 
             if (allAddresses && allAddresses.length > 0) {
