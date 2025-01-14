@@ -1,9 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, ChevronRight } from "lucide-react";
-import { useThreads } from "@/hooks/use-threads";
+import { Button } from "@/components/ui/button";
+import { ChevronRight } from "lucide-react";
 import { useAgents } from "@/hooks/use-agents";
 import { format } from "date-fns";
 import { useSessionStore } from "@/store/session";
@@ -11,14 +10,13 @@ import { useChatStore } from "@/store/chat";
 import { useThreadsStore } from "@/store/threads";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { CreateThreadButton } from "./CreateThreadButton";
 
 export function ThreadList({
   setLeftPanelOpen,
 }: {
   setLeftPanelOpen?: (open: boolean) => void;
 }) {
-  const { createThread } = useThreads();
-  const { agents } = useAgents();
   const { userId } = useSessionStore();
   const { setActiveThread, activeThreadId } = useChatStore();
   const { threads, isLoading: loading, fetchThreads } = useThreadsStore();
@@ -31,20 +29,6 @@ export function ThreadList({
     }
   }, [userId, fetchThreads]);
 
-  const handleNewThread = async () => {
-    if (agents.length > 0) {
-      if (userId) {
-        const thread = await createThread(userId);
-        if (thread) {
-          useThreadsStore.getState().addThread(thread);
-          setActiveThread(thread.id);
-        }
-      }
-    } else {
-      alert("Please create an agent first");
-    }
-  };
-
   const handleThreadClick = (threadId: string) => {
     if (threadId === activeThreadId) return;
     setActiveThread(threadId);
@@ -56,15 +40,7 @@ export function ThreadList({
     <div className="flex flex-col flex-1">
       {/* New Thread Button */}
       <div className="px-2 pb-2">
-        <Button
-          className="w-full bg-blue-600 hover:bg-blue-500 text-white"
-          id="step3"
-          onClick={handleNewThread}
-          disabled={loading || agents.length === 0}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          New Thread
-        </Button>
+        <CreateThreadButton />
       </div>
 
       {/* Recent Threads */}
