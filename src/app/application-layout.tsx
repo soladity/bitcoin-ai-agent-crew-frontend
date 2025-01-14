@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   Users,
-  MessageSquare,
+  // MessageSquare,
   Boxes,
   Menu,
   Wallet,
@@ -26,7 +26,8 @@ interface ApplicationLayoutProps {
 }
 
 const navigation = [
-  { id: "chat", name: "Chat", href: "/chat", icon: MessageSquare },
+  // COMMENTING THIS OUT SINCE WE NO LONGER NEED IT.....
+  // { id: "chat", name: "Chat", href: "/chat", icon: MessageSquare },
   { id: "agents", name: "Agents", href: "/agents", icon: Users },
   { id: "daos", name: "DAOs", href: "/daos", icon: Boxes },
   {
