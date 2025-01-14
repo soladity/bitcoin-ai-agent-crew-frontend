@@ -134,6 +134,10 @@ export default function ApplicationLayout({
 
           {/* Navigation */}
           <div className="flex flex-col h-[calc(100vh-3.5rem)]">
+            {/* Thread List */}
+            <div className="flex-1 overflow-y-auto">
+              <ThreadList setLeftPanelOpen={setLeftPanelOpen} />
+            </div>
             <nav className="flex-none p-2" id="step4">
               <div className="space-y-1">
                 {navigation.map((item) => {
@@ -157,11 +161,6 @@ export default function ApplicationLayout({
                 })}
               </div>
             </nav>
-
-            {/* Thread List */}
-            <div className="flex-1 overflow-y-auto">
-              <ThreadList setLeftPanelOpen={setLeftPanelOpen} />
-            </div>
 
             {/* Sign Out Button */}
             <div className="flex-none p-2">
