@@ -69,30 +69,37 @@ export function AgentSelector({
   }: {
     agent?: any;
     className?: string;
-  }) => (
-    <div
-      className={`relative flex items-center justify-center rounded-full overflow-hidden ring-1 ring-border/10 ${className}`}
-    >
-      <div className="relative h-full w-full">
-        <Image
-          src={
-            agent?.image_url ||
-            "https://bncytzyfafclmdxrwpgq.supabase.co/storage/v1/object/public/aibtcdev/aibtcdev-avatar-1000px.png"
-          }
-          alt={agent?.name || "AI BTC Dev"}
-          fill
-          className="object-cover"
-          priority
-          unoptimized={true}
-        />
-        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-          <span className="text-2xl font-bold text-white">
-            {agent?.name ? agent.name.charAt(0).toUpperCase() : "A"}
-          </span>
+  }) => {
+    const shouldShowOverlay =
+      agent?.name && agent.name.toLowerCase() !== "assistant";
+
+    return (
+      <div
+        className={`relative flex items-center justify-center rounded-full overflow-hidden ring-1 ring-border/10 ${className}`}
+      >
+        <div className="relative h-full w-full">
+          <Image
+            src={
+              agent?.image_url ||
+              "https://bncytzyfafclmdxrwpgq.supabase.co/storage/v1/object/public/aibtcdev/aibtcdev-avatar-1000px.png"
+            }
+            alt={agent?.name || "AI BTC Dev"}
+            fill
+            className="object-cover"
+            priority
+            unoptimized={true}
+          />
+          {shouldShowOverlay && (
+            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+              <span className="text-2xl font-bold text-white">
+                {agent.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   if (loading) {
     return (
