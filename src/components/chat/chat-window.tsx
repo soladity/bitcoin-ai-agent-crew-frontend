@@ -24,7 +24,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AgentSelector } from "./agent-selector";
 import { useAgents } from "@/hooks/use-agents";
 import { CreateThreadButton } from "../threads/CreateThreadButton";
-import { useNextStep } from "nextstepjs";
+import { StartGuide } from "../reusables/StartGuide";
 
 export function ChatWindow() {
   const {
@@ -108,12 +108,6 @@ export function ChatWindow() {
     }
   };
 
-  const { startNextStep } = useNextStep();
-
-  const handleStartMainTour = () => {
-    startNextStep("mainTour");
-  };
-
   if (!accessToken) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -169,9 +163,7 @@ export function ChatWindow() {
           {/* Adjust button size and spacing for different screen sizes */}
           <div className="flex justify-center" id="step3">
             <CreateThreadButton />
-          </div>
-          <div className="space-y-2" id="step1">
-            <Button onClick={handleStartMainTour}>Guide Me</Button>
+            <StartGuide />
           </div>
         </div>
       </div>
