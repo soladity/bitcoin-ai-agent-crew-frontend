@@ -10,10 +10,12 @@ import { useThreadsStore } from "@/store/threads";
 interface CreateThreadButtonProps {
   className?: string;
   variant?: "default" | "ghost" | "link";
+  id?: string;
 }
 
 export function CreateThreadButton({
   className = "w-full bg-blue-600 hover:bg-blue-500 text-white",
+  id = "step3",
   variant = "default",
 }: CreateThreadButtonProps) {
   const { createThread } = useThreads();
@@ -35,6 +37,7 @@ export function CreateThreadButton({
       className={className}
       variant={variant}
       onClick={handleNewThread}
+      id={id}
       // disabled={agents.length === 0}
     >
       {/* <Plus className="h-4 w-4 mr-2" /> */}
