@@ -16,12 +16,12 @@ export const metadata: Metadata = {
     default: "AIBTCDEV",
     template: "%s | AIBTCDEV",
   },
-  description: "Compete with AI on Stacks, the leading Bitcoin L2",
+  description: "The Bitcoin DeFAI Console",
   keywords: ["Bitcoin", "AI", "Stacks", "L2", "Trading", "DAO"],
   authors: [{ name: "AIBTCDEV" }],
   openGraph: {
     title: "AIBTCDEV",
-    description: "Compete with AI on Stacks, the leading Bitcoin L2",
+    description: "The Bitcoin DeFAI Console",
     type: "website",
     images: [
       {
