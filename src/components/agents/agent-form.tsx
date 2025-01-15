@@ -193,23 +193,23 @@ export function AgentForm({
                 : "Select tools"}
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-2xl h-[80vh] flex flex-col p-0 bg-zinc-950 border-zinc-800/40">
+          <DialogContent className="sm:max-w-[90vw] md:max-w-[600px] lg:max-w-[900px] w-full h-[80vh] flex flex-col p-0 bg-zinc-950 border-zinc-800/40 overflow-hidden">
             <DialogHeader className="px-4 py-3 border-b border-zinc-800/40">
               <DialogTitle className="text-sm font-medium">
                 Select Tools
               </DialogTitle>
             </DialogHeader>
             <div className="flex-grow min-h-0">
-              <ScrollArea className="h-full">
+              <ScrollArea className="h-full w-full max-w-full">
                 <div className="px-4">
                   <div className="sticky top-0 bg-zinc-950 pt-4 pb-2 z-10">
                     <div className="flex items-center space-x-2">
-                      <Search className="w-4 h-4 text-zinc-500" />
+                      <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 transform -translate-y-1/2" />
                       <Input
                         placeholder="Search tools..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="h-8 bg-black/20 border-zinc-800/40 text-sm"
+                        className="h-8 bg-black/20 border-zinc-800/40 text-sm pl-9 w-full"
                       />
                     </div>
                   </div>
@@ -226,21 +226,22 @@ export function AgentForm({
                         {tools.map((tool) => (
                           <div
                             key={tool.id}
-                            className="flex items-start space-x-2 p-2 hover:bg-white/5 rounded-lg"
+                            className="flex flex-col sm:flex-row items-start space-y-2 sm:space-y-0 sm:space-x-2 p-2 hover:bg-white/5 rounded-lg"
                           >
                             <Checkbox
                               id={tool.id}
                               checked={selectedTools.includes(tool.id)}
                               onCheckedChange={() => handleToolToggle(tool.id)}
+                              className="mt-1"
                             />
-                            <div className="flex flex-col">
+                            <div className="flex-1 min-w-0">
                               <label
                                 htmlFor={tool.id}
                                 className="text-sm font-medium text-zinc-300 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                               >
                                 {tool.name}
                               </label>
-                              <p className="text-xs text-zinc-500 mt-1">
+                              <p className="text-xs text-zinc-500 mt-1 break-words">
                                 {tool.description}
                               </p>
                             </div>

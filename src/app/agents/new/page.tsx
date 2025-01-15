@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AgentForm } from "@/components/agents/agent-form";
 import { Agent } from "@/types/supabase";
 import { supabase } from "@/utils/supabase/client";
 import { useSessionStore } from "@/store/session";
 import { useWalletStore } from "@/store/wallet";
+import { getRandomImageUrl } from "@/lib/generate-image";
 
 // Loading Modal Component
 const LoadingModal = () => (
@@ -24,10 +25,6 @@ export default function NewAgentPage() {
   const router = useRouter();
   const { userId } = useSessionStore();
   const fetchWallets = useWalletStore((state) => state.fetchWallets);
-  const [stxAddresses, setStxAddresses] = useState<{
-    testnet: string;
-    mainnet: string;
-  }>({ testnet: "", mainnet: "" });
 
   const [agent, setAgent] = useState<Partial<Agent>>({
     name: "",
@@ -41,38 +38,12 @@ export default function NewAgentPage() {
   const [saving, setSaving] = useState(false);
   const [showLoadingModal, setShowLoadingModal] = useState(false);
 
-  useEffect(() => {
-    try {
-      const blockstackSession = localStorage.getItem("blockstack-session");
-      if (blockstackSession) {
-        const sessionData = JSON.parse(blockstackSession);
-        const addresses = sessionData?.userData?.profile?.stxAddress;
-        if (addresses) {
-          setStxAddresses({
-            testnet: addresses.testnet,
-            mainnet: addresses.mainnet,
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Error reading blockstack session:", error);
-    }
-  }, []);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Create combined name for image URL only
-    const imageUrlName = `${agent.name}_${
-      process.env.NEXT_PUBLIC_STACKS_NETWORK === "mainnet"
-        ? stxAddresses.mainnet
-        : stxAddresses.testnet
-    }`;
     const updatedAgent = {
       ...agent,
-      image_url: `https://bitcoinfaces.xyz/api/get-image?name=${encodeURIComponent(
-        imageUrlName
-      )}`,
+      image_url: getRandomImageUrl(),
     };
 
     setSaving(true);

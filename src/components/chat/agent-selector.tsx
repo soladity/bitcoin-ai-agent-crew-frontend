@@ -1,181 +1,311 @@
-"use client";
-
 import * as React from "react";
-import { Bot } from "lucide-react";
-import Image from "next/image";
+import { useState, useEffect } from "react";
+import { Bot, Copy, Check, ExternalLink, Plus } from "lucide-react";
 import { useAgents } from "@/hooks/use-agents";
+import { useWalletStore } from "@/store/wallet";
+import { useSessionStore } from "@/store/session";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
+import dynamic from "next/dynamic";
+import Image from "next/image";
+import { Agent, Wallet } from "@/types/supabase";
 
-interface AgentSelectorProps {
+// Dynamically import Stacks components
+const StacksComponents = dynamic(() => import("../wallet/stacks-component"), {
+  ssr: false,
+});
+
+interface AgentWalletSelectorProps {
   selectedAgentId: string | null;
   onSelect: (value: string | null) => void;
   disabled?: boolean;
 }
 
-export function AgentSelector({
+export function AgentWalletSelector({
   selectedAgentId,
   onSelect,
-  disabled,
-}: AgentSelectorProps) {
-  const { agents, loading } = useAgents();
-  const [internalSelectedId, setInternalSelectedId] = React.useState<
-    string | null
-  >(selectedAgentId);
+}: AgentWalletSelectorProps) {
+  const { agents, loading: agentsLoading } = useAgents();
+  const {
+    balances,
+    userWallet,
+    agentWallets,
+    isLoading: walletsLoading,
+    fetchWallets,
+  } = useWalletStore();
+  const { userId } = useSessionStore();
+  const { toast } = useToast();
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const [stxAmounts, setStxAmounts] = useState<{ [key: string]: string }>({});
 
   // Filter out archived agents
   const activeAgents = agents.filter((agent) => !agent.is_archived);
 
-  React.useEffect(() => {
-    if (!loading && activeAgents.length > 0) {
-      if (!internalSelectedId && selectedAgentId !== null) {
-        const newSelectedId = activeAgents[0].id;
-        setInternalSelectedId(newSelectedId);
-        onSelect(newSelectedId);
-      } else if (
-        internalSelectedId &&
-        !activeAgents.some((agent) => agent.id === internalSelectedId)
-      ) {
-        // If the current selected ID is not in the agents list, select the first agent
-        const newSelectedId = activeAgents[0].id;
-        setInternalSelectedId(newSelectedId);
-        onSelect(newSelectedId);
-      }
+  useEffect(() => {
+    if (userId) {
+      fetchWallets(userId);
     }
-  }, [loading, activeAgents, internalSelectedId, onSelect, selectedAgentId]);
+  }, [userId, fetchWallets]);
 
-  React.useEffect(() => {
-    setInternalSelectedId(selectedAgentId);
-  }, [selectedAgentId]);
-
-  const handleSelect = (value: string) => {
-    const newValue = value === "none" ? null : value;
-    setInternalSelectedId(newValue);
-    onSelect(newValue);
+  const truncateAddress = (address: string) => {
+    if (!address) return "";
+    return `${address.slice(0, 5)}...${address.slice(-5)}`;
   };
 
-  const selectedAgent = activeAgents.find(
-    (agent) => agent.id === internalSelectedId
-  );
+  const copyToClipboard = async (address: string) => {
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopiedAddress(address);
+      setTimeout(() => setCopiedAddress(null), 2000);
+    } catch (error) {
+      toast({
+        title: "Failed to copy",
+        description: `Error: ${error}`,
+        variant: "destructive",
+      });
+    }
+  };
 
-  if (loading) {
+  const formatBalance = (balance: string) => {
+    return (Number(balance) / 1_000_000).toFixed(6);
+  };
+
+  const getWalletAddress = (wallet: Wallet) => {
+    return process.env.NEXT_PUBLIC_STACKS_NETWORK === "mainnet"
+      ? wallet.mainnet_address
+      : wallet.testnet_address;
+  };
+
+  const handleAmountChange = (address: string, value: string) => {
+    if (value === "" || /^\d*\.?\d*$/.test(value)) {
+      setStxAmounts((prev) => ({ ...prev, [address]: value }));
+    }
+  };
+
+  if (agentsLoading || walletsLoading) {
     return (
-      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-background/50 backdrop-blur-sm">
-        <Bot className="h-4 w-4 animate-pulse text-foreground/50" />
+      <div className="flex h-11 w-auto items-center justify-center rounded-full bg-background/50 backdrop-blur-sm px-4">
+        <Bot className="h-4 w-4 animate-pulse text-foreground/50 mr-2" />
+        <span className="text-sm">Loading...</span>
+      </div>
+    );
+  }
+
+  const selectedAgent = activeAgents.find((a) => a.id === selectedAgentId);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button className="max-w-[200px]">
+          {selectedAgent ? (
+            <div className="flex items-center overflow-hidden">
+              <AgentAvatar
+                agent={selectedAgent}
+                className="h-8 w-8 min-w-8 mr-2"
+              />
+              <span className="text-sm font-medium truncate">
+                {selectedAgent.name}
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center">
+              <Bot className="h-5 w-5 text-foreground/50 mr-2" />
+              <span className="text-sm font-medium">Assistant Agent</span>
+            </div>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="w-[min(400px,calc(100vw-2rem))] max-h-[min(600px,calc(100vh-4rem))] overflow-y-auto"
+      >
+        {/* User Wallet Section */}
+        {userWallet && (
+          <>
+            <div className="p-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2 min-w-[140px]">
+                  <Bot className="h-5 w-5 text-foreground/50" />
+                  <span className="font-medium">Assistant Wallet</span>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {balances[getWalletAddress(userWallet)]?.stx?.balance &&
+                    `${formatBalance(
+                      balances[getWalletAddress(userWallet)].stx.balance
+                    )} STX`}
+                </div>
+              </div>
+              <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                <code className="break-all">
+                  {truncateAddress(getWalletAddress(userWallet))}
+                </code>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 p-0 flex-shrink-0"
+                  onClick={() => copyToClipboard(getWalletAddress(userWallet))}
+                >
+                  {copiedAddress === getWalletAddress(userWallet) ? (
+                    <Check className="h-3 w-3" />
+                  ) : (
+                    <Copy className="h-3 w-3" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            <DropdownMenuSeparator />
+          </>
+        )}
+
+        {/* Create New Agent Button */}
+        {activeAgents.length === 0 && (
+          <div className="p-3">
+            <Link href="/agents/new" className="block">
+              <Button className="w-full" variant="secondary">
+                <Plus className="h-4 w-4 mr-2" />
+                Create New Agent
+              </Button>
+            </Link>
+          </div>
+        )}
+
+        {/* Agents Section */}
+        {activeAgents.length > 0 && (
+          <div className="overflow-y-auto">
+            {activeAgents.map((agent) => {
+              const wallet = agentWallets.find((w) => w.agent_id === agent.id);
+              const walletAddress = wallet ? getWalletAddress(wallet) : null;
+              const balance = walletAddress
+                ? balances[walletAddress]?.stx?.balance
+                : null;
+
+              return (
+                <DropdownMenuItem
+                  key={agent.id}
+                  className="flex flex-col items-stretch p-3 cursor-pointer hover:bg-black focus:bg-gray/100"
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    onSelect(agent.id);
+                  }}
+                >
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2 min-w-[140px]">
+                      <AgentAvatar agent={agent} className="h-8 w-8" />
+                      <div className="flex flex-col">
+                        <span className="font-medium truncate max-w-[150px]">
+                          {agent.name}
+                        </span>
+                        {walletAddress && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <code className="break-all">
+                              {truncateAddress(walletAddress)}
+                            </code>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-4 w-4 p-0 flex-shrink-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                copyToClipboard(walletAddress);
+                              }}
+                            >
+                              {copiedAddress === walletAddress ? (
+                                <Check className="h-3 w-3" />
+                              ) : (
+                                <Copy className="h-3 w-3" />
+                              )}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {balance && (
+                      <span className="text-sm text-muted-foreground">
+                        {formatBalance(balance)} STX
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="mt-2 flex items-center gap-2 flex-wrap">
+                    {walletAddress && (
+                      <div className="flex-1 min-w-[200px]">
+                        <StacksComponents
+                          address={walletAddress}
+                          amount={stxAmounts[walletAddress] || ""}
+                          onAmountChange={(value) =>
+                            handleAmountChange(walletAddress, value)
+                          }
+                          onToast={(title, description, variant) =>
+                            toast({ title, description, variant })
+                          }
+                        />
+                      </div>
+                    )}
+                    <Link
+                      href={`/agents/${agent.id}`}
+                      className="inline-flex items-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button
+                        variant="ghost"
+                        className="h-8 px-3 flex items-center gap-2"
+                      >
+                        <span className="text-sm">Manage</span>
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                </DropdownMenuItem>
+              );
+            })}
+          </div>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function AgentAvatar({
+  agent,
+  className = "",
+}: {
+  agent?: Agent;
+  className?: string;
+}) {
+  if (!agent?.image_url) {
+    return (
+      <div
+        className={`flex items-center justify-center rounded-full bg-background ${className}`}
+      >
+        <Bot className="h-5 w-5 text-foreground/50" />
       </div>
     );
   }
 
   return (
-    <Select
-      value={
-        internalSelectedId === null ? "none" : internalSelectedId || undefined
-      }
-      onValueChange={handleSelect}
-      disabled={disabled}
-    >
-      <SelectTrigger
-        data-shape="circle"
-        className="group h-11 w-11 rounded-full p-0 border-0 bg-background/50 backdrop-blur-sm hover:bg-background/80 transition-colors duration-200 [&>span]:!p-0 [&>svg]:hidden"
-      >
-        <SelectValue
-          placeholder={
-            <div className="flex h-11 w-11 items-center justify-center rounded-full overflow-hidden ring-1 ring-border/10">
-              <div className="relative h-full w-full">
-                <Image
-                  src="./logos/aibtcdev-avatar-250px.png"
-                  alt="AI BTC Dev"
-                  fill
-                  className="object-cover"
-                  priority
-                  unoptimized={true}
-                />
-              </div>
-            </div>
-          }
-        >
-          {selectedAgent ? (
-            selectedAgent.image_url ? (
-              <div className="flex h-11 w-11 items-center justify-center rounded-full overflow-hidden ring-1 ring-border/10">
-                <div className="relative h-full w-full">
-                  <Image
-                    src={selectedAgent.image_url}
-                    alt={selectedAgent.name}
-                    fill
-                    className="object-cover"
-                    priority
-                    unoptimized={true}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="flex h-11 w-11 items-center justify-center rounded-full">
-                <Bot className="h-4 w-4 text-foreground/50" />
-              </div>
-            )
-          ) : (
-            <div className="flex h-11 w-11 items-center justify-center rounded-full overflow-hidden ring-1 ring-border/10">
-              <div className="relative h-full w-full">
-                <Image
-                  src="https://bncytzyfafclmdxrwpgq.supabase.co/storage/v1/object/public/aibtcdev/aibtcdev-avatar-1000px.png"
-                  alt="AI BTC Dev"
-                  fill
-                  className="object-cover"
-                  priority
-                  unoptimized={true}
-                />
-              </div>
-            </div>
-          )}
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent align="end" className="w-[300px]">
-        <SelectItem value="none" className="py-2">
-          <div className="flex items-center gap-2.5">
-            <div className="relative h-7 w-7 rounded-full overflow-hidden ring-1 ring-border/10">
-              <Image
-                src="https://bncytzyfafclmdxrwpgq.supabase.co/storage/v1/object/public/aibtcdev/aibtcdev-avatar-1000px.png"
-                alt="AI BTC Dev"
-                fill
-                className="object-cover"
-                unoptimized={true}
-              />
-            </div>
-            <span className="text-sm font-medium truncate flex-1">
-              Assistant
-            </span>
-          </div>
-        </SelectItem>
-        {activeAgents.map((agent) => (
-          <SelectItem key={agent.id} value={agent.id} className="py-2">
-            <div className="flex items-center gap-2.5">
-              {agent.image_url ? (
-                <div className="relative h-7 w-7 rounded-full overflow-hidden ring-1 ring-border/10">
-                  <Image
-                    src={agent.image_url}
-                    alt={agent.name}
-                    fill
-                    className="object-cover"
-                    unoptimized={true}
-                  />
-                </div>
-              ) : (
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-background">
-                  <Bot className="h-3.5 w-3.5 text-foreground/50" />
-                </div>
-              )}
-              <span className="text-sm font-medium truncate flex-1">
-                {agent.name}
-              </span>
-            </div>
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className={`relative rounded-full overflow-hidden ${className}`}>
+      <Image
+        src={agent.image_url || "/placeholder.svg"}
+        alt={agent.name}
+        height={24}
+        width={24}
+        className="object-cover"
+      />
+      <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+        <span className="text-lg font-bold text-white">
+          {agent.name.charAt(0).toUpperCase()}
+        </span>
+      </div>
+    </div>
   );
 }
+
+export default AgentWalletSelector;

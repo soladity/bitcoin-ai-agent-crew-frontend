@@ -6,8 +6,45 @@ import { Message } from "@/lib/chat/types";
 import { useAgent } from "@/hooks/use-agent";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Image from "next/image";
+import { memo } from "react";
+import { Agent } from "@/types/supabase";
 
-export function ChatMessageBubble({ message }: { message: Message }) {
+// Separate AgentAvatar into its own memoized component
+const AgentAvatar = memo(({ agent }: { agent: Agent | null }) => {
+  const shouldShowOverlay =
+    agent?.name && agent.name.toLowerCase() !== "assistant";
+
+  return (
+    <Avatar className="h-6 w-6 relative">
+      {agent?.image_url ? (
+        <AvatarImage
+          src={agent.image_url}
+          alt={agent?.name || "Bot"}
+          className="object-cover"
+        />
+      ) : null}
+      <AvatarFallback>
+        <Image
+          src="/logos/aibtcdev-avatar-1000px.png"
+          alt="AI BTC Dev"
+          width={24}
+          height={24}
+        />
+      </AvatarFallback>
+      {shouldShowOverlay && (
+        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+          <span className="text-xs font-bold text-white">
+            {agent.name.charAt(0).toUpperCase()}
+          </span>
+        </div>
+      )}
+    </Avatar>
+  );
+});
+AgentAvatar.displayName = "AgentAvatar";
+
+// Memoize the entire ChatMessageBubble component
+export const ChatMessageBubble = memo(({ message }: { message: Message }) => {
   const { agent } = useAgent(
     message.role === "assistant" ? message.agent_id : null
   );
@@ -30,20 +67,9 @@ export function ChatMessageBubble({ message }: { message: Message }) {
         {message.role === "user" ? (
           <User className="h-3 w-3" />
         ) : (
-          <Avatar className="h-6 w-6">
-            <AvatarImage src={agent?.image_url} alt={agent?.name || "Bot"} />
-            <AvatarFallback>
-              <Image
-                src="/logos/aibtcdev-avatar-1000px.png"
-                alt="AI BTC Dev"
-                width={24}
-                height={24}
-              />
-            </AvatarFallback>
-          </Avatar>
+          <AgentAvatar agent={agent} />
         )}
       </div>
-
       <div
         className={cn(
           "flex flex-col min-w-0 space-y-1",
@@ -80,7 +106,7 @@ export function ChatMessageBubble({ message }: { message: Message }) {
               message.role === "user" ? "flex-row-reverse" : "flex-row"
             )}
           >
-            <p className="text-[10px] text-zinc-500">
+            <p className="text-xs text-zinc-500">
               {new Date(message.created_at).toLocaleTimeString()}
             </p>
             {message.status === "processing" && (
@@ -94,4 +120,5 @@ export function ChatMessageBubble({ message }: { message: Message }) {
       </div>
     </div>
   );
-}
+});
+ChatMessageBubble.displayName = "ChatMessageBubble";

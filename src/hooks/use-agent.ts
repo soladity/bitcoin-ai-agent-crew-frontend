@@ -110,14 +110,16 @@ export function useAgentForm() {
 }
 
 // Hook for fetching agent data
-export function useAgent(agentId: string | null) {
+export function useAgent(agentId: string | null | undefined) {
   const [agent, setAgent] = useState<Agent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const fetchAgent = async () => {
-      if (!agentId) {
+      setError(null);
+
+      if (!agentId || agentId === "None") {
         setAgent(null);
         setIsLoading(false);
         return;
@@ -137,8 +139,9 @@ export function useAgent(agentId: string | null) {
 
         setAgent(data);
       } catch (err) {
-        setError(err as Error);
-        console.error("Error fetching agent:", err);
+        const error = err as Error;
+        setError(error);
+        console.error("Error fetching agent:", error.message);
       } finally {
         setIsLoading(false);
       }

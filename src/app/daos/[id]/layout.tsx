@@ -1,85 +1,89 @@
-"use client";
+import { Metadata } from "next";
+import { DAOLayoutClient } from "./layout-client";
+import { supabase } from "@/utils/supabase/client";
 
-import React from "react";
-import { useParams, usePathname } from "next/navigation";
-import Link from "next/link";
-import { ChevronRight, Info, Activity, Users, Blocks } from "lucide-react";
+// Twitter recommends 2:1 ratio images
+// Minimum dimensions: 300x157
+// Maximum dimensions: 4096x4096
+// Recommended dimensions: 1200x600
+const TWITTER_IMAGE_WIDTH = 1200;
+const TWITTER_IMAGE_HEIGHT = 600;
+
+// Open Graph recommends 1.91:1 ratio
+const OG_IMAGE_WIDTH = 1200;
+const OG_IMAGE_HEIGHT = 628;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}): Promise<Metadata> {
+  const [{ data: dao }, { data: token }] = await Promise.all([
+    supabase
+      .from("daos")
+      .select("name, description")
+      .eq("id", params.id)
+      .single(),
+    supabase
+      .from("tokens")
+      .select("image_url")
+      .eq("dao_id", params.id)
+      .single(),
+  ]);
+
+  if (!dao) {
+    return {
+      title: "DAO Not Found",
+      description: "The requested DAO could not be found.",
+    };
+  }
+
+  // Generate separate URLs for Twitter and Open Graph with correct dimensions
+  const twitterImageUrl = token?.image_url
+    ? `${token.image_url}?w=${TWITTER_IMAGE_WIDTH}&h=${TWITTER_IMAGE_HEIGHT}&fit=cover&auto=format`
+    : undefined;
+
+  const ogImageUrl = token?.image_url
+    ? `${token.image_url}?w=${OG_IMAGE_WIDTH}&h=${OG_IMAGE_HEIGHT}&fit=cover&auto=format`
+    : undefined;
+
+  return {
+    title: dao.name,
+    description: dao.description,
+    openGraph: {
+      title: dao.name,
+      description: dao.description,
+      images: ogImageUrl
+        ? [
+            {
+              url: ogImageUrl,
+              width: OG_IMAGE_WIDTH,
+              height: OG_IMAGE_HEIGHT,
+              alt: `${dao.name} token logo`,
+            },
+          ]
+        : undefined,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: dao.name,
+      description: dao.description,
+      // Twitter specific image with 2:1 ratio
+      images: twitterImageUrl ? [twitterImageUrl] : undefined,
+      creator: "@aibtcdev",
+    },
+    alternates: {
+      canonical: `/daos/${params.id}`,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+    keywords: [dao.name, "DAO", "Blockchain", "Governance", "Token"],
+  };
+}
 
 export default function DAOLayout({ children }: { children: React.ReactNode }) {
-  const params = useParams();
-  const id = params.id as string;
-  const pathname = usePathname();
-
-  const isOverview = pathname === `/daos/${id}`;
-  const isExtensions = pathname === `/daos/${id}/extensions`;
-  const isHolders = pathname === `/daos/${id}/holders`;
-  const isProposals = pathname === `/daos/${id}/proposals`;
-
-  return (
-    <div className="container mx-auto space-y-4 px-4 py-6">
-      {/* Breadcrumb */}
-      <div className="flex items-center text-sm text-muted-foreground">
-        <Link href="/daos" className="hover:text-foreground transition-colors">
-          DAOs
-        </Link>
-        <ChevronRight className="h-4 w-4 mx-1" />
-        <span className="text-foreground font-medium">Details</span>
-      </div>
-
-      {/* Navigation Tabs */}
-      <div className="flex border-b border-border">
-        <Link href={`/daos/${id}`} className="mr-6">
-          <div
-            className={`flex items-center gap-2 pb-2 ${
-              isOverview
-                ? "border-b-2 border-primary text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Info className="h-4 w-4" />
-            <span className="text-sm font-medium">Overview</span>
-          </div>
-        </Link>
-        <Link href={`/daos/${id}/extensions`} className="mr-6">
-          <div
-            className={`flex items-center gap-2 pb-2 ${
-              isExtensions
-                ? "border-b-2 border-primary text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Blocks className="h-4 w-4" />
-            <span className="text-sm font-medium">Extensions</span>
-          </div>
-        </Link>
-        <Link href={`/daos/${id}/holders`} className="mr-6">
-          <div
-            className={`flex items-center gap-2 pb-2 ${
-              isHolders
-                ? "border-b-2 border-primary text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Users className="h-4 w-4" />
-            <span className="text-sm font-medium">Holders</span>
-          </div>
-        </Link>
-        <Link href={`/daos/${id}/proposals`}>
-          <div
-            className={`flex items-center gap-2 pb-2 ${
-              isProposals
-                ? "border-b-2 border-primary text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Activity className="h-4 w-4" />
-            <span className="text-sm font-medium">Proposals</span>
-          </div>
-        </Link>
-      </div>
-
-      {/* Content */}
-      <main className="min-h-[calc(100vh-12rem)]">{children}</main>
-    </div>
-  );
+  return <DAOLayoutClient>{children}</DAOLayoutClient>;
 }
