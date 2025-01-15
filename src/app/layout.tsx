@@ -11,16 +11,16 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://sprint.aibtc.dev"),
+  metadataBase: new URL("https://app.aibtc.dev"),
   title: {
-    default: "AIBTC",
-    template: "%s | AIBTC",
+    default: "AIBTCDEV",
+    template: "%s | AIBTCDEV",
   },
   description: "Compete with AI on Stacks, the leading Bitcoin L2",
-  keywords: ["Bitcoin", "AI", "Stacks", "L2", "Trading"],
-  authors: [{ name: "AIBTC Champions" }],
+  keywords: ["Bitcoin", "AI", "Stacks", "L2", "Trading", "DAO"],
+  authors: [{ name: "AIBTCDEV" }],
   openGraph: {
-    title: "AIBTC",
+    title: "AIBTCDEV",
     description: "Compete with AI on Stacks, the leading Bitcoin L2",
     type: "website",
     images: [
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
         url: "https://app.aibtc.dev/logos/aibtcdev-avatar-1000px.png",
         width: 1000,
         height: 1000,
-        alt: "AIBTC",
+        alt: "AIBTCDEV",
       },
     ],
   },
