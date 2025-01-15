@@ -104,30 +104,35 @@ export function AgentWalletSelector({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button>
+        <Button className="max-w-[200px]">
           {selectedAgent ? (
-            <>
-              <AgentAvatar agent={selectedAgent} className="h-8 w-8 mr-2" />
-              <span className="text-sm font-medium">{selectedAgent.name}</span>
-            </>
+            <div className="flex items-center overflow-hidden">
+              <AgentAvatar
+                agent={selectedAgent}
+                className="h-8 w-8 min-w-8 mr-2"
+              />
+              <span className="text-sm font-medium truncate">
+                {selectedAgent.name}
+              </span>
+            </div>
           ) : (
-            <>
+            <div className="flex items-center">
               <Bot className="h-5 w-5 text-foreground/50 mr-2" />
               <span className="text-sm font-medium">Assistant Agent</span>
-            </>
+            </div>
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-[320px] max-h-[50vh] overflow-y-auto"
+        className="w-[min(400px,calc(100vw-2rem))] max-h-[min(600px,calc(100vh-4rem))] overflow-y-auto"
       >
         {/* User Wallet Section */}
         {userWallet && (
           <>
-            <div className="px-3 py-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+            <div className="p-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2 min-w-[140px]">
                   <Bot className="h-5 w-5 text-foreground/50" />
                   <span className="font-medium">Assistant Wallet</span>
                 </div>
@@ -139,11 +144,13 @@ export function AgentWalletSelector({
                 </div>
               </div>
               <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                <code>{truncateAddress(getWalletAddress(userWallet))}</code>
+                <code className="break-all">
+                  {truncateAddress(getWalletAddress(userWallet))}
+                </code>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-4 w-4 p-0"
+                  className="h-4 w-4 p-0 flex-shrink-0"
                   onClick={() => copyToClipboard(getWalletAddress(userWallet))}
                 >
                   {copiedAddress === getWalletAddress(userWallet) ? (
@@ -158,14 +165,16 @@ export function AgentWalletSelector({
           </>
         )}
 
-        {/* Create New Agent Button - shown when no agents exist */}
+        {/* Create New Agent Button */}
         {activeAgents.length === 0 && (
-          <Link href="/agents/new" className="block px-3 py-2">
-            <Button className="w-full" variant="secondary">
-              <Plus className="h-4 w-4 mr-2" />
-              Create New Agent
-            </Button>
-          </Link>
+          <div className="p-3">
+            <Link href="/agents/new" className="block">
+              <Button className="w-full" variant="secondary">
+                <Plus className="h-4 w-4 mr-2" />
+                Create New Agent
+              </Button>
+            </Link>
+          </div>
         )}
 
         {/* Agents Section */}
@@ -181,24 +190,28 @@ export function AgentWalletSelector({
               return (
                 <DropdownMenuItem
                   key={agent.id}
-                  className="flex flex-col items-stretch p-3 cursor-pointer hover:bg-gray/50 focus:bg-gray/50"
+                  className="flex flex-col items-stretch p-3 cursor-pointer hover:bg-black focus:bg-gray/100"
                   onSelect={(e) => {
                     e.preventDefault();
                     onSelect(agent.id);
                   }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2 min-w-[140px]">
                       <AgentAvatar agent={agent} className="h-8 w-8" />
                       <div className="flex flex-col">
-                        <span className="font-medium">{agent.name}</span>
+                        <span className="font-medium truncate max-w-[150px]">
+                          {agent.name}
+                        </span>
                         {walletAddress && (
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <code>{truncateAddress(walletAddress)}</code>
+                            <code className="break-all">
+                              {truncateAddress(walletAddress)}
+                            </code>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-4 w-4 p-0"
+                              className="h-4 w-4 p-0 flex-shrink-0"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 copyToClipboard(walletAddress);
@@ -221,9 +234,9 @@ export function AgentWalletSelector({
                     )}
                   </div>
 
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-2 flex items-center gap-2 flex-wrap">
                     {walletAddress && (
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-[200px]">
                         <StacksComponents
                           address={walletAddress}
                           amount={stxAmounts[walletAddress] || ""}
@@ -238,13 +251,16 @@ export function AgentWalletSelector({
                     )}
                     <Link
                       href={`/agents/${agent.id}`}
-                      className="inline-flex h-8 items-center"
+                      className="inline-flex items-center"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button
+                        variant="ghost"
+                        className="h-8 px-3 flex items-center gap-2"
+                      >
+                        <span className="text-sm">Manage</span>
                         <ExternalLink className="h-4 w-4" />
                       </Button>
-                      <span className="sr-only">View agent details</span>
                     </Link>
                   </div>
                 </DropdownMenuItem>
@@ -280,7 +296,8 @@ function AgentAvatar({
         src={agent.image_url || "/placeholder.svg"}
         alt={agent.name}
         height={24}
-        width={25}
+        width={24}
+        className="object-cover"
       />
       <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
         <span className="text-lg font-bold text-white">

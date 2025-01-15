@@ -1,8 +1,16 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { BsRobot } from "react-icons/bs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { STACKS_TESTNET, STACKS_MAINNET } from "@stacks/network";
 import { openSTXTransfer } from "@stacks/connect";
 
@@ -58,29 +66,44 @@ export default function StacksComponents({
       onToast("Please enter a valid STX amount", undefined, "destructive");
       return;
     }
-    // Convert STX to microSTX (1 STX = 1,000,000 microSTX)
     const microSTX = (Number(amount) * 1_000_000).toString();
     sendSTX(address, microSTX);
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <Input
-        type="text"
-        placeholder="Amount in STX"
-        value={amount}
-        onChange={(e) => onAmountChange(e.target.value)}
-        className="w-32 text-sm"
-        required
-      />
-      <Button
-        size="sm"
-        onClick={handleSendSTX}
-        className="text-zinc-400 hover:text-white"
-      >
-        <BsRobot className="h-4 w-4 mr-2" />
-        Fund Agent
-      </Button>
-    </div>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button size="sm" className="text-zinc-400 hover:text-white">
+          <BsRobot className="h-4 w-4 mr-2" />
+          Fund Agent
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add Funds</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4 py-4">
+          <div className="relative">
+            <Input
+              type="string"
+              placeholder="Amount in STX"
+              value={amount}
+              onChange={(e) => onAmountChange(e.target.value)}
+              className="pl-2 pr-12"
+              min="0"
+              step="0.1"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+              STX
+            </span>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={handleSendSTX} className="w-full">
+            Confirm Transfer
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
