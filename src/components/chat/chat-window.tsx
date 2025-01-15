@@ -21,7 +21,8 @@ import { Input } from "@/components/ui/input";
 import { useThreadsStore } from "@/store/threads";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AgentSelector } from "./agent-selector";
+
+import AgentWalletSelector from "./agent-selector";
 import { CreateThreadButton } from "../threads/CreateThreadButton";
 import { StartGuide } from "../reusables/StartGuide";
 
@@ -121,7 +122,7 @@ export function ChatWindow() {
       <div className="flex items-center justify-center h-[calc(100vh-4rem)] backdrop-blur-sm">
         <div className="text-center space-y-4 p-4 sm:p-6 lg:p-8 -mt-20">
           {/* Adjust button size and spacing for different screen sizes */}
-          <div className="flex justify-center gap-3" id="step3">
+          <div className="flex justify-center gap-3">
             <CreateThreadButton />
             <div className="md:block hidden">
               <StartGuide />
@@ -206,8 +207,8 @@ export function ChatWindow() {
             )}
           </div>
         </div>
-        <div className="block md:hidden flex-shrink-0 ml-2">
-          <AgentSelector
+        <div className=" flex-shrink-0 ml-2">
+          <AgentWalletSelector
             selectedAgentId={selectedAgentId}
             onSelect={setSelectedAgent}
             disabled={isChatLoading || !isConnected}

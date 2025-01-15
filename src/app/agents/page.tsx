@@ -21,7 +21,7 @@ export default function AgentsPage() {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex w-full flex-wrap items-center justify-between gap-4 pb-8">
         <div>
-          <Heading>Agent Store</Heading>
+          <Heading>Agents</Heading>
           <p className="text-muted-foreground mt-1">
             Discover and deploy AI agents for your needs
           </p>
