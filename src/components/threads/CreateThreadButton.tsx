@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { useThreads } from "@/hooks/use-threads";
-import { useAgents } from "@/hooks/use-agents";
 import { useSessionStore } from "@/store/session";
 import { useChatStore } from "@/store/chat";
 import { useThreadsStore } from "@/store/threads";
