@@ -9,7 +9,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Agents| AI BTC Dev",
+  title: "Agents",
   description:
     "Discover and deploy AI agents for your blockchain development needs",
 };
