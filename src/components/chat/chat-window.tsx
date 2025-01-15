@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { useThreadsStore } from "@/store/threads";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AgentSelector } from "./agent-selector";
+import AgentWalletSelector from "./agent-selector";
 import { CreateThreadButton } from "../threads/CreateThreadButton";
 import { StartGuide } from "../reusables/StartGuide";
 
@@ -206,8 +206,8 @@ export function ChatWindow() {
             )}
           </div>
         </div>
-        <div className="block md:hidden flex-shrink-0 ml-2">
-          <AgentSelector
+        <div className=" flex-shrink-0 ml-2">
+          <AgentWalletSelector
             selectedAgentId={selectedAgentId}
             onSelect={setSelectedAgent}
             disabled={isChatLoading || !isConnected}

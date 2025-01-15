@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send } from "lucide-react";
-import { AgentSelector } from "./agent-selector";
+import { AgentWalletSelector } from "./agent-selector";
 import { cn } from "@/lib/utils";
 import { useChatStore } from "@/store/chat";
 import { useSessionStore } from "@/store/session";
@@ -80,13 +80,6 @@ export function ChatInput({
           onSubmit={handleSubmit}
           className="flex flex-col md:flex-row gap-2 w-full min-w-0"
         >
-          <div className="hidden md:block flex-shrink-0">
-            <AgentSelector
-              selectedAgentId={selectedAgentId}
-              onSelect={onAgentSelect}
-              disabled={disabled}
-            />
-          </div>
           <div className="flex flex-1 gap-2 min-w-0 w-full">
             <div className="flex-1 min-w-0">
               <Textarea
