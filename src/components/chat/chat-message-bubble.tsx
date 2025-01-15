@@ -7,9 +7,10 @@ import { useAgent } from "@/hooks/use-agent";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Image from "next/image";
 import { memo } from "react";
+import { Agent } from "@/types/supabase";
 
 // Separate AgentAvatar into its own memoized component
-const AgentAvatar = memo(({ agent }: { agent: any }) => {
+const AgentAvatar = memo(({ agent }: { agent: Agent | null }) => {
   const shouldShowOverlay =
     agent?.name && agent.name.toLowerCase() !== "assistant";
 

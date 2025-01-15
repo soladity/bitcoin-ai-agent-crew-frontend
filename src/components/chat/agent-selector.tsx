@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import Image from "next/image";
+import { Agent, Wallet } from "@/types/supabase";
 
 // Dynamically import Stacks components
 const StacksComponents = dynamic(() => import("../wallet/stacks-component"), {
@@ -30,7 +32,6 @@ interface AgentWalletSelectorProps {
 export function AgentWalletSelector({
   selectedAgentId,
   onSelect,
-  disabled,
 }: AgentWalletSelectorProps) {
   const { agents, loading: agentsLoading } = useAgents();
   const {
@@ -77,7 +78,7 @@ export function AgentWalletSelector({
     return (Number(balance) / 1_000_000).toFixed(6);
   };
 
-  const getWalletAddress = (wallet: any) => {
+  const getWalletAddress = (wallet: Wallet) => {
     return process.env.NEXT_PUBLIC_STACKS_NETWORK === "mainnet"
       ? wallet.mainnet_address
       : wallet.testnet_address;
@@ -249,7 +250,7 @@ function AgentAvatar({
   agent,
   className = "",
 }: {
-  agent?: any;
+  agent?: Agent;
   className?: string;
 }) {
   if (!agent?.image_url) {
@@ -264,10 +265,11 @@ function AgentAvatar({
 
   return (
     <div className={`relative rounded-full overflow-hidden ${className}`}>
-      <img
+      <Image
         src={agent.image_url || "/placeholder.svg"}
         alt={agent.name}
-        className="h-full w-full object-cover"
+        height={24}
+        width={25}
       />
       <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
         <span className="text-lg font-bold text-white">

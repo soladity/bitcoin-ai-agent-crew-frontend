@@ -4,7 +4,6 @@ import { useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send } from "lucide-react";
-import { AgentWalletSelector } from "./agent-selector";
 import { cn } from "@/lib/utils";
 import { useChatStore } from "@/store/chat";
 import { useSessionStore } from "@/store/session";
@@ -15,11 +14,7 @@ interface ChatInputProps {
   disabled?: boolean;
 }
 
-export function ChatInput({
-  selectedAgentId,
-  onAgentSelect,
-  disabled = false,
-}: ChatInputProps) {
+export function ChatInput({ disabled = false }: ChatInputProps) {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { sendMessage, activeThreadId } = useChatStore();
