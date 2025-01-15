@@ -13,7 +13,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 
@@ -92,30 +91,36 @@ export function AgentWalletSelector({
 
   if (agentsLoading || walletsLoading) {
     return (
-      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-background/50 backdrop-blur-sm">
-        <Bot className="h-4 w-4 animate-pulse text-foreground/50" />
+      <div className="flex h-11 w-auto items-center justify-center rounded-full bg-background/50 backdrop-blur-sm px-4">
+        <Bot className="h-4 w-4 animate-pulse text-foreground/50 mr-2" />
+        <span className="text-sm">Loading...</span>
       </div>
     );
   }
 
+  const selectedAgent = activeAgents.find((a) => a.id === selectedAgentId);
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="h-11 w-11 rounded-full p-0 hover:bg-background/80"
-        >
-          {selectedAgentId ? (
-            <AgentAvatar
-              agent={activeAgents.find((a) => a.id === selectedAgentId)}
-              className="h-11 w-11"
-            />
+        <Button>
+          {selectedAgent ? (
+            <>
+              <AgentAvatar agent={selectedAgent} className="h-8 w-8 mr-2" />
+              <span className="text-sm font-medium">{selectedAgent.name}</span>
+            </>
           ) : (
-            <Bot className="h-5 w-5 text-foreground/50" />
+            <>
+              <Bot className="h-5 w-5 text-foreground/50 mr-2" />
+              <span className="text-sm font-medium">Select Agent</span>
+            </>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[320px]">
+      <DropdownMenuContent
+        align="end"
+        className="w-[320px] max-h-[50vh] overflow-y-auto"
+      >
         {/* User Wallet Section */}
         {userWallet && (
           <>
@@ -153,96 +158,88 @@ export function AgentWalletSelector({
         )}
 
         {/* Agents Section */}
-        {activeAgents.map((agent) => {
-          const wallet = agentWallets.find((w) => w.agent_id === agent.id);
-          const walletAddress = wallet ? getWalletAddress(wallet) : null;
-          const balance = walletAddress
-            ? balances[walletAddress]?.stx?.balance
-            : null;
+        <div className="overflow-y-auto">
+          {activeAgents.map((agent) => {
+            const wallet = agentWallets.find((w) => w.agent_id === agent.id);
+            const walletAddress = wallet ? getWalletAddress(wallet) : null;
+            const balance = walletAddress
+              ? balances[walletAddress]?.stx?.balance
+              : null;
 
-          return (
-            <DropdownMenuItem
-              key={agent.id}
-              className="flex flex-col items-stretch p-3"
-              onSelect={(e) => {
-                e.preventDefault();
-                onSelect(agent.id);
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <AgentAvatar agent={agent} className="h-8 w-8" />
-                  <div className="flex flex-col">
-                    <span className="font-medium">{agent.name}</span>
-                    {walletAddress && (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <code>{truncateAddress(walletAddress)}</code>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-4 w-4 p-0"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            copyToClipboard(walletAddress);
-                          }}
-                        >
-                          {copiedAddress === walletAddress ? (
-                            <Check className="h-3 w-3" />
-                          ) : (
-                            <Copy className="h-3 w-3" />
-                          )}
-                        </Button>
-                      </div>
-                    )}
+            return (
+              <DropdownMenuItem
+                key={agent.id}
+                className="flex flex-col items-stretch p-3 cursor-pointer hover:bg-gray/50 focus:bg-gray/50"
+                onSelect={(e) => {
+                  e.preventDefault();
+                  onSelect(agent.id);
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AgentAvatar agent={agent} className="h-8 w-8" />
+                    <div className="flex flex-col">
+                      <span className="font-medium">{agent.name}</span>
+                      {walletAddress && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <code>{truncateAddress(walletAddress)}</code>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-4 w-4 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              copyToClipboard(walletAddress);
+                            }}
+                          >
+                            {copiedAddress === walletAddress ? (
+                              <Check className="h-3 w-3" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  {balance && (
+                    <span className="text-sm text-muted-foreground">
+                      {formatBalance(balance)} STX
+                    </span>
+                  )}
                 </div>
-                {balance && (
-                  <span className="text-sm text-muted-foreground">
-                    {formatBalance(balance)} STX
-                  </span>
-                )}
-              </div>
 
-              <div className="mt-2 flex items-center gap-2">
-                {walletAddress && (
-                  <>
+                <div className="mt-2 flex items-center gap-2">
+                  {walletAddress && (
                     <div className="flex-1">
-                      <Input
-                        type="text"
-                        placeholder="STX amount"
-                        value={stxAmounts[walletAddress] || ""}
-                        onChange={(e) =>
-                          handleAmountChange(walletAddress, e.target.value)
+                      <StacksComponents
+                        address={walletAddress}
+                        amount={stxAmounts[walletAddress] || ""}
+                        onAmountChange={(value) =>
+                          handleAmountChange(walletAddress, value)
                         }
-                        onClick={(e) => e.stopPropagation()}
-                        className="h-8 text-sm"
+                        onToast={(title, description, variant) =>
+                          toast({ title, description, variant })
+                        }
                       />
                     </div>
-                    <StacksComponents
-                      address={walletAddress}
-                      amount={stxAmounts[walletAddress] || ""}
-                      onAmountChange={(value) =>
-                        handleAmountChange(walletAddress, value)
-                      }
-                      onToast={(title, description, variant) =>
-                        toast({ title, description, variant })
-                      }
-                    />
-                  </>
-                )}
-                <Link
-                  href={`/agents/${agent.id}`}
-                  className="inline-flex h-8 items-center"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </DropdownMenuItem>
-          );
-        })}
+                  )}
+                  <Link
+                    href={`/agents/${agent.id}`}
+                    className="inline-flex h-8 items-center"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+
+                    <span className="sr-only">View agent details</span>
+                  </Link>
+                </div>
+              </DropdownMenuItem>
+            );
+          })}
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -268,7 +265,7 @@ function AgentAvatar({
   return (
     <div className={`relative rounded-full overflow-hidden ${className}`}>
       <img
-        src={agent.image_url}
+        src={agent.image_url || "/placeholder.svg"}
         alt={agent.name}
         className="h-full w-full object-cover"
       />

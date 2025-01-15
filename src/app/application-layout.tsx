@@ -8,13 +8,13 @@ import {
   Users,
   Boxes,
   Menu,
-  Wallet,
+  // Wallet,
   X,
   LogOut,
   MessageSquare,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { WalletPanel } from "@/components/wallet/wallet-panel";
+// import { WalletPanel } from "@/components/wallet/wallet-panel";
 import { ThreadList } from "@/components/threads/thread-list";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -112,14 +112,14 @@ export default function ApplicationLayout({
             height={300}
           />
         </div>
-        <Button
+        {/* <Button
           variant="ghost"
           size="sm"
           onClick={() => setRightPanelOpen(!rightPanelOpen)}
           className="text-zinc-400"
         >
           <Wallet className="h-5 w-5" />
-        </Button>
+        </Button> */}
       </div>
 
       <div className="flex-1 flex min-w-0 max-h-[100vh] overflow-hidden">
@@ -213,7 +213,7 @@ export default function ApplicationLayout({
           <ScrollArea className="h-screen w-full">{children}</ScrollArea>
         </main>
 
-        {/* Right Wallet Panel */}
+        {/* Right Wallet Panel
         <aside
           className={cn(
             // Base styles
@@ -228,7 +228,7 @@ export default function ApplicationLayout({
           )}
         >
           <WalletPanel onClose={() => setRightPanelOpen(false)} />
-        </aside>
+        </aside> */}
 
         {/* Overlay for mobile when panels are open */}
         <div
