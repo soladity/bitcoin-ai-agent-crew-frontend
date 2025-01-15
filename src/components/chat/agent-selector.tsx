@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Agent } from "@/types/supabase";
 
 interface AgentSelectorProps {
   selectedAgentId: string | null;
@@ -63,6 +64,44 @@ export function AgentSelector({
     (agent) => agent.id === internalSelectedId
   );
 
+  const AgentImage = ({
+    agent,
+    className = "",
+  }: {
+    agent?: Agent;
+    className?: string;
+  }) => {
+    const shouldShowOverlay =
+      agent?.name && agent.name.toLowerCase() !== "assistant";
+
+    return (
+      <div
+        className={`relative flex items-center justify-center rounded-full overflow-hidden ring-1 ring-border/10 ${className}`}
+      >
+        <div className="relative h-full w-full">
+          <Image
+            src={
+              agent?.image_url ||
+              "https://bncytzyfafclmdxrwpgq.supabase.co/storage/v1/object/public/aibtcdev/aibtcdev-avatar-1000px.png"
+            }
+            alt={agent?.name || "AI BTC Dev"}
+            fill
+            className="object-cover"
+            priority
+            unoptimized={true}
+          />
+          {shouldShowOverlay && (
+            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+              <span className="text-2xl font-bold text-white">
+                {agent.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex h-11 w-11 items-center justify-center rounded-full bg-background/50 backdrop-blur-sm">
@@ -83,69 +122,24 @@ export function AgentSelector({
         data-shape="circle"
         className="group h-11 w-11 rounded-full p-0 border-0 bg-background/50 backdrop-blur-sm hover:bg-background/80 transition-colors duration-200 [&>span]:!p-0 [&>svg]:hidden"
       >
-        <SelectValue
-          placeholder={
-            <div className="flex h-11 w-11 items-center justify-center rounded-full overflow-hidden ring-1 ring-border/10">
-              <div className="relative h-full w-full">
-                <Image
-                  src="./logos/aibtcdev-avatar-250px.png"
-                  alt="AI BTC Dev"
-                  fill
-                  className="object-cover"
-                  priority
-                  unoptimized={true}
-                />
-              </div>
-            </div>
-          }
-        >
+        <SelectValue placeholder={<AgentImage className="h-11 w-11" />}>
           {selectedAgent ? (
             selectedAgent.image_url ? (
-              <div className="flex h-11 w-11 items-center justify-center rounded-full overflow-hidden ring-1 ring-border/10">
-                <div className="relative h-full w-full">
-                  <Image
-                    src={selectedAgent.image_url}
-                    alt={selectedAgent.name}
-                    fill
-                    className="object-cover"
-                    priority
-                    unoptimized={true}
-                  />
-                </div>
-              </div>
+              <AgentImage agent={selectedAgent} className="h-11 w-11" />
             ) : (
               <div className="flex h-11 w-11 items-center justify-center rounded-full">
                 <Bot className="h-4 w-4 text-foreground/50" />
               </div>
             )
           ) : (
-            <div className="flex h-11 w-11 items-center justify-center rounded-full overflow-hidden ring-1 ring-border/10">
-              <div className="relative h-full w-full">
-                <Image
-                  src="https://bncytzyfafclmdxrwpgq.supabase.co/storage/v1/object/public/aibtcdev/aibtcdev-avatar-1000px.png"
-                  alt="AI BTC Dev"
-                  fill
-                  className="object-cover"
-                  priority
-                  unoptimized={true}
-                />
-              </div>
-            </div>
+            <AgentImage className="h-11 w-11" />
           )}
         </SelectValue>
       </SelectTrigger>
       <SelectContent align="end" className="w-[300px]">
         <SelectItem value="none" className="py-2">
           <div className="flex items-center gap-2.5">
-            <div className="relative h-7 w-7 rounded-full overflow-hidden ring-1 ring-border/10">
-              <Image
-                src="https://bncytzyfafclmdxrwpgq.supabase.co/storage/v1/object/public/aibtcdev/aibtcdev-avatar-1000px.png"
-                alt="AI BTC Dev"
-                fill
-                className="object-cover"
-                unoptimized={true}
-              />
-            </div>
+            <AgentImage className="h-7 w-7" />
             <span className="text-sm font-medium truncate flex-1">
               Assistant
             </span>
@@ -155,15 +149,7 @@ export function AgentSelector({
           <SelectItem key={agent.id} value={agent.id} className="py-2">
             <div className="flex items-center gap-2.5">
               {agent.image_url ? (
-                <div className="relative h-7 w-7 rounded-full overflow-hidden ring-1 ring-border/10">
-                  <Image
-                    src={agent.image_url}
-                    alt={agent.name}
-                    fill
-                    className="object-cover"
-                    unoptimized={true}
-                  />
-                </div>
+                <AgentImage agent={agent} className="h-7 w-7" />
               ) : (
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-background">
                   <Bot className="h-3.5 w-3.5 text-foreground/50" />
@@ -179,3 +165,5 @@ export function AgentSelector({
     </Select>
   );
 }
+
+export default AgentSelector;

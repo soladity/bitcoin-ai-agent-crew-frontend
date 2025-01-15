@@ -54,7 +54,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   connect: (accessToken: string) => {
     // Don't reconnect if already connected or connecting
     if (globalWs && (globalWs.readyState === WebSocket.OPEN || globalWs.readyState === WebSocket.CONNECTING)) {
-      console.log('WebSocket already connected or connecting, skipping connection');
+      // console.log('WebSocket already connected or connecting, skipping connection');
       return;
     }
 
@@ -64,16 +64,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
         throw new Error("WebSocket URL not configured");
       }
 
-      console.log('Creating new WebSocket connection');
+      // console.log('Creating new WebSocket connection');
       globalWs = new WebSocket(`${wsUrl}?token=${accessToken}`);
 
       globalWs.onopen = () => {
-        console.log('WebSocket connected');
+        // console.log('WebSocket connected');
         set({ isConnected: true, error: null, ws: globalWs });
       };
 
       globalWs.onclose = () => {
-        console.log('WebSocket disconnected');
+        // console.log('WebSocket disconnected');
         set({ isConnected: false, ws: null });
         globalWs = null;
       };
@@ -86,7 +86,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       globalWs.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log('Received message:', data);
+          // console.log('Received message:', data);
           if (data.type === "token") {
             get().addMessage(data);
           } else {
@@ -104,7 +104,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   disconnect: () => {
     if (globalWs?.readyState === WebSocket.OPEN || globalWs?.readyState === WebSocket.CONNECTING) {
-      console.log('Closing WebSocket connection');
+      // console.log('Closing WebSocket connection');
       globalWs.close();
       globalWs = null;
       set({ isConnected: false, ws: null });

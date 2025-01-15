@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Copy, Check, X, Wallet as WalletIcon } from "lucide-react";
 import { useWalletStore } from "@/store/wallet";
 import { useSessionStore } from "@/store/session";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useNextStep } from "nextstepjs";
 import { useToast } from "@/hooks/use-toast";
 import dynamic from "next/dynamic";
 import type { Wallet, Agent } from "@/types/supabase";
@@ -67,12 +65,6 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
     (wallet) => !wallet.agent?.is_archived
   );
 
-  const { startNextStep } = useNextStep();
-
-  const handleStartMainTour = () => {
-    startNextStep("mainTour");
-  };
-
   const handleAmountChange = (address: string, value: string) => {
     if (value === "" || /^\d*\.?\d*$/.test(value)) {
       setStxAmounts((prev) => ({ ...prev, [address]: value }));
@@ -89,7 +81,6 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
     <div className="h-full flex flex-col w-full md:max-w-sm">
       <div className="h-14 px-4 flex items-center justify-between border-b border-zinc-800/50">
         <h2 className="text-lg font-medium text-white">Wallets</h2>
-        <Button onClick={handleStartMainTour}>Start Tour</Button>
         {onClose && (
           <Button
             variant="ghost"
@@ -219,14 +210,22 @@ export function WalletPanel({ onClose }: WalletPanelProps) {
                       className="bg-zinc-800/50 rounded-lg p-4 space-y-3 mt-3"
                     >
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8 border border-zinc-800/40">
-                          <AvatarImage
-                            src={wallet.agent?.image_url || undefined}
-                          />
-                          <AvatarFallback className="bg-zinc-900 text-zinc-500">
-                            {wallet.agent?.name?.[0]?.toUpperCase() || "A"}
-                          </AvatarFallback>
-                        </Avatar>
+                        <div className="relative h-8 w-8">
+                          <div
+                            className="absolute inset-0 rounded-full border border-zinc-800/40 bg-cover bg-center"
+                            style={{
+                              backgroundImage: `url(${
+                                wallet.agent?.image_url || ""
+                              })`,
+                            }}
+                          >
+                            <div className="absolute inset-0 bg-black/20 rounded-full flex items-center justify-center">
+                              <span className="text-lg font-bold text-white">
+                                {wallet.agent?.name?.[0]?.toUpperCase() || "A"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
                         <span className="text-sm font-medium text-white">
                           {wallet.agent?.name || "Agent"}
                         </span>

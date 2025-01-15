@@ -5,16 +5,16 @@ export function useAgentName(agentId: string | undefined) {
   const [agentName, setAgentName] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log("useAgentName hook called with agentId:", agentId);
-    
+    // console.log("useAgentName hook called with agentId:", agentId);
+
     const fetchAgentName = async () => {
       if (!agentId) {
-        console.log("No agentId provided, skipping fetch");
+        // console.log("No agentId provided, skipping fetch");
         return;
       }
 
       try {
-        console.log("Fetching agent name for id:", agentId);
+        // console.log("Fetching agent name for id:", agentId);
         const { data, error } = await supabase
           .from("agents")
           .select("name")
@@ -26,7 +26,7 @@ export function useAgentName(agentId: string | undefined) {
           return;
         }
 
-        console.log("Fetched agent name:", data.name);
+        // console.log("Fetched agent name:", data.name);
         setAgentName(data.name);
       } catch (error) {
         console.error("Error fetching agent name:", error);

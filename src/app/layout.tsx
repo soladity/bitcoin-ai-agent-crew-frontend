@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "logos/aibtcdev-avatar-1000px.png",
+        url: "https://app.aibtc.dev/logos/aibtcdev-avatar-1000px.png",
         width: 1000,
         height: 1000,
         alt: "AIBTCDEV",
@@ -34,7 +34,14 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    images: ["logos/aibtcdev-avatar-1000px.png"],
+    images: [
+      {
+        url: "https://app.aibtc.dev/logos/aibtcdev-pattern-1-with-text-social.png",
+        alt: "AIBTC",
+        width: 1200,
+        height: 630,
+      },
+    ],
   },
 };
 

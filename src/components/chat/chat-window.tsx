@@ -23,6 +23,8 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AgentSelector } from "./agent-selector";
 import { useAgents } from "@/hooks/use-agents";
+import { CreateThreadButton } from "../threads/CreateThreadButton";
+import { StartGuide } from "../reusables/StartGuide";
 
 export function ChatWindow() {
   const {
@@ -89,7 +91,7 @@ export function ChatWindow() {
     return () => {
       mounted = false;
       if (process.env.NODE_ENV !== "development") {
-        console.log("ChatWindow unmounting, disconnecting WebSocket");
+        // console.log("ChatWindow unmounting, disconnecting WebSocket");
         memoizedDisconnect();
       }
     };
@@ -139,9 +141,8 @@ export function ChatWindow() {
           </div>
           <h3 className="text-lg font-semibold">Create Your First AI Agent</h3>
           <p className="text-sm text-muted-foreground">
-            To start chatting, you will need to create at least one AI agent.
-            Agents are AI assistants that you can customize with specific roles
-            and capabilities.
+            To start chatting, you will need to create at an AI agent. Customize
+            it with roles, backstory and capabilities.
           </p>
           <Button
             onClick={() => (window.location.href = "/agents")}
@@ -157,22 +158,23 @@ export function ChatWindow() {
   if (!activeThreadId) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-4rem)] backdrop-blur-sm">
-        <div className="text-center space-y-2.5 p-4 -mt-20">
-          <p className="text-lg font-medium text-muted-foreground">
-            Select a Thread
-          </p>
-          <p className="text-sm text-muted-foreground/60">
-            Choose a thread from the sidebar to start chatting
-          </p>
+        <div className="text-center space-y-4 p-4 sm:p-6 lg:p-8 -mt-20">
+          {/* Adjust button size and spacing for different screen sizes */}
+          <div className="flex justify-center gap-3" id="step3">
+            <CreateThreadButton />
+            <div className="md:block hidden">
+              <StartGuide />
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col relative h-full w-full min-w-0 max-w-full">
-      {/* Header - Fixed at top */}
-      <div className="sticky top-0 z-20 flex items-center justify-between px-2 md:px-4 h-14 border-b border-border/10 min-w-0 bg-background/80 backdrop-blur-sm w-full">
+    <div className="flex flex-col relative h-[94dvh] md:h-[100dvh] w-full min-w-0 max-w-full">
+      {/* Header */}
+      <div className="sticky top-0  flex items-center justify-between px-2 md:px-4 h-14 border-b border-border/10 min-w-0 bg-background/80 backdrop-blur-sm w-full">
         <div className="flex items-center gap-2 overflow-hidden min-w-0 flex-1">
           {!isConnected && (
             <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground flex-shrink-0" />
@@ -252,13 +254,13 @@ export function ChatWindow() {
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Clear Thread Messages</DialogTitle>
+            <DialogTitle>Clear Chat Messages</DialogTitle>
             <DialogDescription>
-              Are you sure you want to clear all messages in this thread? This
+              Are you sure you want to clear all messages in this chat? This
               action cannot be undone.
             </DialogDescription>
           </DialogHeader>
@@ -277,9 +279,9 @@ export function ChatWindow() {
         </DialogContent>
       </Dialog>
 
-      {/* Message List - Scrollable area */}
+      {/* Message List */}
       <div className="flex-1 overflow-hidden w-full min-w-0 max-w-full">
-        <ScrollArea className="h-[calc(100vh-8rem)] w-full">
+        <ScrollArea className="h-full w-full pb-4">
           <div className="flex flex-col justify-end min-h-full w-full max-w-full">
             {chatError && (
               <Alert
@@ -294,8 +296,8 @@ export function ChatWindow() {
         </ScrollArea>
       </div>
 
-      {/* Input - Fixed at bottom */}
-      <div className="sticky bottom-0 border-t border-border/10 bg-background/80 backdrop-blur-sm w-full min-w-0">
+      {/* Input */}
+      <div className="sticky bottom-0 border-t border-border/10 bg-background/80 backdrop-blur-sm w-full min-w-0 pb-safe">
         <ChatInput
           selectedAgentId={selectedAgentId}
           onAgentSelect={setSelectedAgent}

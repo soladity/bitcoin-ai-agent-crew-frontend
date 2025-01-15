@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useGuide } from "@/hooks/use-guide";
 
 const CustomCard: React.FC<CardComponentProps> = ({
   step,
@@ -19,6 +20,22 @@ const CustomCard: React.FC<CardComponentProps> = ({
   skipTour,
   arrow,
 }) => {
+  const { updateGuideCompletion } = useGuide();
+
+  const handleFinish = async () => {
+    await updateGuideCompletion();
+
+    nextStep();
+  };
+
+  const handleSkip = async () => {
+    await updateGuideCompletion();
+
+    if (skipTour) {
+      skipTour();
+    }
+  };
+
   return (
     <Card className="w-[350px]">
       <CardHeader>
@@ -41,13 +58,15 @@ const CustomCard: React.FC<CardComponentProps> = ({
             >
               Previous
             </Button>
-            <Button onClick={nextStep}>
+            <Button
+              onClick={currentStep === totalSteps - 1 ? handleFinish : nextStep}
+            >
               {currentStep === totalSteps - 1 ? "Finish" : "Next"}
             </Button>
           </div>
         )}
-        {step.showSkip && (
-          <Button onClick={skipTour} variant={"ghost"} className="w-full">
+        {step.showSkip && skipTour && (
+          <Button onClick={handleSkip} variant="ghost" className="w-full">
             Skip Tour
           </Button>
         )}

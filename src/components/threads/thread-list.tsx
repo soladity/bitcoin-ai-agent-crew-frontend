@@ -1,10 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, ChevronRight } from "lucide-react";
-import { useThreads } from "@/hooks/use-threads";
-import { useAgents } from "@/hooks/use-agents";
+import { Button } from "@/components/ui/button";
+import { ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { useSessionStore } from "@/store/session";
 import { useChatStore } from "@/store/chat";
@@ -17,8 +15,6 @@ export function ThreadList({
 }: {
   setLeftPanelOpen?: (open: boolean) => void;
 }) {
-  const { createThread } = useThreads();
-  const { agents } = useAgents();
   const { userId } = useSessionStore();
   const { setActiveThread, activeThreadId } = useChatStore();
   const { threads, isLoading: loading, fetchThreads } = useThreadsStore();
@@ -31,20 +27,6 @@ export function ThreadList({
     }
   }, [userId, fetchThreads]);
 
-  const handleNewThread = async () => {
-    if (agents.length > 0) {
-      if (userId) {
-        const thread = await createThread(userId);
-        if (thread) {
-          useThreadsStore.getState().addThread(thread);
-          setActiveThread(thread.id);
-        }
-      }
-    } else {
-      alert("Please create an agent first");
-    }
-  };
-
   const handleThreadClick = (threadId: string) => {
     if (threadId === activeThreadId) return;
     setActiveThread(threadId);
@@ -54,24 +36,11 @@ export function ThreadList({
 
   return (
     <div className="flex flex-col flex-1">
-      {/* New Thread Button */}
-      <div className="px-2 pb-2">
-        <Button
-          className="w-full bg-blue-600 hover:bg-blue-500 text-white"
-          id="step3"
-          onClick={handleNewThread}
-          disabled={loading || agents.length === 0}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          New Thread
-        </Button>
-      </div>
-
       {/* Recent Threads */}
       <div className="flex-1 p-2 border-t border-zinc-800/50" id="step2">
         <div className="px-3 py-2">
           <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
-            Recent Threads
+            Recent Chats
           </h3>
         </div>
         <ScrollArea className="h-[calc(100vh-280px)]">
@@ -80,7 +49,7 @@ export function ThreadList({
               <div className="px-3 py-2 text-sm text-zinc-500">Loading...</div>
             ) : threads.length === 0 ? (
               <div className="px-3 py-2 text-sm text-zinc-500">
-                No threads yet
+                No chats yet
               </div>
             ) : (
               threads.map((thread) => (
