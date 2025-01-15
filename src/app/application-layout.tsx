@@ -4,7 +4,15 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Users, Boxes, Menu, Wallet, X, LogOut } from "lucide-react";
+import {
+  Users,
+  Boxes,
+  Menu,
+  Wallet,
+  X,
+  LogOut,
+  MessageSquare,
+} from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { WalletPanel } from "@/components/wallet/wallet-panel";
 import { ThreadList } from "@/components/threads/thread-list";
@@ -18,6 +26,7 @@ interface ApplicationLayoutProps {
 }
 
 const navigation = [
+  { id: "chat", name: "Chat", href: "/chat", icon: MessageSquare },
   { id: "agents", name: "Agents", href: "/agents", icon: Users },
   { id: "daos", name: "DAOs", href: "/daos", icon: Boxes },
   {
@@ -49,6 +58,30 @@ export default function ApplicationLayout({
   const router = useRouter();
   const [leftPanelOpen, setLeftPanelOpen] = React.useState(false);
   const [rightPanelOpen, setRightPanelOpen] = React.useState(false);
+  const [user, setUser] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    // Get the current session when the component mounts
+    const getSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+    };
+
+    getSession();
+
+    // Subscribe to auth state changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -162,16 +195,18 @@ export default function ApplicationLayout({
               </div>
             </nav>
 
-            {/* Sign Out Button */}
-            <div className="flex-none p-2">
-              <button
-                onClick={handleSignOut}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
-              >
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </button>
-            </div>
+            {/* Sign Out Button - Only shown when user is logged in */}
+            {user && (
+              <div className="flex-none p-2">
+                <button
+                  onClick={handleSignOut}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </button>
+              </div>
+            )}
           </div>
         </aside>
 
