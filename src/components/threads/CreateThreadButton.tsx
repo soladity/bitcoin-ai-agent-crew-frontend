@@ -17,21 +17,16 @@ export function CreateThreadButton({
   variant = "default",
 }: CreateThreadButtonProps) {
   const { createThread } = useThreads();
-  const { agents } = useAgents();
   const { userId } = useSessionStore();
   const { setActiveThread } = useChatStore();
 
   const handleNewThread = async () => {
-    if (agents.length > 0) {
-      if (userId) {
-        const thread = await createThread(userId);
-        if (thread) {
-          useThreadsStore.getState().addThread(thread);
-          setActiveThread(thread.id);
-        }
+    if (userId) {
+      const thread = await createThread(userId);
+      if (thread) {
+        useThreadsStore.getState().addThread(thread);
+        setActiveThread(thread.id);
       }
-    } else {
-      alert("Please create an agent first");
     }
   };
 
@@ -40,7 +35,7 @@ export function CreateThreadButton({
       className={className}
       variant={variant}
       onClick={handleNewThread}
-      disabled={agents.length === 0}
+      // disabled={agents.length === 0}
     >
       {/* <Plus className="h-4 w-4 mr-2" /> */}
       New Chat
