@@ -58,24 +58,22 @@ export default function ApplicationLayout({
   const router = useRouter();
   const [leftPanelOpen, setLeftPanelOpen] = React.useState(false);
   const [rightPanelOpen, setRightPanelOpen] = React.useState(false);
-  const [user, setUser] = React.useState<any>(null);
+  const [hasUser, setHasUser] = React.useState(false);
 
   React.useEffect(() => {
-    // Get the current session when the component mounts
-    const getSession = async () => {
+    const checkUser = async () => {
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
+        data: { user },
+      } = await supabase.auth.getUser();
+      setHasUser(!!user);
     };
 
-    getSession();
+    checkUser();
 
-    // Subscribe to auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      setHasUser(!!session?.user);
     });
 
     return () => {
@@ -196,7 +194,7 @@ export default function ApplicationLayout({
             </nav>
 
             {/* Sign Out Button - Only shown when user is logged in */}
-            {user && (
+            {hasUser && (
               <div className="flex-none p-2">
                 <button
                   onClick={handleSignOut}
