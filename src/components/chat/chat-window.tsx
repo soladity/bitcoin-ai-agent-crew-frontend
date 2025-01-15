@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { useThreadsStore } from "@/store/threads";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+
 import AgentWalletSelector from "./agent-selector";
 import { CreateThreadButton } from "../threads/CreateThreadButton";
 import { StartGuide } from "../reusables/StartGuide";
