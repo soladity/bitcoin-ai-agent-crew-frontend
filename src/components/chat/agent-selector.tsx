@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { Bot, Copy, Check, ExternalLink } from "lucide-react";
+import { Bot, Copy, Check, ExternalLink, Plus } from "lucide-react";
 import { useAgents } from "@/hooks/use-agents";
 import { useWalletStore } from "@/store/wallet";
 import { useSessionStore } from "@/store/session";
@@ -113,7 +113,7 @@ export function AgentWalletSelector({
           ) : (
             <>
               <Bot className="h-5 w-5 text-foreground/50 mr-2" />
-              <span className="text-sm font-medium">Select Agent</span>
+              <span className="text-sm font-medium">Assistant Agent</span>
             </>
           )}
         </Button>
@@ -129,7 +129,7 @@ export function AgentWalletSelector({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Bot className="h-5 w-5 text-foreground/50" />
-                  <span className="font-medium">My Wallet</span>
+                  <span className="font-medium">Assistant Wallet</span>
                 </div>
                 <div className="text-sm text-muted-foreground">
                   {balances[getWalletAddress(userWallet)]?.stx?.balance &&
@@ -158,89 +158,100 @@ export function AgentWalletSelector({
           </>
         )}
 
+        {/* Create New Agent Button - shown when no agents exist */}
+        {activeAgents.length === 0 && (
+          <Link href="/agents/new" className="block px-3 py-2">
+            <Button className="w-full" variant="secondary">
+              <Plus className="h-4 w-4 mr-2" />
+              Create New Agent
+            </Button>
+          </Link>
+        )}
+
         {/* Agents Section */}
-        <div className="overflow-y-auto">
-          {activeAgents.map((agent) => {
-            const wallet = agentWallets.find((w) => w.agent_id === agent.id);
-            const walletAddress = wallet ? getWalletAddress(wallet) : null;
-            const balance = walletAddress
-              ? balances[walletAddress]?.stx?.balance
-              : null;
+        {activeAgents.length > 0 && (
+          <div className="overflow-y-auto">
+            {activeAgents.map((agent) => {
+              const wallet = agentWallets.find((w) => w.agent_id === agent.id);
+              const walletAddress = wallet ? getWalletAddress(wallet) : null;
+              const balance = walletAddress
+                ? balances[walletAddress]?.stx?.balance
+                : null;
 
-            return (
-              <DropdownMenuItem
-                key={agent.id}
-                className="flex flex-col items-stretch p-3 cursor-pointer hover:bg-gray/50 focus:bg-gray/50"
-                onSelect={(e) => {
-                  e.preventDefault();
-                  onSelect(agent.id);
-                }}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <AgentAvatar agent={agent} className="h-8 w-8" />
-                    <div className="flex flex-col">
-                      <span className="font-medium">{agent.name}</span>
-                      {walletAddress && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <code>{truncateAddress(walletAddress)}</code>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-4 w-4 p-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              copyToClipboard(walletAddress);
-                            }}
-                          >
-                            {copiedAddress === walletAddress ? (
-                              <Check className="h-3 w-3" />
-                            ) : (
-                              <Copy className="h-3 w-3" />
-                            )}
-                          </Button>
-                        </div>
-                      )}
+              return (
+                <DropdownMenuItem
+                  key={agent.id}
+                  className="flex flex-col items-stretch p-3 cursor-pointer hover:bg-gray/50 focus:bg-gray/50"
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    onSelect(agent.id);
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <AgentAvatar agent={agent} className="h-8 w-8" />
+                      <div className="flex flex-col">
+                        <span className="font-medium">{agent.name}</span>
+                        {walletAddress && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <code>{truncateAddress(walletAddress)}</code>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-4 w-4 p-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                copyToClipboard(walletAddress);
+                              }}
+                            >
+                              {copiedAddress === walletAddress ? (
+                                <Check className="h-3 w-3" />
+                              ) : (
+                                <Copy className="h-3 w-3" />
+                              )}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    {balance && (
+                      <span className="text-sm text-muted-foreground">
+                        {formatBalance(balance)} STX
+                      </span>
+                    )}
                   </div>
-                  {balance && (
-                    <span className="text-sm text-muted-foreground">
-                      {formatBalance(balance)} STX
-                    </span>
-                  )}
-                </div>
 
-                <div className="mt-2 flex items-center gap-2">
-                  {walletAddress && (
-                    <div className="flex-1">
-                      <StacksComponents
-                        address={walletAddress}
-                        amount={stxAmounts[walletAddress] || ""}
-                        onAmountChange={(value) =>
-                          handleAmountChange(walletAddress, value)
-                        }
-                        onToast={(title, description, variant) =>
-                          toast({ title, description, variant })
-                        }
-                      />
-                    </div>
-                  )}
-                  <Link
-                    href={`/agents/${agent.id}`}
-                    className="inline-flex h-8 items-center"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-
-                    <span className="sr-only">View agent details</span>
-                  </Link>
-                </div>
-              </DropdownMenuItem>
-            );
-          })}
-        </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    {walletAddress && (
+                      <div className="flex-1">
+                        <StacksComponents
+                          address={walletAddress}
+                          amount={stxAmounts[walletAddress] || ""}
+                          onAmountChange={(value) =>
+                            handleAmountChange(walletAddress, value)
+                          }
+                          onToast={(title, description, variant) =>
+                            toast({ title, description, variant })
+                          }
+                        />
+                      </div>
+                    )}
+                    <Link
+                      href={`/agents/${agent.id}`}
+                      className="inline-flex h-8 items-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                      <span className="sr-only">View agent details</span>
+                    </Link>
+                  </div>
+                </DropdownMenuItem>
+              );
+            })}
+          </div>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
