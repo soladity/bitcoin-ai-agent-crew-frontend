@@ -8,6 +8,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Image from "next/image";
 import { memo } from "react";
 import { Agent } from "@/types/supabase";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import type { Components } from "react-markdown";
 
 // Separate AgentAvatar into its own memoized component
 const AgentAvatar = memo(({ agent }: { agent: Agent | null }) => {
@@ -42,6 +45,53 @@ const AgentAvatar = memo(({ agent }: { agent: Agent | null }) => {
   );
 });
 AgentAvatar.displayName = "AgentAvatar";
+
+// Custom components for markdown rendering
+const MarkdownComponents: Components = {
+  p: ({ children, ...props }) => (
+    <p className="mb-2 last:mb-0" {...props}>
+      {children}
+    </p>
+  ),
+  ul: ({ children, ...props }) => (
+    <ul className="list-disc pl-4 mb-2 space-y-1" {...props}>
+      {children}
+    </ul>
+  ),
+  ol: ({ children, ...props }) => (
+    <ol className="list-decimal pl-4 mb-2 space-y-1" {...props}>
+      {children}
+    </ol>
+  ),
+  li: ({ children, ...props }) => (
+    <li className="marker:text-zinc-500" {...props}>
+      {children}
+    </li>
+  ),
+  strong: ({ children, ...props }) => (
+    <strong className="font-semibold" {...props}>
+      {children}
+    </strong>
+  ),
+  em: ({ children, ...props }) => (
+    <em className="italic" {...props}>
+      {children}
+    </em>
+  ),
+  code: ({ children, ...props }) => (
+    <code
+      className="rounded bg-zinc-700/50 px-1.5 py-0.5 text-sm font-mono"
+      {...props}
+    >
+      {children}
+    </code>
+  ),
+  blockquote: ({ children, ...props }) => (
+    <blockquote className="border-l-2 border-zinc-500 pl-4 italic" {...props}>
+      {children}
+    </blockquote>
+  ),
+};
 
 // Memoize the entire ChatMessageBubble component
 export const ChatMessageBubble = memo(({ message }: { message: Message }) => {
@@ -95,9 +145,14 @@ export const ChatMessageBubble = memo(({ message }: { message: Message }) => {
               {message.tool}
             </div>
           )}
-          <p className="text-sm whitespace-pre-wrap leading-relaxed break-words">
-            {message.content || ""}
-          </p>
+          <div className="text-sm leading-relaxed break-words [&>*:last-child]:mb-0">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={MarkdownComponents}
+            >
+              {message.content || ""}
+            </ReactMarkdown>
+          </div>
         </div>
         {message.created_at && (
           <div
