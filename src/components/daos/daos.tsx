@@ -1,22 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  ClickableTableRow,
-} from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/utils/supabase/client";
 import Image from "next/image";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import { Heading } from "@/components/ui/heading";
 import { Token } from "@/types/supabase";
+import { Card } from "@/components/ui/card";
 
 interface DAO {
   id: string;
@@ -76,7 +67,6 @@ export default function DAOs() {
 
       if (extensionsError) throw extensionsError;
 
-      // Combine the data
       const enrichedDAOs = daosData.map((dao) => ({
         ...dao,
         extensions:
@@ -99,68 +89,79 @@ export default function DAOs() {
 
   if (loading) {
     return (
-      <div className="flex justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex w-full flex-wrap items-end justify-between gap-4 border-zinc-950/10 pb-6 dark:border-white/10">
-        <Heading>DAOs</Heading>
-        <Input
-          placeholder="Search daos..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-sm"
-        />
+    <div className="container mx-auto space-y-6 px-4 py-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Heading className="text-2xl font-bold sm:text-3xl">DAOs</Heading>
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
+          <Input
+            placeholder="Search DAOs..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
       </div>
 
-      <div className="mt-6">
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="w-[80px]">Logo</TableHead>
-                <TableHead className="w-[300px]">Name</TableHead>
-                <TableHead className="w-[150px]">Token Symbol</TableHead>
-                <TableHead className="w-[150px] text-right">Price</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredDAOs.map((dao) => {
-                const token = tokens.find((token) => token.dao_id === dao.id);
-                const randomPrice = (Math.random() * 100).toFixed(2);
-                return (
-                  <ClickableTableRow key={dao.id} href={`/daos/${dao.id}`}>
-                    <TableCell className="w-[80px]">
-                      {token?.image_url && (
-                        <Image
-                          src={token.image_url || dao.image_url}
-                          alt={dao.name}
-                          width={40}
-                          height={40}
-                          className="rounded-lg"
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell className="w-[300px] font-medium">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {filteredDAOs.map((dao) => {
+          const token = tokens.find((token) => token.dao_id === dao.id);
+          const randomPrice = (Math.random() * 100).toFixed(2);
+          return (
+            <Card
+              key={dao.id}
+              className="group cursor-pointer overflow-hidden transition-all hover:shadow-lg"
+              onClick={() => (window.location.href = `/daos/${dao.id}`)}
+            >
+              <div className="p-4">
+                <div className="flex items-center gap-3">
+                  {token?.image_url && (
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg">
+                      <Image
+                        src={token.image_url || dao.image_url}
+                        alt={dao.name}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-110"
+                      />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-base font-semibold group-hover:text-primary">
                       {dao.name}
-                    </TableCell>
-                    <TableCell className="w-[150px]">
-                      {token?.symbol || "-"}
-                    </TableCell>
-                    <TableCell className="w-[150px] text-right">
-                      ${randomPrice}
-                    </TableCell>
-                  </ClickableTableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </Card>
+                    </h3>
+                    {token?.symbol && (
+                      <p className="text-sm text-muted-foreground">
+                        {token.symbol}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium">${randomPrice}</p>
+                  </div>
+                </div>
+                <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">
+                  {dao.mission}
+                </p>
+              </div>
+            </Card>
+          );
+        })}
       </div>
+
+      {filteredDAOs.length === 0 && (
+        <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-dashed">
+          <p className="text-center text-muted-foreground">
+            No DAOs found matching your search.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
