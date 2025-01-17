@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { Bot, Copy, Check, ExternalLink, Plus } from "lucide-react";
@@ -45,9 +47,20 @@ export function AgentWalletSelector({
   const { toast } = useToast();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [stxAmounts, setStxAmounts] = useState<{ [key: string]: string }>({});
+  const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
 
   // Filter out archived agents
   const activeAgents = agents.filter((agent) => !agent.is_archived);
+
+  useEffect(() => {
+    if (userId) {
+      fetchWallets(userId).catch((err) => {
+        setError("Failed to fetch wallets. Please try again.");
+        console.error(err);
+      });
+    }
+  }, [userId, fetchWallets]);
 
   useEffect(() => {
     if (userId) {
@@ -90,6 +103,19 @@ export function AgentWalletSelector({
     }
   };
 
+  const handleSelect = (agentId: string | null) => {
+    onSelect(agentId);
+    setOpen(false);
+  };
+
+  if (error) {
+    return (
+      <div className="flex h-11 w-auto items-center justify-center rounded-full bg-destructive/10 text-destructive px-4">
+        <span className="text-sm">{error}</span>
+      </div>
+    );
+  }
+
   if (agentsLoading || walletsLoading) {
     return (
       <div className="flex h-11 w-auto items-center justify-center rounded-full bg-background/50 backdrop-blur-sm px-4">
@@ -102,7 +128,7 @@ export function AgentWalletSelector({
   const selectedAgent = activeAgents.find((a) => a.id === selectedAgentId);
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button className="max-w-[200px]">
           {selectedAgent ? (
@@ -127,43 +153,77 @@ export function AgentWalletSelector({
         align="end"
         className="w-[min(400px,calc(100vw-2rem))] max-h-[min(600px,calc(100vh-4rem))] overflow-y-auto"
       >
-        {/* User Wallet Section */}
-        {userWallet && (
-          <>
-            <div className="p-3">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-2 min-w-[140px]">
-                  <Bot className="h-5 w-5 text-foreground/50" />
-                  <span className="font-medium">Assistant Wallet</span>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {balances[getWalletAddress(userWallet)]?.stx?.balance &&
-                    `${formatBalance(
-                      balances[getWalletAddress(userWallet)].stx.balance
-                    )} STX`}
-                </div>
+        {/* Assistant Agent Option */}
+        <DropdownMenuItem
+          className="flex flex-col items-stretch p-3 cursor-pointer hover:bg-black focus:bg-gray/100"
+          onSelect={(e) => {
+            e.preventDefault();
+            handleSelect(null);
+          }}
+        >
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2 min-w-[140px]">
+              <div className="flex items-center justify-center rounded-full bg-background h-8 w-8">
+                <Bot className="h-5 w-5 text-foreground/50" />
               </div>
-              <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                <code className="break-all">
-                  {truncateAddress(getWalletAddress(userWallet))}
-                </code>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-4 w-4 p-0 flex-shrink-0"
-                  onClick={() => copyToClipboard(getWalletAddress(userWallet))}
-                >
-                  {copiedAddress === getWalletAddress(userWallet) ? (
-                    <Check className="h-3 w-3" />
-                  ) : (
-                    <Copy className="h-3 w-3" />
-                  )}
-                </Button>
+              <div className="flex flex-col">
+                <span className="font-medium truncate max-w-[150px]">
+                  Assistant Agent
+                </span>
+                {userWallet && (
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <code className="break-all">
+                      {truncateAddress(getWalletAddress(userWallet))}
+                    </code>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-4 w-4 p-0 flex-shrink-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        copyToClipboard(getWalletAddress(userWallet));
+                      }}
+                    >
+                      {copiedAddress === getWalletAddress(userWallet) ? (
+                        <Check className="h-3 w-3" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
-            <DropdownMenuSeparator />
-          </>
-        )}
+            {userWallet &&
+              balances[getWalletAddress(userWallet)]?.stx?.balance && (
+                <span className="text-sm text-muted-foreground">
+                  {formatBalance(
+                    balances[getWalletAddress(userWallet)].stx.balance
+                  )}{" "}
+                  STX
+                </span>
+              )}
+          </div>
+
+          {userWallet && (
+            <div className="mt-2 flex items-center gap-2 flex-wrap">
+              <div className="flex-1 min-w-[200px]">
+                <StacksComponents
+                  address={getWalletAddress(userWallet)}
+                  amount={stxAmounts[getWalletAddress(userWallet)] || ""}
+                  onAmountChange={(value) =>
+                    handleAmountChange(getWalletAddress(userWallet), value)
+                  }
+                  onToast={(title, description, variant) =>
+                    toast({ title, description, variant })
+                  }
+                />
+              </div>
+            </div>
+          )}
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
 
         {/* Create New Agent Button */}
         {activeAgents.length === 0 && (
@@ -193,7 +253,7 @@ export function AgentWalletSelector({
                   className="flex flex-col items-stretch p-3 cursor-pointer hover:bg-black focus:bg-gray/100"
                   onSelect={(e) => {
                     e.preventDefault();
-                    onSelect(agent.id);
+                    handleSelect(agent.id);
                   }}
                 >
                   <div className="flex items-center justify-between flex-wrap gap-2">
