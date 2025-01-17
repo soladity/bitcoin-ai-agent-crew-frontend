@@ -95,18 +95,16 @@ export default function ApplicationLayout({
   return (
     <div className="flex flex-col h-screen bg-zinc-950">
       {/* Mobile Navigation Bar */}
-      <div className="md:hidden h-14 px-2 flex items-center border-b border-zinc-800/50 bg-zinc-900">
-        <div className="absolute left-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setLeftPanelOpen(!leftPanelOpen)}
-            className="text-zinc-400"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-        </div>
-        <div className="flex-1 flex items-center justify-center gap-2">
+      <div className="md:hidden h-14 px-2 flex items-center justify-between border-b border-zinc-800/50 bg-zinc-900">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setLeftPanelOpen(!leftPanelOpen)}
+          className="text-zinc-400"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+        <div className="flex items-center justify-center gap-2">
           <Image
             src="/logos/aibtcdev-avatar-1000px.png"
             alt="AIBTCDEV"
@@ -120,6 +118,7 @@ export default function ApplicationLayout({
             height={300}
           />
         </div>
+        <div className="w-10" /> {/* Spacer for centering */}
       </div>
 
       <div className="flex-1 flex min-w-0 max-h-[100vh] overflow-hidden">
@@ -143,8 +142,8 @@ export default function ApplicationLayout({
               <Image
                 src="/logos/aibtcdev-avatar-1000px.png"
                 alt="AIBTCDEV"
-                width={20}
-                height={20}
+                width={24}
+                height={24}
                 className="flex-shrink-0"
               />
               <div
@@ -201,7 +200,7 @@ export default function ApplicationLayout({
                           : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
                       )}
                     >
-                      <item.icon className="h-4 w-4 flex-shrink-0" />
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
                       <span
                         className={cn(
                           "transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap",
@@ -216,14 +215,14 @@ export default function ApplicationLayout({
               </div>
             </nav>
 
-            {/* Sign Out Button - Only shown when user is logged in */}
+            {/* Sign Out Button */}
             {hasUser && (
               <div className="flex-none p-2">
                 <button
                   onClick={handleSignOut}
                   className="flex w-full items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
                 >
-                  <LogOut className="h-4 w-4 flex-shrink-0" />
+                  <LogOut className="h-5 w-5 flex-shrink-0" />
                   <span
                     className={cn(
                       "transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap",
