@@ -3,48 +3,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Code2,
-  Coins,
-  Wallet,
-  MessageSquare,
-  Share2,
-  PlayCircle,
-  PiggyBank,
-  Vault,
-  Building2,
-  ExternalLink,
-} from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { Extension } from "@/types/supabase";
 
 interface DAOExtensionsProps {
   extensions: Extension[];
 }
-
-const getExtensionIcon = (type: Extension["type"]) => {
-  switch (type) {
-    case "dex":
-      return <PiggyBank className="h-5 w-5" />;
-    case "token":
-      return <Coins className="h-5 w-5" />;
-    case "treasury":
-      return <Vault className="h-5 w-5" />;
-    case "bank-account":
-      return <Building2 className="h-5 w-5" />;
-    case "messaging":
-      return <MessageSquare className="h-5 w-5" />;
-    case "payments":
-      return <Wallet className="h-5 w-5" />;
-    case "actions":
-      return <PlayCircle className="h-5 w-5" />;
-    case "direct-execute":
-      return <Code2 className="h-5 w-5" />;
-    case "pool":
-      return <Share2 className="h-5 w-5" />;
-    default:
-      return <Share2 className="h-5 w-5" />;
-  }
-};
 
 const getStatusColor = (status: Extension["status"]) => {
   switch (status) {
@@ -57,7 +21,13 @@ const getStatusColor = (status: Extension["status"]) => {
   }
 };
 
-function DAOExtensions({ extensions }: DAOExtensionsProps) {
+const getExplorerUrl = (txId: string) => {
+  const baseUrl = "https://explorer.hiro.so/txid";
+  const isTestnet = process.env.NEXT_PUBLIC_STACKS_NETWORK === "testnet";
+  return `${baseUrl}/${txId}${isTestnet ? "?chain=testnet" : ""}`;
+};
+
+export function DAOExtensions({ extensions }: DAOExtensionsProps) {
   const [selectedStatus, setSelectedStatus] = useState<
     Extension["status"] | "all"
   >("all");
@@ -74,27 +44,21 @@ function DAOExtensions({ extensions }: DAOExtensionsProps) {
   };
 
   return (
-    <div className="relative">
+    <div className="w-full">
       {/* Header Section */}
-      <div className="relative mb-8">
-        <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-background/50 to-background" />
-        <div className="relative z-10 px-6 py-8">
-          <div className="mx-auto max-w-screen-xl">
-            <h1 className="text-2xl font-semibold tracking-tight mb-2">
-              Extensions
-            </h1>
-            <p className="text-muted-foreground">
-              Manage and monitor your DAO&apos;s active extensions and
-              capabilities
-            </p>
-          </div>
-        </div>
+      <div className="mb-8">
+        <h2 className="text-xl sm:text-2xl font-semibold tracking-tight mb-2">
+          Extensions
+        </h2>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          Manage and monitor your DAO&apos;s active extensions and capabilities
+        </p>
       </div>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-screen-xl px-6 space-y-6">
+      <div className="space-y-4 sm:space-y-6 pb-12">
         {/* Status Filters */}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <StatusButton
             status="all"
             count={stats.all}
@@ -122,55 +86,49 @@ function DAOExtensions({ extensions }: DAOExtensionsProps) {
         </div>
 
         {/* Extensions List */}
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {filteredExtensions.map((extension) => (
             <div
               key={extension.id}
-              className="group relative rounded-lg border bg-background/50 backdrop-blur-sm p-4 transition-all hover:bg-background/80"
+              className="group relative rounded-lg border bg-background/50 backdrop-blur-sm p-3 sm:p-4 transition-all hover:bg-background/80"
             >
-              <div className="flex items-start gap-4">
-                <div
-                  className={`p-3 rounded-lg border ${getStatusColor(
-                    extension.status
-                  )}`}
-                >
-                  {getExtensionIcon(extension.type)}
-                </div>
+              <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-1">
-                    <h3 className="text-base font-medium capitalize">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1">
+                    <h3 className="text-sm sm:text-base font-medium capitalize">
                       {extension.type.replace("-", " ")}
                     </h3>
                     <Badge
                       variant="secondary"
                       className={`${getStatusColor(
                         extension.status
-                      )} border capitalize`}
+                      )} border capitalize text-xs`}
                     >
                       {extension.status}
                     </Badge>
                   </div>
                   {extension.contract_principal && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                    <div className="flex items-center gap-2 mb-1">
+                      <code className="text-xs bg-muted truncate max-w-[350px] sm:max-w-[250px] lg:max-w-full">
                         {extension.contract_principal}
                       </code>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
                     </div>
                   )}
                   {extension.tx_id && (
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      TX: {extension.tx_id}
-                    </p>
+                    <a
+                      href={getExplorerUrl(extension.tx_id)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 mt-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <span className="truncate max-w-[350px] sm:max-w-[250px] lg:max-w-full">
+                        TX: {extension.tx_id}
+                      </span>
+                      <ArrowUpRight className="h-3 w-3" />
+                    </a>
                   )}
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-muted-foreground whitespace-nowrap">
                   {new Date(extension.created_at).toLocaleDateString()}
                 </div>
               </div>
@@ -209,5 +167,4 @@ function StatusButton({
   );
 }
 
-export { DAOExtensions };
 export default DAOExtensions;

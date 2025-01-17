@@ -11,7 +11,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { format } from "date-fns";
-import { ThumbsUp, ThumbsDown, Timer, CheckCircle2, XCircle } from "lucide-react";
+import {
+  ThumbsUp,
+  ThumbsDown,
+  Timer,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 
 interface Proposal {
   id: string;
@@ -45,18 +51,20 @@ function getStatusColor(status: Proposal["status"]) {
 function getStatusIcon(status: Proposal["status"]) {
   switch (status) {
     case "active":
-      return <Timer className="h-4 w-4" />;
+      return <Timer className="h-3 w-3 sm:h-4 sm:w-4" />;
     case "expired":
-      return <XCircle className="h-4 w-4" />;
+      return <XCircle className="h-3 w-3 sm:h-4 sm:w-4" />;
     case "success":
-      return <CheckCircle2 className="h-4 w-4" />;
+      return <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4" />;
     case "failed":
-      return <XCircle className="h-4 w-4" />;
+      return <XCircle className="h-3 w-3 sm:h-4 sm:w-4" />;
   }
 }
 
 function DAOProposals({ proposals }: DAOProposalsProps) {
-  const [statusFilter, setStatusFilter] = useState<Proposal["status"] | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<Proposal["status"] | "all">(
+    "all"
+  );
 
   const filteredProposals = proposals.filter(
     (proposal) => statusFilter === "all" || proposal.status === statusFilter
@@ -69,18 +77,22 @@ function DAOProposals({ proposals }: DAOProposalsProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Stats Overview */}
-      <div className="grid grid-cols-4 gap-4">
-        <Card className="p-6">
-          <div className="text-sm text-muted-foreground">Active Proposals</div>
-          <div className="mt-2 text-2xl font-bold">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+        <Card className="p-3 sm:p-6">
+          <div className="text-xs sm:text-sm text-muted-foreground">
+            Active Proposals
+          </div>
+          <div className="mt-1 sm:mt-2 text-lg sm:text-2xl font-bold">
             {proposals.filter((p) => p.status === "active").length}
           </div>
         </Card>
-        <Card className="p-6">
-          <div className="text-sm text-muted-foreground">Success Rate</div>
-          <div className="mt-2 text-2xl font-bold">
+        <Card className="p-3 sm:p-6">
+          <div className="text-xs sm:text-sm text-muted-foreground">
+            Success Rate
+          </div>
+          <div className="mt-1 sm:mt-2 text-lg sm:text-2xl font-bold">
             {Math.round(
               (proposals.filter((p) => p.status === "success").length /
                 proposals.filter((p) => p.status !== "active").length) *
@@ -89,13 +101,19 @@ function DAOProposals({ proposals }: DAOProposalsProps) {
             %
           </div>
         </Card>
-        <Card className="p-6">
-          <div className="text-sm text-muted-foreground">Total Proposals</div>
-          <div className="mt-2 text-2xl font-bold">{proposals.length}</div>
+        <Card className="p-3 sm:p-6">
+          <div className="text-xs sm:text-sm text-muted-foreground">
+            Total Proposals
+          </div>
+          <div className="mt-1 sm:mt-2 text-lg sm:text-2xl font-bold">
+            {proposals.length}
+          </div>
         </Card>
-        <Card className="p-6">
-          <div className="text-sm text-muted-foreground">Total Votes</div>
-          <div className="mt-2 text-2xl font-bold">
+        <Card className="p-3 sm:p-6">
+          <div className="text-xs sm:text-sm text-muted-foreground">
+            Total Votes
+          </div>
+          <div className="mt-1 sm:mt-2 text-lg sm:text-2xl font-bold">
             {proposals.reduce((acc, p) => acc + p.votesFor + p.votesAgainst, 0)}
           </div>
         </Card>
@@ -105,9 +123,11 @@ function DAOProposals({ proposals }: DAOProposalsProps) {
       <div className="flex justify-end">
         <Select
           value={statusFilter}
-          onValueChange={(value) => setStatusFilter(value as Proposal["status"] | "all")}
+          onValueChange={(value) =>
+            setStatusFilter(value as Proposal["status"] | "all")
+          }
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[140px] sm:w-[180px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
@@ -121,18 +141,22 @@ function DAOProposals({ proposals }: DAOProposalsProps) {
       </div>
 
       {/* Proposals List */}
-      <div className="grid gap-4">
+      <div className="grid gap-3 sm:gap-4">
         {filteredProposals.map((proposal) => (
-          <Card key={proposal.id} className="p-6">
-            <div className="space-y-4">
+          <Card key={proposal.id} className="p-4 sm:p-6">
+            <div className="space-y-3 sm:space-y-4">
               {/* Header */}
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-semibold">{proposal.title}</h3>
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-base sm:text-lg font-semibold break-all">
+                      {proposal.title}
+                    </h3>
                     <Badge
                       variant="secondary"
-                      className={`${getStatusColor(proposal.status)}`}
+                      className={`${getStatusColor(
+                        proposal.status
+                      )} text-xs sm:text-sm whitespace-nowrap`}
                     >
                       <span className="flex items-center gap-1">
                         {getStatusIcon(proposal.status)}
@@ -140,7 +164,7 @@ function DAOProposals({ proposals }: DAOProposalsProps) {
                       </span>
                     </Badge>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     {proposal.description}
                   </p>
                 </div>
@@ -148,19 +172,19 @@ function DAOProposals({ proposals }: DAOProposalsProps) {
 
               {/* Voting Progress */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="flex items-center gap-1">
-                    <ThumbsUp className="h-4 w-4" />
+                    <ThumbsUp className="h-3 w-3 sm:h-4 sm:w-4" />
                     {proposal.votesFor} votes for
                   </span>
                   <span className="flex items-center gap-1">
-                    <ThumbsDown className="h-4 w-4" />
+                    <ThumbsDown className="h-3 w-3 sm:h-4 sm:w-4" />
                     {proposal.votesAgainst} votes against
                   </span>
                 </div>
-                <div className="w-full bg-secondary rounded-full h-2.5">
+                <div className="w-full bg-secondary rounded-full h-2">
                   <div
-                    className="bg-primary h-2.5 rounded-full transition-all"
+                    className="bg-primary h-2 rounded-full transition-all"
                     style={{
                       width: `${getVotePercentage(
                         proposal.votesFor,
@@ -177,9 +201,10 @@ function DAOProposals({ proposals }: DAOProposalsProps) {
               </div>
 
               {/* Timeline */}
-              <div className="flex justify-between text-sm text-muted-foreground">
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 text-xs sm:text-sm text-muted-foreground">
                 <div>
-                  Start: {format(new Date(proposal.startTime), "MMM d, yyyy HH:mm")}
+                  Start:{" "}
+                  {format(new Date(proposal.startTime), "MMM d, yyyy HH:mm")}
                 </div>
                 <div>
                   End: {format(new Date(proposal.endTime), "MMM d, yyyy HH:mm")}
