@@ -7,6 +7,7 @@ import { Send, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useChatStore } from "@/store/chat";
 import { useSessionStore } from "@/store/session";
+import { useThread } from "@/hooks/use-thread";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +29,7 @@ export function ChatInput({ disabled = false }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { sendMessage, activeThreadId, clearMessages } = useChatStore();
   const { accessToken } = useSessionStore();
+  const { clearThread } = useThread(activeThreadId || "");
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -76,6 +78,9 @@ export function ChatInput({ disabled = false }: ChatInputProps) {
   const clearMessagesInThread = async () => {
     if (!activeThreadId) return;
     try {
+      // First clear the messages in Supabase
+      await clearThread();
+      // Then clear the local state
       clearMessages(activeThreadId);
       setShowDeleteDialog(false);
     } catch (error) {
