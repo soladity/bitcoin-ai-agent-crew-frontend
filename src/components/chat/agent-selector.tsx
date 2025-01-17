@@ -108,6 +108,11 @@ export function AgentWalletSelector({
     setOpen(false);
   };
 
+  const handleStacksAction = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+  };
+
   if (error) {
     return (
       <div className="flex h-11 w-auto items-center justify-center rounded-full bg-destructive/10 text-destructive px-4">
@@ -206,7 +211,10 @@ export function AgentWalletSelector({
           </div>
 
           {userWallet && (
-            <div className="mt-2 flex items-center gap-2 flex-wrap">
+            <div
+              className="mt-2 flex items-center gap-2 flex-wrap"
+              onClick={handleStacksAction}
+            >
               <div className="flex-1 min-w-[200px]">
                 <StacksComponents
                   address={getWalletAddress(userWallet)}
@@ -296,7 +304,10 @@ export function AgentWalletSelector({
 
                   <div className="mt-2 flex items-center gap-2 flex-wrap">
                     {walletAddress && (
-                      <div className="flex-1 min-w-[200px]">
+                      <div
+                        className="flex-1 min-w-[200px]"
+                        onClick={handleStacksAction}
+                      >
                         <StacksComponents
                           address={walletAddress}
                           amount={stxAmounts[walletAddress] || ""}
