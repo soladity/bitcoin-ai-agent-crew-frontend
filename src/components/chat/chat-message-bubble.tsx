@@ -47,7 +47,7 @@ const AgentAvatar = memo(({ agent }: { agent: Agent | null }) => {
 AgentAvatar.displayName = "AgentAvatar";
 
 // Custom components for markdown rendering
-const MarkdownComponents: Components = {
+export const MarkdownComponents: Components = {
   p: ({ children, ...props }) => (
     <p className="mb-2 last:mb-0" {...props}>
       {children}

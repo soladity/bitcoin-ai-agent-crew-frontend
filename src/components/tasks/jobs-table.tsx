@@ -1,19 +1,19 @@
-"use client";
-
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { ScrollText } from "lucide-react";
+  ScrollText,
+  AlertCircle,
+  Clock,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 import { useJobs } from "@/hooks/use-jobs";
 import { useProfile } from "@/hooks/use-profile";
 import { format } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { MarkdownComponents } from "../chat/chat-message-bubble";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 interface JobsTableProps {
   agentId: string;
@@ -25,15 +25,20 @@ export function JobsTable({ agentId }: JobsTableProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-32 text-sm text-zinc-500">
-        Loading jobs...
-      </div>
+      <Card className="p-6">
+        <div className="flex items-center justify-center h-32">
+          <div className="flex flex-col items-center gap-2 text-muted-foreground">
+            <Clock className="h-6 w-6 animate-pulse" />
+            <p className="text-sm">Loading jobs...</p>
+          </div>
+        </div>
+      </Card>
     );
   }
 
   if (error) {
     return (
-      <Alert variant="destructive">
+      <Alert variant="destructive" className="mx-auto max-w-2xl">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
           Failed to load jobs: {error.message}
@@ -44,57 +49,81 @@ export function JobsTable({ agentId }: JobsTableProps) {
 
   if (jobs.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-32 text-sm text-zinc-500">
-        <ScrollText className="h-8 w-8 mb-2 text-zinc-400" />
-        <p>No jobs found</p>
-      </div>
+      <Card className="p-6">
+        <div className="flex flex-col items-center justify-center h-32">
+          <ScrollText className="h-8 w-8 mb-2 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">No jobs found</p>
+        </div>
+      </Card>
     );
   }
 
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "failed":
+        return <XCircle className="h-4 w-4" />;
+      case "running":
+        return <Clock className="h-4 w-4" />;
+      default:
+        return <CheckCircle2 className="h-4 w-4" />;
+    }
+  };
+
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Timestamp</TableHead>
-            <TableHead>Task</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Result/Error</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {jobs.map((job) => (
-            <TableRow key={job.id}>
-              <TableCell>{format(new Date(job.created_at), "PPpp")}</TableCell>
-              <TableCell>{job.task_name}</TableCell>
-              <TableCell>
+    <div className="space-y-4">
+      {jobs.map((job, index) => (
+        <Card key={job.id} className="p-4 sm:p-6">
+          <div className="flex flex-col space-y-4">
+            {/* Header */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
                 <span
-                  className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                    job.status === "failed"
-                      ? "bg-red-50 text-red-700 dark:bg-red-400/10 dark:text-red-400"
-                      : job.status === "running"
-                      ? "bg-yellow-50 text-yellow-700 dark:bg-yellow-400/10 dark:text-yellow-400"
-                      : "bg-green-50 text-green-700 dark:bg-green-400/10 dark:text-green-400"
-                  }`}
+                  className={`inline-flex items-center gap-1.5 text-sm font-medium
+                    ${
+                      job.status === "failed"
+                        ? "text-destructive"
+                        : job.status === "running"
+                        ? "text-yellow-500"
+                        : "text-green-500"
+                    }`}
                 >
+                  {getStatusIcon(job.status)}
                   {job.status}
                 </span>
-              </TableCell>
-              <TableCell>
-                {job.error ? (
-                  <span className="text-red-500">{job.error}</span>
-                ) : job.result ? (
-                  <span className="text-zinc-500">
+                <Separator orientation="vertical" className="h-4" />
+                <span className="font-mono text-xs text-muted-foreground">
+                  {format(new Date(job.created_at), "PP p")}
+                </span>
+              </div>
+            </div>
+
+            {/* Task Name */}
+            <div>
+              <h3 className="text-sm font-medium leading-none">
+                {job.task_name}
+              </h3>
+            </div>
+
+            {/* Result */}
+            <div className="rounded-lg bg-muted/50 p-4">
+              {job.error ? (
+                <span className="text-destructive text-sm">{job.error}</span>
+              ) : job.result ? (
+                <div className="text-sm text-muted-foreground prose-sm max-w-none">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={MarkdownComponents}
+                  >
                     {typeof job.result === "string"
                       ? job.result
-                      : JSON.stringify(job.result)}
-                  </span>
-                ) : null}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                      : JSON.stringify(job.result, null, 2)}
+                  </ReactMarkdown>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </Card>
+      ))}
     </div>
   );
 }
