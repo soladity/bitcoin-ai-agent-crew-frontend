@@ -20,9 +20,12 @@ export function AgentDetailsPanel({ agent }: AgentDetailsPanelProps) {
   const agentWallet = agentWallets.find(
     (wallet) => wallet.agent_id === agent.id
   );
-  const walletBalance = agentWallet?.testnet_address
-    ? balances[agentWallet.testnet_address]
-    : null;
+  const network = process.env.NEXT_PUBLIC_STACKS_NETWORK;
+  const walletAddress =
+    network === "mainnet"
+      ? agentWallet?.mainnet_address
+      : agentWallet?.testnet_address;
+  const walletBalance = walletAddress ? balances[walletAddress] : null;
 
   const truncateAddress = (address: string) => {
     if (!address) return "";
@@ -100,19 +103,15 @@ export function AgentDetailsPanel({ agent }: AgentDetailsPanelProps) {
               {!agent.is_archived && agentWallet && (
                 <div className="mt-6 p-4 rounded-xl bg-zinc-800/40 text-sm">
                   <h3 className="font-medium text-zinc-300 mb-3">Wallet</h3>
-                  {agentWallet.testnet_address ? (
+                  {walletAddress ? (
                     <>
                       <button
-                        onClick={() =>
-                          copyToClipboard(agentWallet.testnet_address!)
-                        }
+                        onClick={() => copyToClipboard(walletAddress)}
                         className="w-full flex items-center justify-between text-xs text-zinc-500 font-mono hover:text-zinc-300 transition-colors group mb-3"
                       >
-                        <span>
-                          {truncateAddress(agentWallet.testnet_address)}
-                        </span>
+                        <span>{truncateAddress(walletAddress)}</span>
                         <span className="text-zinc-600 group-hover:text-zinc-400">
-                          {copiedAddress === agentWallet.testnet_address ? (
+                          {copiedAddress === walletAddress ? (
                             <Check className="h-3.5 w-3.5" />
                           ) : (
                             <Copy className="h-3.5 w-3.5" />
