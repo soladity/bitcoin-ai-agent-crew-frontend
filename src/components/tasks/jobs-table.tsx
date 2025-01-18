@@ -71,7 +71,7 @@ export function JobsTable({ agentId }: JobsTableProps) {
 
   return (
     <div className="space-y-4">
-      {jobs.map((job, index) => (
+      {jobs.map((job) => (
         <Card key={job.id} className="p-4 sm:p-6">
           <div className="flex flex-col space-y-4">
             {/* Header */}
