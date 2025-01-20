@@ -101,7 +101,9 @@ export function ProfileView() {
   };
 
   const startTelegramBot = async () => {
-    window.open(`https://t.me/aitbtcdevbot?start=${telegramUser?.id}`);
+    const botUsername =
+      process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "aibtcdevbot";
+    window.open(`https://t.me/${botUsername}?start=${telegramUser?.id}`);
   };
 
   if (loading) {
