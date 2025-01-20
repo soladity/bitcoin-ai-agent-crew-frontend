@@ -113,7 +113,7 @@ export default function DAOs() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredDAOs.map((dao) => {
           const token = tokens.find((token) => token.dao_id === dao.id);
-          const randomPrice = (Math.random() * 100).toFixed(2);
+          const placeholderPrice = " TBD";
           return (
             <Card
               key={dao.id}
@@ -143,7 +143,7 @@ export default function DAOs() {
                     )}
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium">${randomPrice}</p>
+                    <p className="text-sm font-medium">${placeholderPrice}</p>
                   </div>
                 </div>
                 <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">
