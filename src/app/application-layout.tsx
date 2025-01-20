@@ -50,6 +50,21 @@ export default function ApplicationLayout({
   const [leftPanelOpen, setLeftPanelOpen] = React.useState(false);
   const [rightPanelOpen, setRightPanelOpen] = React.useState(false);
   const [hasUser, setHasUser] = React.useState(false);
+  const [isMobile, setIsMobile] = React.useState(false);
+  const [isHovered, setIsHovered] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth < 768) {
+        setLeftPanelOpen(false);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   React.useEffect(() => {
     const checkUser = async () => {
@@ -80,18 +95,16 @@ export default function ApplicationLayout({
   return (
     <div className="flex flex-col h-screen bg-zinc-950">
       {/* Mobile Navigation Bar */}
-      <div className="md:hidden h-14 px-2 flex items-center border-b border-zinc-800/50 bg-zinc-900/50">
-        <div className="absolute left-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setLeftPanelOpen(!leftPanelOpen)}
-            className="text-zinc-400"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-        </div>
-        <div className="flex-1 flex items-center justify-center gap-2">
+      <div className="md:hidden h-14 px-2 flex items-center justify-between border-b border-zinc-800/50 bg-zinc-900">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setLeftPanelOpen(!leftPanelOpen)}
+          className="text-zinc-400"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+        <div className="flex items-center justify-center gap-2">
           <Image
             src="/logos/aibtcdev-avatar-1000px.png"
             alt="AIBTCDEV"
@@ -105,49 +118,70 @@ export default function ApplicationLayout({
             height={300}
           />
         </div>
+        <div className="w-10" /> {/* Spacer for centering */}
       </div>
 
       <div className="flex-1 flex min-w-0 max-h-[100vh] overflow-hidden">
         {/* Left Sidebar */}
         <aside
+          onMouseEnter={() => !isMobile && setIsHovered(true)}
+          onMouseLeave={() => !isMobile && setIsHovered(false)}
           className={cn(
-            "bg-zinc-900/50 border-r border-zinc-800/50 flex flex-col",
-            "hidden md:flex md:w-64",
-            "fixed md:relative inset-y-0 left-0 z-20 w-[min(100vw,320px)]",
-            leftPanelOpen
-              ? "flex bg-zinc-900 md:bg-zinc-900/50 md:w-64"
-              : "hidden"
+            "border-r border-zinc-800/50 flex flex-col transition-all duration-300 ease-in-out",
+            "fixed md:relative inset-y-0 left-0 z-20",
+            isMobile
+              ? "bg-zinc-900 w-[min(100vw,320px)]"
+              : "bg-zinc-900/50 w-16",
+            isMobile ? (leftPanelOpen ? "flex" : "hidden") : "flex",
+            !isMobile && isHovered && "w-64"
           )}
         >
           {/* Header */}
           <div className="h-14 px-4 flex items-center justify-between border-b border-zinc-800/50">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 overflow-hidden">
               <Image
                 src="/logos/aibtcdev-avatar-1000px.png"
                 alt="AIBTCDEV"
-                width={20}
-                height={20}
+                width={24}
+                height={24}
+                className="flex-shrink-0"
               />
-              <Image
-                src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
-                alt="AIBTCDEV"
-                width={150}
-                height={300}
-              />
+              <div
+                className={cn(
+                  "transition-all duration-300 ease-in-out overflow-hidden",
+                  !isHovered && !isMobile ? "w-0" : "w-auto"
+                )}
+              >
+                <Image
+                  src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
+                  alt="AIBTCDEV"
+                  width={150}
+                  height={300}
+                />
+              </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setLeftPanelOpen(false)}
-              className="text-zinc-400 md:hidden h-8 w-8 hover:bg-zinc-800"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            {isMobile && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setLeftPanelOpen(false)}
+                className="text-zinc-400 md:hidden h-8 w-8 hover:bg-zinc-800"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
 
           {/* Navigation */}
           <div className="flex flex-col h-[calc(100vh-3.5rem)]">
-            <div className="flex-1 overflow-y-auto">
+            <div
+              className={cn(
+                "flex-1 overflow-y-auto transition-opacity duration-300",
+                (!isHovered && !isMobile) || (!leftPanelOpen && isMobile)
+                  ? "opacity-0 invisible"
+                  : "opacity-100 visible"
+              )}
+            >
               <ThreadList setLeftPanelOpen={setLeftPanelOpen} />
             </div>
             <nav className="flex-none p-2" id="step4">
@@ -166,23 +200,37 @@ export default function ApplicationLayout({
                           : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
                       )}
                     >
-                      <item.icon className="h-4 w-4" />
-                      {item.name}
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      <span
+                        className={cn(
+                          "transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap",
+                          !isHovered && !isMobile ? "w-0" : "w-auto"
+                        )}
+                      >
+                        {item.name}
+                      </span>
                     </Link>
                   );
                 })}
               </div>
             </nav>
 
-            {/* Sign Out Button - Only shown when user is logged in */}
+            {/* Sign Out Button */}
             {hasUser && (
               <div className="flex-none p-2">
                 <button
                   onClick={handleSignOut}
                   className="flex w-full items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
                 >
-                  <LogOut className="h-4 w-4" />
-                  Sign Out
+                  <LogOut className="h-5 w-5 flex-shrink-0" />
+                  <span
+                    className={cn(
+                      "transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap",
+                      !isHovered && !isMobile ? "w-0" : "w-auto"
+                    )}
+                  >
+                    Sign Out
+                  </span>
                 </button>
               </div>
             )}
