@@ -73,11 +73,13 @@ function DAOProposals({ proposals }: DAOProposalsProps) {
     (proposal) => statusFilter === "all" || proposal.status === statusFilter
   );
 
+  /*
   const getVotePercentage = (votesFor: number, votesAgainst: number) => {
     const total = votesFor + votesAgainst;
     if (total === 0) return 0;
     return (votesFor / total) * 100;
   };
+  */
 
   const getEstimatedProposalEndDate = (proposalCreatedAt: string): Date => {
     const createdAt = new Date(proposalCreatedAt);
