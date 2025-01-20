@@ -54,7 +54,15 @@ body {
     --chart-2: 231 95% 41%; /* aibtc.blue.500 */
     --chart-3: 220 2% 35%; /* aibtc.gray.500 */
     --chart-4: 21 100% 70%; /* aibtc.orange.300 */
-    --chart-5: 231 95% 60%; /* aibtc.blue.300 */ --sidebar-background: 0 0% 98%; --sidebar-foreground: 240 5.3% 26.1%; --sidebar-primary: 240 5.9% 10%; --sidebar-primary-foreground: 0 0% 98%; --sidebar-accent: 240 4.8% 95.9%; --sidebar-accent-foreground: 240 5.9% 10%; --sidebar-border: 220 13% 91%; --sidebar-ring: 217.2 91.2% 59.8%;
+    --chart-5: 231 95% 60%; /* aibtc.blue.300 */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
@@ -92,7 +100,15 @@ body {
     --chart-2: 231 95% 45%; /* darker blue */
     --chart-3: 220 2% 25%; /* darker gray */
     --chart-4: 21 100% 65%; /* lighter orange */
-    --chart-5: 231 95% 65%; /* lighter blue */ --sidebar-background: 240 5.9% 10%; --sidebar-foreground: 240 4.8% 95.9%; --sidebar-primary: 224.3 76.3% 48%; --sidebar-primary-foreground: 0 0% 100%; --sidebar-accent: 240 3.7% 15.9%; --sidebar-accent-foreground: 240 4.8% 95.9%; --sidebar-border: 240 3.7% 15.9%; --sidebar-ring: 217.2 91.2% 59.8%;
+    --chart-5: 231 95% 65%; /* lighter blue */
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -104,7 +120,6 @@ body {
   body {
     @apply bg-background text-foreground;
   }
-
 }
 
 /* Add gradient utilities to match Chakra gradients */

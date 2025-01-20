@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import DAOProposals from "@/components/daos/dao-proposals";
 import { supabase } from "@/utils/supabase/client";
 
-export const runtime = 'edge';
+export const runtime = "edge";
 
 async function getProposals(daoId: string) {
   const { data: proposals, error } = await supabase
@@ -23,8 +23,16 @@ export default async function ProposalsPage({
   const proposals = await getProposals(params.id);
 
   return (
-    <Suspense fallback={<Loader2 className="h-4 w-4 animate-spin" />}>
-      <DAOProposals proposals={proposals} />
-    </Suspense>
+    <div className="w-full px-4 sm:px-0">
+      <Suspense
+        fallback={
+          <div className="flex justify-center items-center min-h-[200px] w-full">
+            <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-muted-foreground" />
+          </div>
+        }
+      >
+        <DAOProposals proposals={proposals} />
+      </Suspense>
+    </div>
   );
 }

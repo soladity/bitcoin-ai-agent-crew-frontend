@@ -9,7 +9,6 @@ import { Separator } from "@/components/ui/separator";
 interface Profile {
   id: string;
   email: string;
-  role: string;
   discord_username: string | null;
 }
 
@@ -28,6 +27,7 @@ export function ProfileView() {
   const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [telegramLoading, setTelegramLoading] = useState(false);
+  const [connectedNetwork, setConnectedNetwork] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadProfile() {
@@ -55,6 +55,10 @@ export function ProfileView() {
         if (!telegramError) {
           setTelegramUser(telegramData);
         }
+
+        // Fetch connected network
+        const network = process.env.NEXT_PUBLIC_STACKS_NETWORK;
+        setConnectedNetwork(network || "Unknown");
       } catch (error) {
         console.error("Error loading profile:", error);
       } finally {
@@ -97,7 +101,9 @@ export function ProfileView() {
   };
 
   const startTelegramBot = async () => {
-    window.open(`https://t.me/aitbtcdevbot?start=${telegramUser?.id}`);
+    const botUsername =
+      process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "aibtcdevbot";
+    window.open(`https://t.me/${botUsername}?start=${telegramUser?.id}`);
   };
 
   if (loading) {
@@ -109,11 +115,11 @@ export function ProfileView() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="max-w-3xl mx-auto space-y-8">
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8">
         <Card className="border-none shadow-none bg-background/40 backdrop-blur">
           <CardHeader>
-            <CardTitle className="text-2xl font-medium">
+            <CardTitle className="text-base sm:text-2xl font-medium">
               Wallet Information
             </CardTitle>
             <Separator className="my-2" />
@@ -121,18 +127,20 @@ export function ProfileView() {
           <CardContent className="grid gap-6">
             <div className="space-y-2">
               <label className="text-sm text-muted-foreground">
-                Profile ID
+                Connected Wallet
               </label>
               <div className="font-mono text-sm bg-muted/30 p-2 rounded-md">
-                {profile?.id || "No wallet connected"}
+                {profile?.email
+                  ? profile.email.split("@")[0].toUpperCase()
+                  : "No wallet connected"}
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm text-muted-foreground">Role</label>
-              <div>
-                <Badge variant="secondary" className="text-xs">
-                  {profile?.role || "Normal User"}
-                </Badge>
+              <label className="text-sm text-muted-foreground">
+                Connected Network
+              </label>
+              <div className="font-mono text-sm bg-muted/30 p-2 rounded-md">
+                {connectedNetwork}
               </div>
             </div>
           </CardContent>
@@ -140,7 +148,7 @@ export function ProfileView() {
 
         <Card className="border-none shadow-none bg-background/40 backdrop-blur">
           <CardHeader>
-            <CardTitle className="text-2xl font-medium">
+            <CardTitle className="text-base sm:text-2xl font-medium">
               Social Connections
             </CardTitle>
             <Separator className="my-2" />
@@ -150,9 +158,7 @@ export function ProfileView() {
               <label className="text-sm text-muted-foreground">Discord</label>
               <div className="bg-muted/30 p-3 rounded-md space-y-2">
                 <Badge
-                  variant={
-                    profile?.discord_username ? "default" : "destructive"
-                  }
+                  variant={profile?.discord_username ? "default" : "outline"}
                   className="text-xs"
                 >
                   {profile?.discord_username ? "Connected" : "Not Connected"}
@@ -172,7 +178,7 @@ export function ProfileView() {
                   <div className="flex items-center gap-2">
                     <Badge
                       variant={
-                        telegramUser.is_registered ? "default" : "secondary"
+                        telegramUser.is_registered ? "default" : "outline"
                       }
                       className="text-xs"
                     >
@@ -188,9 +194,9 @@ export function ProfileView() {
                   )}
                   {!telegramUser.is_registered && (
                     <Button
-                      variant="outline"
-                      size="sm"
+                      variant="ghost"
                       onClick={startTelegramBot}
+                      disabled={!telegramUser}
                     >
                       Start Registration
                     </Button>
@@ -199,8 +205,7 @@ export function ProfileView() {
               ) : (
                 <div className="mt-2">
                   <Button
-                    variant="outline"
-                    size="sm"
+                    variant="ghost"
                     onClick={initializeTelegramUser}
                     disabled={telegramLoading}
                   >
