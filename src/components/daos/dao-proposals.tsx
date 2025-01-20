@@ -12,23 +12,26 @@ import {
 } from "@/components/ui/select";
 import { format } from "date-fns";
 import {
-  ThumbsUp,
-  ThumbsDown,
+  //ThumbsUp,
+  //ThumbsDown,
   Timer,
   CheckCircle2,
+  FileEdit,
   XCircle,
 } from "lucide-react";
 
 interface Proposal {
   id: string;
+  created_at: string;
   title: string;
   description: string;
-  startTime: string;
-  endTime: string;
-  votesFor: number;
-  votesAgainst: number;
-  status: "active" | "expired" | "success" | "failed";
-  quorum?: number;
+  code: string | null;
+  link: string | null;
+  monetary_ask: null;
+  status: "DRAFT" | "PENDING" | "DEPLOYED" | "FAILED";
+  contract_principal: string;
+  tx_id: string;
+  dao_id: string;
 }
 
 interface DAOProposalsProps {
@@ -37,26 +40,26 @@ interface DAOProposalsProps {
 
 function getStatusColor(status: Proposal["status"]) {
   switch (status) {
-    case "active":
-      return "bg-green-500/10 text-green-500";
-    case "expired":
+    case "DRAFT":
       return "bg-gray-500/10 text-gray-500";
-    case "success":
+    case "PENDING":
       return "bg-blue-500/10 text-blue-500";
-    case "failed":
+    case "DEPLOYED":
+      return "bg-green-500/10 text-green-500";
+    case "FAILED":
       return "bg-red-500/10 text-red-500";
   }
 }
 
 function getStatusIcon(status: Proposal["status"]) {
   switch (status) {
-    case "active":
+    case "DRAFT":
+      return <FileEdit className="h-3 w-3 sm:h-4 sm:w-4" />;
+    case "PENDING":
       return <Timer className="h-3 w-3 sm:h-4 sm:w-4" />;
-    case "expired":
-      return <XCircle className="h-3 w-3 sm:h-4 sm:w-4" />;
-    case "success":
+    case "DEPLOYED":
       return <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4" />;
-    case "failed":
+    case "FAILED":
       return <XCircle className="h-3 w-3 sm:h-4 sm:w-4" />;
   }
 }
@@ -70,10 +73,18 @@ function DAOProposals({ proposals }: DAOProposalsProps) {
     (proposal) => statusFilter === "all" || proposal.status === statusFilter
   );
 
+  /*
   const getVotePercentage = (votesFor: number, votesAgainst: number) => {
     const total = votesFor + votesAgainst;
     if (total === 0) return 0;
     return (votesFor / total) * 100;
+  };
+  */
+
+  const getEstimatedProposalEndDate = (proposalCreatedAt: string): Date => {
+    const createdAt = new Date(proposalCreatedAt);
+    const duration = 1000 * 60 * 60 * 24; // 1 day
+    return new Date(createdAt.getTime() + duration);
   };
 
   return (
@@ -85,7 +96,7 @@ function DAOProposals({ proposals }: DAOProposalsProps) {
             Active Proposals
           </div>
           <div className="mt-1 sm:mt-2 text-lg sm:text-2xl font-bold">
-            {proposals.filter((p) => p.status === "active").length}
+            {proposals.filter((p) => p.status === "DEPLOYED").length}
           </div>
         </Card>
         <Card className="p-3 sm:p-6">
@@ -93,11 +104,15 @@ function DAOProposals({ proposals }: DAOProposalsProps) {
             Success Rate
           </div>
           <div className="mt-1 sm:mt-2 text-lg sm:text-2xl font-bold">
-            {Math.round(
-              (proposals.filter((p) => p.status === "success").length /
-                proposals.filter((p) => p.status !== "active").length) *
-                100
-            )}
+            {
+              proposals.length > 1
+                ? Math.round(
+                    (proposals.filter((p) => p.status === "DEPLOYED").length /
+                      proposals.filter((p) => p.status !== "DEPLOYED").length) *
+                      100
+                  )
+                : 100 // one bootstrap = 100% successful
+            }
             %
           </div>
         </Card>
@@ -114,7 +129,8 @@ function DAOProposals({ proposals }: DAOProposalsProps) {
             Total Votes
           </div>
           <div className="mt-1 sm:mt-2 text-lg sm:text-2xl font-bold">
-            {proposals.reduce((acc, p) => acc + p.votesFor + p.votesAgainst, 0)}
+            <p>-</p>
+            {/*proposals.reduce((acc, p) => acc + p.votesFor + p.votesAgainst, 0)*/}
           </div>
         </Card>
       </div>
@@ -132,10 +148,10 @@ function DAOProposals({ proposals }: DAOProposalsProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Proposals</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="expired">Expired</SelectItem>
-            <SelectItem value="success">Successful</SelectItem>
-            <SelectItem value="failed">Failed</SelectItem>
+            <SelectItem value="DRAFT">Draft</SelectItem>
+            <SelectItem value="PENDING">Pending</SelectItem>
+            <SelectItem value="DEPLOYED">Deployed</SelectItem>
+            <SelectItem value="FAILED">Failed</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -171,6 +187,7 @@ function DAOProposals({ proposals }: DAOProposalsProps) {
               </div>
 
               {/* Voting Progress */}
+              {/*
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="flex items-center gap-1">
@@ -182,6 +199,7 @@ function DAOProposals({ proposals }: DAOProposalsProps) {
                     {proposal.votesAgainst} votes against
                   </span>
                 </div>
+                
                 <div className="w-full bg-secondary rounded-full h-2">
                   <div
                     className="bg-primary h-2 rounded-full transition-all"
@@ -199,15 +217,20 @@ function DAOProposals({ proposals }: DAOProposalsProps) {
                   </div>
                 )}
               </div>
+              */}
 
               {/* Timeline */}
               <div className="flex flex-col sm:flex-row sm:justify-between gap-1 text-xs sm:text-sm text-muted-foreground">
                 <div>
                   Start:{" "}
-                  {format(new Date(proposal.startTime), "MMM d, yyyy HH:mm")}
+                  {format(new Date(proposal.created_at), "MMM d, yyyy HH:mm")}
                 </div>
                 <div>
-                  End: {format(new Date(proposal.endTime), "MMM d, yyyy HH:mm")}
+                  End:{" "}
+                  {format(
+                    getEstimatedProposalEndDate(proposal.created_at),
+                    "MMM d, yyyy HH:mm"
+                  )}
                 </div>
               </div>
             </div>
