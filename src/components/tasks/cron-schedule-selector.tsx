@@ -61,7 +61,7 @@ export function CronScheduleSelector({
     if (value && value !== selectedSchedule) {
       setSelectedSchedule(value);
     }
-  }, [value]);
+  }, [value, selectedSchedule]);
 
   const handleScheduleChange = (newValue: string) => {
     setSelectedSchedule(newValue);
@@ -81,7 +81,7 @@ export function CronScheduleSelector({
             <div className="flex items-center space-x-2">
               {selectedOption && (
                 <>
-                  <selectedOption.icon className="h-4 w-4 " />
+                  <selectedOption.icon className="h-4 w-4" />
                   <span>{selectedOption.label}</span>
                 </>
               )}
@@ -99,7 +99,7 @@ export function CronScheduleSelector({
                 <option.icon className="h-5 w-5" />
                 <div className="space-y-1">
                   <div className="font-medium">{option.label}</div>
-                  <div className="text-x">{option.description}</div>
+                  <div className="text-xs">{option.description}</div>
                 </div>
               </div>
             </SelectItem>
