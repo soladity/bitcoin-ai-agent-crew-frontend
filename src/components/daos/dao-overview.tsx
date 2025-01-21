@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { BsGlobe, BsTwitterX, BsTelegram } from "react-icons/bs";
-import { DAO, Token } from "@/types/supabase";
+import type { DAO, Token } from "@/types/supabase";
 import {
   Table,
   TableBody,
@@ -50,7 +50,8 @@ function DAOOverview({
     if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
     if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
     if (num >= 1e3) return `$${(num / 1e3).toFixed(2)}K`;
-    return `$${num.toFixed(2)}`;
+    if (num < 0.000001) return `$${num.toExponential(2)}`;
+    return `$${num.toFixed(6)}`;
   };
 
   return (
@@ -65,7 +66,7 @@ function DAOOverview({
               {token?.image_url && (
                 <div className="relative h-20 w-20 sm:h-24 sm:w-24 shrink-0">
                   <Image
-                    src={token.image_url}
+                    src={token.image_url || "/placeholder.svg"}
                     alt={dao.name}
                     fill
                     className="rounded-2xl object-cover ring-1 ring-border/10"
