@@ -118,9 +118,10 @@ export function useDAODetails(id: string) {
     const fetchTokenPrice = async (dex: string) => {
         try {
             const { data } = await sdkMainnet.getToken(dex);
-
+            const priceUsd = data.priceUsd ? Number(data.priceUsd) : 0;
+            // console.log('Token price fetched:', priceUsd);
             return {
-                priceUsd: data.priceUsd ? Number(data.priceUsd) : 0,
+                priceUsd,
                 marketCap: data.marketCap ? Number(data.marketCap) : 0,
                 holders: data.holders ? Number(data.holders) : 0
             };
@@ -130,8 +131,9 @@ export function useDAODetails(id: string) {
         }
     };
 
-    const fetchTreasuryTokens = async (treasuryAddress: string) => {
+    const fetchTreasuryTokens = async (treasuryAddress: string, tokenPrice: number) => {
         try {
+            // console.log('Treasury tokens fetch started with price:', tokenPrice);
             const network = process.env.NEXT_PUBLIC_STACKS_NETWORK;
             const response = await fetch(
                 `https://api.${network}.hiro.so/extended/v1/address/${treasuryAddress}/balances`
@@ -141,24 +143,30 @@ export function useDAODetails(id: string) {
             const tokens: TreasuryToken[] = [];
 
             if (data.stx && Number(data.stx.balance) > 0) {
+                const amount = Number(data.stx.balance) / 1_000_000;
+                const value = amount * tokenPrice;
                 tokens.push({
                     type: 'FT',
                     name: 'Stacks',
                     symbol: 'STX',
-                    amount: Number(data.stx.balance) / 1_000_000,
-                    value: 0,
+                    amount,
+                    value
                 });
+                // console.log('STX token processed:', { amount, tokenPrice, value });
             }
 
             for (const [assetIdentifier, tokenData] of Object.entries(data.fungible_tokens)) {
                 const [, tokenInfo] = assetIdentifier.split('::');
+                const amount = Number(tokenData.balance) / 1_000_000;
+                const value = amount * tokenPrice;
                 tokens.push({
                     type: 'FT',
                     name: tokenInfo || assetIdentifier,
                     symbol: tokenInfo || '',
-                    amount: Number(tokenData.balance),
-                    value: 0,
+                    amount,
+                    value
                 });
+                // console.log('FT token processed:', tokenInfo, { amount, tokenPrice, value });
             }
 
             for (const [assetIdentifier] of Object.entries(data.non_fungible_tokens)) {
@@ -168,10 +176,11 @@ export function useDAODetails(id: string) {
                     name: nftInfo || assetIdentifier,
                     symbol: nftInfo || '',
                     amount: 1,
-                    value: 0,
+                    value: 0
                 });
             }
 
+            // console.log('Final treasury tokens:', tokens);
             return tokens;
         } catch (error) {
             console.error("Error fetching treasury tokens:", error);
@@ -249,7 +258,7 @@ export function useDAODetails(id: string) {
 
                     if (!treasuryAddr) throw new Error("No treasury address found");
 
-                    const treasuryTokensList = await fetchTreasuryTokens(treasuryAddr);
+                    const treasuryTokensList = await fetchTreasuryTokens(treasuryAddr, tokenDetails.priceUsd);
                     if (!isMounted) return;
 
                     setHolders(holdersData.holders);

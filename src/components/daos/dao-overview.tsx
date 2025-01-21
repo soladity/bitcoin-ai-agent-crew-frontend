@@ -200,7 +200,9 @@ function DAOOverview({
                     <TableHead>Name</TableHead>
                     <TableHead>Symbol</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="text-right">Value</TableHead>
+                    {treasuryTokens.some((token) => token.value > 0) && (
+                      <TableHead className="text-right">Value</TableHead>
+                    )}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -218,9 +220,11 @@ function DAOOverview({
                       <TableCell className="text-right whitespace-nowrap">
                         {token.amount.toLocaleString()}
                       </TableCell>
-                      <TableCell className="text-right whitespace-nowrap">
-                        {formatNumber(token.value)}
-                      </TableCell>
+                      {treasuryTokens.some((token) => token.value > 0) && (
+                        <TableCell className="text-right whitespace-nowrap">
+                          {token.value > 0 ? formatNumber(token.value) : "-"}
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>
