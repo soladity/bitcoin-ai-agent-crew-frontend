@@ -46,12 +46,18 @@ function DAOOverview({
 }: DAOOverviewProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number, isPrice: boolean = false) => {
+    if (isPrice) {
+      if (num === 0) return "$0.00";
+      if (num < 0.01) return `$${num.toFixed(8)}`;
+      return `$${num.toFixed(2)}`;
+    }
+
+    // For non-price values (market cap, treasury, etc.)
     if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
     if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
     if (num >= 1e3) return `$${(num / 1e3).toFixed(2)}K`;
-    if (num < 0.000001) return `$${num.toExponential(2)}`;
-    return `$${num.toFixed(6)}`;
+    return `$${num.toFixed(2)}`;
   };
 
   return (
@@ -126,7 +132,10 @@ function DAOOverview({
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 space-y-8 sm:space-y-12">
         {/* Key Metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
-          <Metric label="Token Price" value={formatNumber(marketStats.price)} />
+          <Metric
+            label="Token Price"
+            value={formatNumber(marketStats.price, true)}
+          />
           <Metric
             label="Market Cap"
             value={formatNumber(marketStats.marketCap)}

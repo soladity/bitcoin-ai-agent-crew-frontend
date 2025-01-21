@@ -98,28 +98,26 @@ export function useDAODetails(id: string) {
                 `https://api.${network}.hiro.so/extended/v1/tokens/ft/${contractPrincipal}::${tokenSymbol}/holders`
             );
             const data: HiroHolderResponse = await response.json();
-            console.log("Holders data:", data);
 
             const holdersWithPercentage = data.results.map((holder) => ({
                 ...holder,
                 percentage: (Number(holder.balance) / Number(data.total_supply)) * 100,
             }));
 
-            setHolders(holdersWithPercentage);
             return {
+                holders: holdersWithPercentage,
                 totalSupply: Number(data.total_supply),
                 holderCount: data.total
             };
         } catch (error) {
             console.error("Error fetching holders:", error);
-            return { totalSupply: 0, holderCount: 0 };
+            return { holders: [], totalSupply: 0, holderCount: 0 };
         }
     };
 
     const fetchTokenPrice = async (dex: string) => {
         try {
             const { data } = await sdkMainnet.getToken(dex);
-            console.log("Raw token data:", data);
 
             return {
                 priceUsd: data.priceUsd ? Number(data.priceUsd) : 0,
@@ -152,30 +150,26 @@ export function useDAODetails(id: string) {
                 });
             }
 
-            if (data.fungible_tokens) {
-                for (const [assetIdentifier, tokenData] of Object.entries(data.fungible_tokens)) {
-                    const [, tokenInfo] = assetIdentifier.split('::');
-                    tokens.push({
-                        type: 'FT',
-                        name: tokenInfo || assetIdentifier,
-                        symbol: tokenInfo || '',
-                        amount: Number(tokenData.balance),
-                        value: 0,
-                    });
-                }
+            for (const [assetIdentifier, tokenData] of Object.entries(data.fungible_tokens)) {
+                const [, tokenInfo] = assetIdentifier.split('::');
+                tokens.push({
+                    type: 'FT',
+                    name: tokenInfo || assetIdentifier,
+                    symbol: tokenInfo || '',
+                    amount: Number(tokenData.balance),
+                    value: 0,
+                });
             }
 
-            if (data.non_fungible_tokens) {
-                for (const [assetIdentifier,] of Object.entries(data.non_fungible_tokens)) {
-                    const [, nftInfo] = assetIdentifier.split('::');
-                    tokens.push({
-                        type: 'NFT',
-                        name: nftInfo || assetIdentifier,
-                        symbol: nftInfo || '',
-                        amount: 1,
-                        value: 0,
-                    });
-                }
+            for (const [assetIdentifier] of Object.entries(data.non_fungible_tokens)) {
+                const [, nftInfo] = assetIdentifier.split('::');
+                tokens.push({
+                    type: 'NFT',
+                    name: nftInfo || assetIdentifier,
+                    symbol: nftInfo || '',
+                    amount: 1,
+                    value: 0,
+                });
             }
 
             return tokens;
@@ -186,11 +180,14 @@ export function useDAODetails(id: string) {
     };
 
     useEffect(() => {
+        let isMounted = true;
+
         const loadData = async () => {
             const cachedData = daoCache.get(id);
             const now = Date.now();
 
             if (cachedData && (now - cachedData.timestamp) < CACHE_DURATION) {
+                if (!isMounted) return;
                 setDAO(cachedData.data.dao);
                 setDAOExtensions(cachedData.data.daoExtensions);
                 setHolders(cachedData.data.holders);
@@ -210,6 +207,7 @@ export function useDAODetails(id: string) {
                     .single();
 
                 if (daoError) throw daoError;
+                if (!isMounted) return;
                 setDAO(daoData);
 
                 const { data: extensionsData, error: extensionsError } = await supabase
@@ -218,6 +216,7 @@ export function useDAODetails(id: string) {
                     .eq("dao_id", id);
 
                 if (extensionsError) throw extensionsError;
+                if (!isMounted) return;
                 setDAOExtensions(extensionsData);
 
                 const { data: tokensData, error: tokensError } = await supabase
@@ -229,15 +228,9 @@ export function useDAODetails(id: string) {
 
                 if (tokensData && tokensData.length > 0) {
                     const currentToken = tokensData[0];
+                    if (!isMounted) return;
                     setToken(currentToken);
                     setTokenSymbol(currentToken.symbol);
-
-                    // Fetch holders data
-                    const holdersData = await fetchHolders(
-                        currentToken.contract_principal,
-                        currentToken.symbol
-                    );
-                    console.log("Holders data fetched:", holdersData);
 
                     const dex = extensionsData.find(
                         (extension) => extension.type === "dex"
@@ -245,8 +238,10 @@ export function useDAODetails(id: string) {
 
                     if (!dex) throw new Error("No DEX contract found");
 
-                    const tokenDetails = await fetchTokenPrice(dex);
-                    console.log("Token details:", tokenDetails);
+                    const [holdersData, tokenDetails] = await Promise.all([
+                        fetchHolders(currentToken.contract_principal, currentToken.symbol),
+                        fetchTokenPrice(dex)
+                    ]);
 
                     const treasuryAddr = extensionsData.find(
                         (extension) => extension.type === "aibtc-treasury"
@@ -255,8 +250,11 @@ export function useDAODetails(id: string) {
                     if (!treasuryAddr) throw new Error("No treasury address found");
 
                     const treasuryTokensList = await fetchTreasuryTokens(treasuryAddr);
+                    if (!isMounted) return;
+
+                    setHolders(holdersData.holders);
                     setTreasuryTokens(treasuryTokensList);
-                    console.log("current token", currentToken)
+
                     const treasuryBalance = (currentToken.max_supply || 0) * 0.8 * tokenDetails.priceUsd;
 
                     const newMarketStats = {
@@ -266,14 +264,13 @@ export function useDAODetails(id: string) {
                         holderCount: holdersData.holderCount || tokenDetails.holders,
                     };
 
-                    console.log("Setting market stats:", newMarketStats);
                     setMarketStats(newMarketStats);
 
                     daoCache.set(id, {
                         data: {
                             dao: daoData,
                             daoExtensions: extensionsData,
-                            holders,
+                            holders: holdersData.holders,
                             tokenSymbol: currentToken.symbol,
                             token: currentToken,
                             marketStats: newMarketStats,
@@ -285,11 +282,17 @@ export function useDAODetails(id: string) {
             } catch (error) {
                 console.error("Error fetching data:", error);
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
 
         loadData();
+
+        return () => {
+            isMounted = false;
+        };
     }, [id]);
 
     return {
