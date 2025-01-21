@@ -181,10 +181,7 @@ export function ProfileView() {
 
     const botUsername =
       process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "aibtcdevbot";
-    window.open(
-      `https://t.me/${botUsername}?start=${telegramUser?.id}`,
-      "_blank"
-    );
+    window.open(`https://t.me/${botUsername}?start=${telegramUser?.id}`);
 
     setTimeout(checkTelegramStatus, 5000); // Initial check after 5 seconds
   };
