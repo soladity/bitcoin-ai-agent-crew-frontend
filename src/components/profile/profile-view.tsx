@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +31,7 @@ export function ProfileView() {
     useState(false);
   const [telegramStatusCheckCount, setTelegramStatusCheckCount] = useState(0);
 
+  // Load profile on component mount
   useEffect(() => {
     async function loadProfile() {
       try {
@@ -67,6 +68,7 @@ export function ProfileView() {
     loadProfile();
   }, []);
 
+  // Initialize Telegram User
   const initializeTelegramUser = async () => {
     try {
       setTelegramLoading(true);
@@ -98,28 +100,8 @@ export function ProfileView() {
     }
   };
 
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && shouldCheckTelegramStatus) {
-        console.log("Tab became visible, checking Telegram status");
-
-        if (telegramStatusCheckCount < 2) {
-          checkTelegramStatus();
-        } else {
-          console.log("Max check count reached. Stopping further checks.");
-          setShouldCheckTelegramStatus(false);
-        }
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [shouldCheckTelegramStatus, telegramStatusCheckCount]);
-
-  const checkTelegramStatus = async () => {
+  // Check Telegram Status
+  const checkTelegramStatus = useCallback(async () => {
     console.log("Checking Telegram status...");
     if (telegramStatusCheckCount >= 2) {
       console.log("Max check count reached. Stopping checks.");
@@ -150,7 +132,6 @@ export function ProfileView() {
           console.log("Telegram registration completed!");
           setShouldCheckTelegramStatus(false); // Stop checking if registered
         } else {
-          // Increment check count and re-run after a delay if necessary
           setTelegramStatusCheckCount((prevCount) => {
             if (prevCount + 1 < 2) {
               setTimeout(checkTelegramStatus, 5000); // Check again in 5 seconds
@@ -164,8 +145,35 @@ export function ProfileView() {
     } catch (error) {
       console.error("Error checking Telegram status:", error);
     }
-  };
+  }, [telegramStatusCheckCount]);
 
+  // Handle visibility change
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && shouldCheckTelegramStatus) {
+        console.log("Tab became visible, checking Telegram status");
+
+        if (telegramStatusCheckCount < 2) {
+          checkTelegramStatus();
+        } else {
+          console.log("Max check count reached. Stopping further checks.");
+          setShouldCheckTelegramStatus(false);
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [
+    shouldCheckTelegramStatus,
+    telegramStatusCheckCount,
+    checkTelegramStatus,
+  ]);
+
+  // Start Telegram Bot
   const startTelegramBot = () => {
     console.log("Starting Telegram bot registration");
     setShouldCheckTelegramStatus(true);
@@ -178,7 +186,6 @@ export function ProfileView() {
       "_blank"
     );
 
-    // Start polling for Telegram status
     setTimeout(checkTelegramStatus, 5000); // Initial check after 5 seconds
   };
 
