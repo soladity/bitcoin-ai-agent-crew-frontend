@@ -5,7 +5,7 @@ import { useThreads } from "@/hooks/use-threads";
 import { useSessionStore } from "@/store/session";
 import { useChatStore } from "@/store/chat";
 import { useThreadsStore } from "@/store/threads";
-import { Plus } from "lucide-react";
+import { MessageSquarePlusIcon } from "lucide-react";
 
 interface CreateThreadButtonProps {
   className?: string;
@@ -40,8 +40,7 @@ export function CreateThreadButton({
       id={id}
       // disabled={agents.length === 0}
     >
-      <Plus className="h-4 w-4 mr-2" />
-      New Chat
+      <MessageSquarePlusIcon />
     </Button>
   );
 }

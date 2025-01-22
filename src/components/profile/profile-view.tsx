@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,8 +27,11 @@ export function ProfileView() {
   const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [telegramLoading, setTelegramLoading] = useState(false);
-  const [connectedNetwork, setConnectedNetwork] = useState<string | null>(null);
+  const [shouldCheckTelegramStatus, setShouldCheckTelegramStatus] =
+    useState(false);
+  const [telegramStatusCheckCount, setTelegramStatusCheckCount] = useState(0);
 
+  // Load profile on component mount
   useEffect(() => {
     async function loadProfile() {
       try {
@@ -55,10 +58,6 @@ export function ProfileView() {
         if (!telegramError) {
           setTelegramUser(telegramData);
         }
-
-        // Fetch connected network
-        const network = process.env.NEXT_PUBLIC_STACKS_NETWORK;
-        setConnectedNetwork(network || "Unknown");
       } catch (error) {
         console.error("Error loading profile:", error);
       } finally {
@@ -69,6 +68,7 @@ export function ProfileView() {
     loadProfile();
   }, []);
 
+  // Initialize Telegram User
   const initializeTelegramUser = async () => {
     try {
       setTelegramLoading(true);
@@ -100,10 +100,90 @@ export function ProfileView() {
     }
   };
 
-  const startTelegramBot = async () => {
+  // Check Telegram Status
+  const checkTelegramStatus = useCallback(async () => {
+    console.log("Checking Telegram status...");
+    if (telegramStatusCheckCount >= 2) {
+      console.log("Max check count reached. Stopping checks.");
+      setShouldCheckTelegramStatus(false);
+      return;
+    }
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        console.log("No user found");
+        return;
+      }
+
+      const { data: telegramData, error: telegramError } = await supabase
+        .from("telegram_users")
+        .select("*")
+        .eq("profile_id", user.id)
+        .single();
+
+      if (!telegramError) {
+        console.log("Telegram user data:", telegramData);
+        setTelegramUser(telegramData);
+
+        if (telegramData.is_registered) {
+          console.log("Telegram registration completed!");
+          setShouldCheckTelegramStatus(false); // Stop checking if registered
+        } else {
+          setTelegramStatusCheckCount((prevCount) => {
+            if (prevCount + 1 < 2) {
+              setTimeout(checkTelegramStatus, 5000); // Check again in 5 seconds
+            }
+            return prevCount + 1;
+          });
+        }
+      } else {
+        console.error("Error fetching Telegram user:", telegramError);
+      }
+    } catch (error) {
+      console.error("Error checking Telegram status:", error);
+    }
+  }, [telegramStatusCheckCount]);
+
+  // Handle visibility change
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && shouldCheckTelegramStatus) {
+        console.log("Tab became visible, checking Telegram status");
+
+        if (telegramStatusCheckCount < 2) {
+          checkTelegramStatus();
+        } else {
+          console.log("Max check count reached. Stopping further checks.");
+          setShouldCheckTelegramStatus(false);
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [
+    shouldCheckTelegramStatus,
+    telegramStatusCheckCount,
+    checkTelegramStatus,
+  ]);
+
+  // Start Telegram Bot
+  const startTelegramBot = () => {
+    console.log("Starting Telegram bot registration");
+    setShouldCheckTelegramStatus(true);
+    setTelegramStatusCheckCount(0);
+
     const botUsername =
       process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "aibtcdevbot";
     window.open(`https://t.me/${botUsername}?start=${telegramUser?.id}`);
+
+    setTimeout(checkTelegramStatus, 5000); // Initial check after 5 seconds
   };
 
   if (loading) {
@@ -133,14 +213,6 @@ export function ProfileView() {
                 {profile?.email
                   ? profile.email.split("@")[0].toUpperCase()
                   : "No wallet connected"}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm text-muted-foreground">
-                Connected Network
-              </label>
-              <div className="font-mono text-sm bg-muted/30 p-2 rounded-md">
-                {connectedNetwork}
               </div>
             </div>
           </CardContent>
@@ -187,12 +259,11 @@ export function ProfileView() {
                         : "Pending Registration"}
                     </Badge>
                   </div>
-                  {telegramUser.is_registered && (
+                  {telegramUser.is_registered ? (
                     <p className="text-sm text-muted-foreground">
                       {telegramUser.username || "N/A"}
                     </p>
-                  )}
-                  {!telegramUser.is_registered && (
+                  ) : (
                     <Button
                       variant="ghost"
                       onClick={startTelegramBot}

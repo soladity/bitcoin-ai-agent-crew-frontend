@@ -3,19 +3,10 @@
 import { useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Trash2 } from "lucide-react";
+import { Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useChatStore } from "@/store/chat";
 import { useSessionStore } from "@/store/session";
-import { useThread } from "@/hooks/use-thread";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 interface ChatInputProps {
   selectedAgentId: string | null;
@@ -25,11 +16,9 @@ interface ChatInputProps {
 
 export function ChatInput({ disabled = false }: ChatInputProps) {
   const [input, setInput] = useState("");
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { sendMessage, activeThreadId, clearMessages } = useChatStore();
+  const { sendMessage, activeThreadId } = useChatStore();
   const { accessToken } = useSessionStore();
-  const { clearThread } = useThread(activeThreadId || "");
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -75,19 +64,6 @@ export function ChatInput({ disabled = false }: ChatInputProps) {
     []
   );
 
-  const clearMessagesInThread = async () => {
-    if (!activeThreadId) return;
-    try {
-      // First clear the messages in Supabase
-      await clearThread();
-      // Then clear the local state
-      clearMessages(activeThreadId);
-      setShowDeleteDialog(false);
-    } catch (error) {
-      console.error("Error clearing messages:", error);
-    }
-  };
-
   if (!accessToken) {
     return null;
   }
@@ -114,21 +90,10 @@ export function ChatInput({ disabled = false }: ChatInputProps) {
                   "text-foreground placeholder-muted-foreground",
                   "text-sm rounded-xl",
                   "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                  "transition-colors duration-200",
-                  "pr-12" // Add padding for the delete button
+                  "transition-colors duration-200"
                 )}
                 rows={1}
               />
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground"
-                onClick={() => setShowDeleteDialog(true)}
-                disabled={disabled}
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
             </div>
             <Button
               type="submit"
@@ -140,30 +105,6 @@ export function ChatInput({ disabled = false }: ChatInputProps) {
           </div>
         </form>
       </div>
-
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Clear Chat Messages</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to clear all messages in this chat? This
-              action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowDeleteDialog(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={clearMessagesInThread}
-              disabled={disabled}
-            >
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

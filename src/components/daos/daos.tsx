@@ -56,6 +56,7 @@ export default function DAOs() {
       const { data: daosData, error: daosError } = await supabase
         .from("daos")
         .select("*")
+        .eq("is_deployed", true)
         .order("created_at", { ascending: false });
 
       if (daosError) throw daosError;
