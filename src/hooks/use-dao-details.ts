@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { Extension, DAO, Holder, Token } from "@/types/supabase";
-import FaktorySDK from "@faktoryfun/core-sdk";
+import { sdkFaktory } from "@/lib/faktory-fun";
 
 interface MarketStats {
     price: number;
@@ -64,9 +64,6 @@ const daoCache = new Map<string, {
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-const sdkMainnet = new FaktorySDK({
-    network: 'mainnet'
-});
 
 export function useDAODetails(id: string) {
     const [dao, setDAO] = useState<DAO | null>(null);
@@ -117,7 +114,7 @@ export function useDAODetails(id: string) {
 
     const fetchTokenPrice = async (dex: string) => {
         try {
-            const { data } = await sdkMainnet.getToken(dex);
+            const { data } = await sdkFaktory.getToken(dex);
             const priceUsd = data.priceUsd ? Number(data.priceUsd) : 0;
             // console.log('Token price fetched:', priceUsd);
             return {
