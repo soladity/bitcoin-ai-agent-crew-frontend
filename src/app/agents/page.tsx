@@ -58,7 +58,8 @@ export default function AgentsPage() {
       await navigator.clipboard.writeText(address);
       setCopiedAddress(address);
       setTimeout(() => setCopiedAddress(null), 2000);
-    } catch (error) {
+    } catch (err) {
+      console.error("Failed to copy to clipboard:", err);
       toast({
         title: "Failed to copy",
         description: "Could not copy address to clipboard",
