@@ -2,13 +2,28 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { useSessionStore } from "@/store/session";
 import { useChatStore } from "@/store/chat";
 import { useThreadsStore } from "@/store/threads";
+import { useThread } from "@/hooks/use-thread";
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function ThreadList({
   setLeftPanelOpen,
@@ -16,7 +31,7 @@ export function ThreadList({
   setLeftPanelOpen?: (open: boolean) => void;
 }) {
   const { userId } = useSessionStore();
-  const { setActiveThread, activeThreadId } = useChatStore();
+  const { setActiveThread, activeThreadId, clearMessages } = useChatStore();
   const {
     threads,
     isLoading: loading,
@@ -27,6 +42,9 @@ export function ThreadList({
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedTitle, setEditedTitle] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
+  const { clearThread } = useThread(selectedThreadId || "");
 
   // Group threads by date
   const groupedThreads = useMemo(() => {
@@ -94,6 +112,26 @@ export function ThreadList({
     }
   };
 
+  const handleDelete = async () => {
+    if (selectedThreadId) {
+      try {
+        // First clear the messages in Supabase
+        await clearThread();
+        // Then clear the local state
+        clearMessages(selectedThreadId);
+
+        setShowDeleteDialog(false);
+        setSelectedThreadId(null);
+
+        if (selectedThreadId === activeThreadId) {
+          setActiveThread("");
+        }
+      } catch (error) {
+        console.error("Error clearing messages:", error);
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col flex-1">
       <div className="flex-1 p-2 border-t border-zinc-800/50" id="step2">
@@ -115,45 +153,78 @@ export function ThreadList({
                 <div key={date} className="space-y-1">
                   <h4 className="px-3 py-1 text-s font-extrabold">{date}</h4>
                   {dateThreads.map((thread) => (
-                    <Button
+                    <div
                       key={thread.id}
-                      variant="ghost"
-                      className={`w-full justify-between hover:bg-zinc-800/50 hover:text-white group relative ${
+                      className={`flex items-center group ${
                         thread.id === activeThreadId
                           ? "bg-zinc-800/50 text-white"
                           : "text-zinc-400"
                       }`}
-                      onClick={() => handleThreadClick(thread.id)}
                     >
-                      <div className="flex flex-1 items-center justify-between pr-2">
-                        {editingId === thread.id ? (
-                          <input
-                            type="text"
-                            value={editedTitle}
-                            onChange={(e) => setEditedTitle(e.target.value)}
-                            onBlur={() => handleSubmit(thread.id)}
-                            onKeyDown={(e) => handleKeyDown(e, thread.id)}
-                            className="bg-zinc-900 text-white px-2 py-1 rounded w-full text-sm"
-                            autoFocus
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          <span className="text-sm truncate">
-                            {thread.title || "Untitled Thread"}
-                          </span>
-                        )}
-                      </div>
+                      <Button
+                        variant="ghost"
+                        className={`flex-1 justify-start hover:bg-zinc-800/50 hover:text-white relative ${
+                          thread.id === activeThreadId
+                            ? "bg-zinc-800/50 text-white"
+                            : "text-zinc-400"
+                        }`}
+                        onClick={() => handleThreadClick(thread.id)}
+                      >
+                        <div className="flex flex-1 items-center">
+                          {editingId === thread.id ? (
+                            <input
+                              type="text"
+                              value={editedTitle}
+                              onChange={(e) => setEditedTitle(e.target.value)}
+                              onBlur={() => handleSubmit(thread.id)}
+                              onKeyDown={(e) => handleKeyDown(e, thread.id)}
+                              className="bg-zinc-900 text-white px-2 py-1 rounded w-full text-sm"
+                              autoFocus
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            <span className="text-sm truncate">
+                              {thread.title || "Untitled Thread"}
+                            </span>
+                          )}
+                        </div>
+                      </Button>
                       {!editingId && (
-                        <p
-                          onClick={(e) =>
-                            startEditing(e, thread.id, thread.title)
-                          }
-                          className="opacity-0 group-hover:opacity-100 hover:text-blue-400 transition-opacity ml-2"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </p>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              className=""
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startEditing(e, thread.id, thread.title);
+                              }}
+                            >
+                              <Pencil className="mr-2 h-4 w-4" />
+                              <span>Edit</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedThreadId(thread.id);
+                                setShowDeleteDialog(true);
+                              }}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              <span>Delete</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )}
-                    </Button>
+                    </div>
                   ))}
                 </div>
               ))
@@ -161,6 +232,26 @@ export function ThreadList({
           </div>
         </ScrollArea>
       </div>
+
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Clear Thread Messages</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to clear all messages in this thread? This
+              action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Clear
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
