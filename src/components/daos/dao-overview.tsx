@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { BsGlobe, BsTwitterX, BsTelegram } from "react-icons/bs";
-import { DAO, Token } from "@/types/supabase";
+import type { DAO, Token } from "@/types/supabase";
 import {
   Table,
   TableBody,
@@ -46,7 +46,14 @@ function DAOOverview({
 }: DAOOverviewProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number, isPrice: boolean = false) => {
+    if (isPrice) {
+      if (num === 0) return "$0.00";
+      if (num < 0.01) return `$${num.toFixed(8)}`;
+      return `$${num.toFixed(2)}`;
+    }
+
+    // For non-price values (market cap, treasury, etc.)
     if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
     if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
     if (num >= 1e3) return `$${(num / 1e3).toFixed(2)}K`;
@@ -65,7 +72,7 @@ function DAOOverview({
               {token?.image_url && (
                 <div className="relative h-20 w-20 sm:h-24 sm:w-24 shrink-0">
                   <Image
-                    src={token.image_url}
+                    src={token.image_url || "/placeholder.svg"}
                     alt={dao.name}
                     fill
                     className="rounded-2xl object-cover ring-1 ring-border/10"
@@ -125,7 +132,10 @@ function DAOOverview({
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 space-y-8 sm:space-y-12">
         {/* Key Metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
-          <Metric label="Token Price" value={formatNumber(marketStats.price)} />
+          <Metric
+            label="Token Price"
+            value={formatNumber(marketStats.price, true)}
+          />
           <Metric
             label="Market Cap"
             value={formatNumber(marketStats.marketCap)}
@@ -190,7 +200,9 @@ function DAOOverview({
                     <TableHead>Name</TableHead>
                     <TableHead>Symbol</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="text-right">Value</TableHead>
+                    {treasuryTokens.some((token) => token.value > 0) && (
+                      <TableHead className="text-right">Value</TableHead>
+                    )}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -208,9 +220,11 @@ function DAOOverview({
                       <TableCell className="text-right whitespace-nowrap">
                         {token.amount.toLocaleString()}
                       </TableCell>
-                      <TableCell className="text-right whitespace-nowrap">
-                        {formatNumber(token.value)}
-                      </TableCell>
+                      {treasuryTokens.some((token) => token.value > 0) && (
+                        <TableCell className="text-right whitespace-nowrap">
+                          {token.value > 0 ? formatNumber(token.value) : "-"}
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>
