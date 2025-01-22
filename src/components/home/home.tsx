@@ -3,6 +3,17 @@
 import React from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { PrivacyPolicy } from "../terms-and-condition/privacy-policy";
+import { TermsOfService } from "../terms-and-condition/terms-of-service";
 
 const SignIn = dynamic(() => import("../auth/auth-stacks"), {
   ssr: false,
@@ -14,19 +25,17 @@ export default function Home() {
       <div className="w-full max-w-md p-4 sm:p-8 space-y-4 sm:space-y-6 bg-zinc-800 rounded-xl sm:rounded-2xl shadow-2xl border border-zinc-700">
         <div className="text-center space-y-3">
           <div className="flex items-center justify-center gap-2 ">
-            {/* Avatar logo */}
             <Image
               alt="AIBTC.DEV"
-              src={"/logos/aibtcdev-avatar-250px.png"}
+              src="/logos/aibtcdev-avatar-250px.png"
               height={50}
               width={50}
               priority
               className="rounded-full"
             />
-            {/* Text logo - made larger */}
             <Image
               alt="AIBTC.DEV"
-              src={"/logos/aibtcdev-primary-logo-white-wide-1000px.png"}
+              src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
               height={100}
               width={300}
               priority
@@ -43,13 +52,49 @@ export default function Home() {
 
           <p className="text-center text-xs text-zinc-400 mt-4 px-2 sm:px-0">
             By connecting your wallet, you agree to the{" "}
-            <a href="#" className="text-orange-500 hover:text-orange-400">
-              Terms of Service
-            </a>{" "}
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="link"
+                  className="text-orange-500 hover:text-orange-400 p-0"
+                >
+                  Terms of Service
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[800px] h-[90vh] overflow-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-3xl font-bold">
+                    Terms of Service
+                  </DialogTitle>
+                </DialogHeader>
+                <DialogDescription>
+                  Please read our Terms of Service carefully.
+                </DialogDescription>
+                <TermsOfService />
+              </DialogContent>
+            </Dialog>{" "}
             and{" "}
-            <a href="#" className="text-orange-500 hover:text-orange-400">
-              Privacy Policy
-            </a>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="link"
+                  className="text-orange-500 hover:text-orange-400 p-0"
+                >
+                  Privacy Policy
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[800px] h-[90vh] overflow-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-3xl font-bold">
+                    Privacy Policy
+                  </DialogTitle>
+                </DialogHeader>
+                <DialogDescription>
+                  Please read our Privacy Policy carefully.
+                </DialogDescription>
+                <PrivacyPolicy />
+              </DialogContent>
+            </Dialog>
           </p>
         </div>
       </div>
