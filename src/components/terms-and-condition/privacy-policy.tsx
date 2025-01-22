@@ -63,17 +63,6 @@ export function PrivacyPolicy() {
             <li>Data portability</li>
           </ul>
         </section>
-
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">
-            Changes to This Privacy Policy
-          </h2>
-          <p className="text-zinc-800 dark:text-zinc-200">
-            We may update our Privacy Policy from time to time. We will notify
-            you of any changes by posting the new Privacy Policy on this page
-            and updating the &quot;last updated&quot; date.
-          </p>
-        </section>
       </div>
     </ScrollArea>
   );
