@@ -51,12 +51,12 @@ export default function Home() {
           <SignIn />
 
           <p className="text-center text-xs text-zinc-400 mt-4 px-2 sm:px-0">
-            By connecting your wallet, you agree to the{" "}
+            By connecting your wallet, you agree to the
             <Dialog>
               <DialogTrigger asChild>
                 <Button
                   variant="link"
-                  className="text-orange-500 hover:text-orange-400 p-0"
+                  className="text-orange-500 hover:text-orange-400 p-0 ml-1"
                 >
                   Terms of Service
                 </Button>
@@ -73,12 +73,12 @@ export default function Home() {
                 <TermsOfService />
               </DialogContent>
             </Dialog>{" "}
-            and{" "}
+            &&
             <Dialog>
               <DialogTrigger asChild>
                 <Button
                   variant="link"
-                  className="text-orange-500 hover:text-orange-400 p-0"
+                  className="text-orange-500 hover:text-orange-400 p-0 ml-2"
                 >
                   Privacy Policy
                 </Button>
