@@ -90,17 +90,17 @@ export function ChatWindow() {
         <div className="flex items-center gap-2 overflow-hidden min-w-0 flex-1">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <div>
-              <CreateThreadButton />
+              <AgentWalletSelector
+                selectedAgentId={selectedAgentId}
+                onSelect={setSelectedAgent}
+                disabled={isChatLoading || !isConnected}
+              />
             </div>
           </div>
         </div>
 
         <div className="flex-shrink-0 ml-2">
-          <AgentWalletSelector
-            selectedAgentId={selectedAgentId}
-            onSelect={setSelectedAgent}
-            disabled={isChatLoading || !isConnected}
-          />
+          <CreateThreadButton />
         </div>
       </div>
 
