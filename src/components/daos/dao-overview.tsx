@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DAOCreationDate } from "./dao-creation-date";
+import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 
 interface DAOOverviewProps {
   dao: DAO;
@@ -96,25 +97,49 @@ function DAOOverview({
       </div>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-screen-xl space-y-8 sm:space-y-12">
+      <div className="mx-auto  space-y-8 sm:space-y-12">
         {/* Key Metrics */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
-          <Metric
-            label="Token Price"
-            value={formatNumber(marketStats.price, true)}
-          />
-          <Metric
-            label="Market Cap"
-            value={formatNumber(marketStats.marketCap)}
-          />
-          <Metric
-            label="Treasury"
-            value={formatNumber(marketStats.treasuryBalance)}
-          />
-          <Metric
-            label="Holders"
-            value={marketStats.holderCount.toLocaleString()}
-          />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Token Price</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {formatNumber(marketStats.price, true)}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Market Cap</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {formatNumber(marketStats.marketCap)}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Treasury</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {formatNumber(marketStats.treasuryBalance)}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Holders</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {marketStats.holderCount.toLocaleString()}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Description Section */}
