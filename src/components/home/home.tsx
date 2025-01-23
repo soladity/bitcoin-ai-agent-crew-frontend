@@ -29,82 +29,81 @@ export default function Home() {
         objectFit="cover"
         quality={100}
         priority
-        className="absolute inset-0 z-0"
+        className="absolute inset-0 z-0 opacity-80"
       />
-      <div className="relative z-10 w-full max-w-md p-4 sm:p-8 space-y-4 sm:space-y-6 bg-zinc-800/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-2xl border border-zinc-700">
-        <div className="text-center space-y-3">
-          <div className="flex items-center justify-center gap-2 ">
+      <div className="relative z-10 w-full max-w-md space-y-6 p-6 sm:p-8 bg-zinc-800/90 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-2xl border border-zinc-700">
+        {/* Logo Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-center gap-3">
             <Image
               alt="AIBTC.DEV"
               src="/logos/aibtcdev-avatar-250px.png"
-              height={50}
-              width={50}
+              height={48}
+              width={48}
               priority
-              className="rounded-full"
+              className="rounded-full shadow-lg"
             />
             <Image
               alt="AIBTC.DEV"
               src="/logos/aibtcdev-primary-logo-white-wide-1000px.png"
-              height={100}
-              width={300}
+              height={80}
+              width={240}
               priority
-              className="w-64 sm:w-80 h-auto object-contain"
+              className="w-56 sm:w-64 h-auto object-contain"
             />
           </div>
-          <p className="text-zinc-200 text-xs sm:text-sm">
+          <p className="text-zinc-200 text-sm font-medium text-center">
             Connect your wallet to get started
           </p>
         </div>
 
-        <div className="space-y-4">
+        {/* Sign In Section */}
+        <div className="space-y-6">
           <SignIn />
 
-          <p className="text-center text-xs text-zinc-300 mt-4 px-2 sm:px-0">
-            By connecting your wallet, you agree to the
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  variant="link"
-                  className="text-orange-400 hover:text-orange-300 p-0 ml-1"
-                >
-                  Terms of Service
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[800px] h-[90vh] overflow-auto">
-                <DialogHeader>
-                  <DialogTitle className="text-3xl font-bold">
+          {/* Terms and Privacy Section */}
+          <div className="text-center space-y-2">
+            <p className="text-xs text-zinc-400 leading-relaxed px-4">
+              By connecting your wallet, you agree to our{" "}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="link" className="p-0 h-auto font-medium">
                     Terms of Service
-                  </DialogTitle>
-                </DialogHeader>
-                <DialogDescription>
-                  Please read our Terms of Service carefully.
-                </DialogDescription>
-                <TermsOfService />
-              </DialogContent>
-            </Dialog>{" "}
-            &
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  variant="link"
-                  className="text-orange-400 hover:text-orange-300 p-0 ml-2"
-                >
-                  Privacy Policy
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[800px] h-[90vh] overflow-auto">
-                <DialogHeader>
-                  <DialogTitle className="text-3xl font-bold">
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-bold">
+                      Terms of Service
+                    </DialogTitle>
+                    <DialogDescription className="text-sm text-zinc-400">
+                      Please read our Terms of Service carefully.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <TermsOfService />
+                </DialogContent>
+              </Dialog>{" "}
+              and{" "}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="link" className=" p-0 h-auto font-medium">
                     Privacy Policy
-                  </DialogTitle>
-                </DialogHeader>
-                <DialogDescription>
-                  Please read our Privacy Policy carefully.
-                </DialogDescription>
-                <PrivacyPolicy />
-              </DialogContent>
-            </Dialog>
-          </p>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-bold">
+                      Privacy Policy
+                    </DialogTitle>
+                    <DialogDescription className="text-sm text-zinc-400">
+                      Please read our Privacy Policy carefully.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <PrivacyPolicy />
+                </DialogContent>
+              </Dialog>
+            </p>
+          </div>
         </div>
       </div>
     </div>
