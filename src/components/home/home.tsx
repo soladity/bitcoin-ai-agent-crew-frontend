@@ -21,8 +21,17 @@ const SignIn = dynamic(() => import("../auth/auth-stacks"), {
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-900 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md p-4 sm:p-8 space-y-4 sm:space-y-6 bg-zinc-800 rounded-xl sm:rounded-2xl shadow-2xl border border-zinc-700">
+    <div className="relative min-h-screen flex items-center justify-center bg-zinc-900 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <Image
+        src="/logos/aibtcdev-pattern-1-1920px.png"
+        alt="AIBTC.DEV Waves Background"
+        layout="fill"
+        objectFit="cover"
+        quality={100}
+        priority
+        className="absolute inset-0 z-0"
+      />
+      <div className="relative z-10 w-full max-w-md p-4 sm:p-8 space-y-4 sm:space-y-6 bg-zinc-800/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-2xl border border-zinc-700">
         <div className="text-center space-y-3">
           <div className="flex items-center justify-center gap-2 ">
             <Image
@@ -42,7 +51,7 @@ export default function Home() {
               className="w-64 sm:w-80 h-auto object-contain"
             />
           </div>
-          <p className="text-zinc-400 text-xs sm:text-sm">
+          <p className="text-zinc-200 text-xs sm:text-sm">
             Connect your wallet to get started
           </p>
         </div>
@@ -50,13 +59,13 @@ export default function Home() {
         <div className="space-y-4">
           <SignIn />
 
-          <p className="text-center text-xs text-zinc-400 mt-4 px-2 sm:px-0">
+          <p className="text-center text-xs text-zinc-300 mt-4 px-2 sm:px-0">
             By connecting your wallet, you agree to the
             <Dialog>
               <DialogTrigger asChild>
                 <Button
                   variant="link"
-                  className="text-orange-500 hover:text-orange-400 p-0 ml-1"
+                  className="text-orange-400 hover:text-orange-300 p-0 ml-1"
                 >
                   Terms of Service
                 </Button>
@@ -73,12 +82,12 @@ export default function Home() {
                 <TermsOfService />
               </DialogContent>
             </Dialog>{" "}
-            &&
+            &
             <Dialog>
               <DialogTrigger asChild>
                 <Button
                   variant="link"
-                  className="text-orange-500 hover:text-orange-400 p-0 ml-2"
+                  className="text-orange-400 hover:text-orange-300 p-0 ml-2"
                 >
                   Privacy Policy
                 </Button>
