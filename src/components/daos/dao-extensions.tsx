@@ -12,12 +12,10 @@ interface DAOExtensionsProps {
 
 const getStatusColor = (status: Extension["status"]) => {
   switch (status) {
-    case "active":
+    case "DEPLOYED":
       return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
     case "pending":
       return "bg-amber-500/10 text-amber-500 border-amber-500/20";
-    case "inactive":
-      return "bg-zinc-500/10 text-zinc-500 border-zinc-500/20";
   }
 };
 
@@ -28,24 +26,20 @@ const getExplorerUrl = (txId: string) => {
 };
 
 export function DAOExtensions({ extensions }: DAOExtensionsProps) {
-  const [selectedStatus, setSelectedStatus] = useState<
-    Extension["status"] | "all"
-  >("all");
+  const [selectedStatus, setSelectedStatus] =
+    useState<Extension["status"]>("DEPLOYED");
 
-  const filteredExtensions = extensions.filter((ext) =>
-    selectedStatus === "all" ? true : ext.status === selectedStatus
+  const filteredExtensions = extensions.filter(
+    (ext) => ext.status === selectedStatus
   );
 
   const stats = {
-    all: extensions.length,
     active: extensions.filter((e) => e.status === "DEPLOYED").length,
     pending: extensions.filter((e) => e.status === "pending").length,
-    inactive: extensions.filter((e) => e.status === "inactive").length,
   };
 
   return (
     <div className="w-full">
-      {/* Header Section */}
       <div className="mb-8">
         <h2 className="text-xl sm:text-2xl font-semibold tracking-tight mb-2">
           Extensions
@@ -55,21 +49,13 @@ export function DAOExtensions({ extensions }: DAOExtensionsProps) {
         </p>
       </div>
 
-      {/* Main Content */}
       <div className="space-y-4 sm:space-y-6 pb-12">
-        {/* Status Filters */}
         <div className="flex flex-wrap gap-2">
           <StatusButton
-            status="all"
-            count={stats.all}
-            selected={selectedStatus === "all"}
-            onClick={() => setSelectedStatus("all")}
-          />
-          <StatusButton
-            status="active"
+            status="DEPLOYED"
             count={stats.active}
-            selected={selectedStatus === "active"}
-            onClick={() => setSelectedStatus("active")}
+            selected={selectedStatus === "DEPLOYED"}
+            onClick={() => setSelectedStatus("DEPLOYED")}
           />
           <StatusButton
             status="pending"
@@ -77,15 +63,8 @@ export function DAOExtensions({ extensions }: DAOExtensionsProps) {
             selected={selectedStatus === "pending"}
             onClick={() => setSelectedStatus("pending")}
           />
-          <StatusButton
-            status="inactive"
-            count={stats.inactive}
-            selected={selectedStatus === "inactive"}
-            onClick={() => setSelectedStatus("inactive")}
-          />
         </div>
 
-        {/* Extensions List */}
         <div className="space-y-3 sm:space-y-4">
           {filteredExtensions.map((extension) => (
             <div
@@ -147,7 +126,7 @@ function StatusButton({
   selected,
   onClick,
 }: {
-  status: Extension["status"] | "all";
+  status: Extension["status"];
   count: number;
   selected: boolean;
   onClick: () => void;
