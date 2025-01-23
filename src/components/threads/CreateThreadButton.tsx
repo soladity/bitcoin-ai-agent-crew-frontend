@@ -20,7 +20,7 @@ export function CreateThreadButton({
 }: CreateThreadButtonProps) {
   const { createThread } = useThreads();
   const { userId } = useSessionStore();
-  const { setActiveThread } = useChatStore();
+  const { setActiveThread, activeThreadId } = useChatStore();
 
   const handleNewThread = async () => {
     if (userId) {
@@ -38,9 +38,9 @@ export function CreateThreadButton({
       variant={variant}
       onClick={handleNewThread}
       id={id}
-      // disabled={agents.length === 0}
     >
-      <MessageSquarePlusIcon />
+      <MessageSquarePlusIcon className="h-5 w-5" />
+      {!activeThreadId && <span className="ml-2">New Chat</span>}
     </Button>
   );
 }

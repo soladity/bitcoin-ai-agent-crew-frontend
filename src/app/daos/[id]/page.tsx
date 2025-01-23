@@ -2,7 +2,6 @@
 
 import { useParams } from "next/navigation";
 import DAOOverview from "@/components/daos/dao-overview";
-import { DAOCreationDate } from "@/components/daos/dao-creation-date";
 import { useDAODetails } from "@/hooks/use-dao-details";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -55,16 +54,13 @@ export default function DAOPage() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-6">
+    <div className="max-w-[1400px] mx-auto space-y-6 h-full">
       <DAOOverview
         dao={dao}
         token={token}
         marketStats={marketStats}
         treasuryTokens={treasuryTokens}
       />
-      <div className="px-4">
-        <DAOCreationDate createdAt={dao.created_at} />
-      </div>
     </div>
   );
 }
