@@ -35,7 +35,6 @@ interface DAOOverviewProps {
 
 function DAOOverview({
   dao,
-  token,
   treasuryTokens = [],
   marketStats = {
     price: 0,
@@ -186,7 +185,7 @@ function DAOOverview({
                         {token.symbol}
                       </TableCell>
                       <TableCell className="text-right whitespace-nowrap">
-                        {token.amount.toLocaleString()}
+                        {formatNumber(token.amount)}
                       </TableCell>
                       {treasuryTokens.some((token) => token.value > 0) && (
                         <TableCell className="text-right whitespace-nowrap">
