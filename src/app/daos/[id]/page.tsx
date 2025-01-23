@@ -62,9 +62,6 @@ export default function DAOPage() {
         marketStats={marketStats}
         treasuryTokens={treasuryTokens}
       />
-      <div className="px-4">
-        <DAOCreationDate createdAt={dao.created_at} />
-      </div>
     </div>
   );
 }

@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DAOCreationDate } from "./dao-creation-date";
 
 interface DAOOverviewProps {
   dao: DAO;
@@ -232,6 +233,7 @@ function DAOOverview({
             </div>
           </div>
         )}
+        <DAOCreationDate createdAt={dao.created_at} />
       </div>
     </div>
   );
