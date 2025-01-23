@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ChevronRight,
   Info,
@@ -22,6 +23,13 @@ interface DAO {
   is_graduated: boolean;
   is_deployed: boolean;
   created_at: string;
+  website_url?: string;
+  x_url?: string;
+  telegram_url?: string;
+}
+
+interface Token {
+  image_url: string;
 }
 
 export function DAOLayoutClient({ children }: { children: React.ReactNode }) {
@@ -29,6 +37,7 @@ export function DAOLayoutClient({ children }: { children: React.ReactNode }) {
   const id = params.id as string;
   const pathname = usePathname();
   const [dao, setDao] = useState<DAO | null>(null);
+  const [token, setToken] = useState<Token | null>(null);
   const [loading, setLoading] = useState(true);
 
   const isOverview = pathname === `/daos/${id}`;
@@ -37,24 +46,23 @@ export function DAOLayoutClient({ children }: { children: React.ReactNode }) {
   const isProposals = pathname === `/daos/${id}/proposals`;
 
   useEffect(() => {
-    const fetchDAO = async () => {
+    const fetchDAOAndToken = async () => {
       try {
-        const { data, error } = await supabase
-          .from("daos")
-          .select("*")
-          .eq("id", id)
-          .single();
+        const [{ data: daoData }, { data: tokenData }] = await Promise.all([
+          supabase.from("daos").select("*").eq("id", id).single(),
+          supabase.from("tokens").select("image_url").eq("dao_id", id).single(),
+        ]);
 
-        if (error) throw error;
-        setDao(data);
+        if (daoData) setDao(daoData);
+        if (tokenData) setToken(tokenData);
       } catch (error) {
-        console.error("Error fetching DAO:", error);
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDAO();
+    fetchDAOAndToken();
   }, [id]);
 
   if (loading) {
@@ -66,7 +74,7 @@ export function DAOLayoutClient({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col">
       <div className="container mx-auto px-4 py-4 sm:py-6 flex-grow">
         {/* Breadcrumb */}
         <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-4">
@@ -82,10 +90,34 @@ export function DAOLayoutClient({ children }: { children: React.ReactNode }) {
           </span>
         </div>
 
-        {/* DAO Title */}
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate mb-4">
-          {dao?.name}
-        </h1>
+        {/* DAO Header */}
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6">
+          {/* Token Image - Fixed size container with responsive image */}
+          {token?.image_url && (
+            <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0">
+              <Image
+                src={token.image_url}
+                alt={`${dao?.name} token`}
+                fill
+                className="rounded-2xl object-cover"
+                sizes="(max-width: 640px) 96px, 128px"
+                priority
+              />
+            </div>
+          )}
+
+          {/* DAO Info */}
+          <div className="flex-1 text-center sm:text-left">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
+              {dao?.name}
+            </h1>
+            {dao?.mission && (
+              <p className="text-base sm:text-lg text-muted-foreground">
+                {dao.mission}
+              </p>
+            )}
+          </div>
+        </div>
 
         {/* Navigation Tabs - Mobile */}
         <div className="block sm:hidden border-b border-border overflow-x-auto mb-4">
