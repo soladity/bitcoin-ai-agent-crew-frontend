@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, X } from "lucide-react";
 import { Agent } from "@/types/supabase";
 import { fetchTools, Tool } from "@/lib/tools";
+import Link from "next/link";
 
 interface AgentFormProps {
   formData: Partial<Agent>;
@@ -293,6 +294,11 @@ export function AgentForm({
       >
         {saving ? "Saving..." : "Save Agent"}
       </Button>
+      <Link href="/agents">
+        <Button variant={"default"} className="w-full h-9 text-sm mt-6">
+          Cancel
+        </Button>
+      </Link>
     </form>
   );
 }
