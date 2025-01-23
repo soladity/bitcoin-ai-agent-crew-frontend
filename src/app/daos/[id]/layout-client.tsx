@@ -23,6 +23,9 @@ interface DAO {
   is_graduated: boolean;
   is_deployed: boolean;
   created_at: string;
+  website_url?: string;
+  x_url?: string;
+  telegram_url?: string;
 }
 
 interface Token {
@@ -88,23 +91,28 @@ export function DAOLayoutClient({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* DAO Header */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6">
+          {/* Token Image - Fixed size container with responsive image */}
           {token?.image_url && (
-            <div className="relative h-16 w-16 rounded-full overflow-hidden border border-border">
+            <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0">
               <Image
                 src={token.image_url}
                 alt={`${dao?.name} token`}
                 fill
-                className="object-cover"
+                className="rounded-2xl object-cover"
+                sizes="(max-width: 640px) 96px, 128px"
+                priority
               />
             </div>
           )}
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+
+          {/* DAO Info */}
+          <div className="flex-1 text-center sm:text-left">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
               {dao?.name}
             </h1>
             {dao?.mission && (
-              <p className="text-sm sm:text-base text-muted-foreground mt-1">
+              <p className="text-base sm:text-lg text-muted-foreground">
                 {dao.mission}
               </p>
             )}
