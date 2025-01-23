@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ChevronRight,
   Info,
@@ -24,11 +25,16 @@ interface DAO {
   created_at: string;
 }
 
+interface Token {
+  image_url: string;
+}
+
 export function DAOLayoutClient({ children }: { children: React.ReactNode }) {
   const params = useParams();
   const id = params.id as string;
   const pathname = usePathname();
   const [dao, setDao] = useState<DAO | null>(null);
+  const [token, setToken] = useState<Token | null>(null);
   const [loading, setLoading] = useState(true);
 
   const isOverview = pathname === `/daos/${id}`;
@@ -37,24 +43,23 @@ export function DAOLayoutClient({ children }: { children: React.ReactNode }) {
   const isProposals = pathname === `/daos/${id}/proposals`;
 
   useEffect(() => {
-    const fetchDAO = async () => {
+    const fetchDAOAndToken = async () => {
       try {
-        const { data, error } = await supabase
-          .from("daos")
-          .select("*")
-          .eq("id", id)
-          .single();
+        const [{ data: daoData }, { data: tokenData }] = await Promise.all([
+          supabase.from("daos").select("*").eq("id", id).single(),
+          supabase.from("tokens").select("image_url").eq("dao_id", id).single(),
+        ]);
 
-        if (error) throw error;
-        setDao(data);
+        if (daoData) setDao(daoData);
+        if (tokenData) setToken(tokenData);
       } catch (error) {
-        console.error("Error fetching DAO:", error);
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDAO();
+    fetchDAOAndToken();
   }, [id]);
 
   if (loading) {
@@ -82,10 +87,29 @@ export function DAOLayoutClient({ children }: { children: React.ReactNode }) {
           </span>
         </div>
 
-        {/* DAO Title */}
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate mb-4">
-          {dao?.name}
-        </h1>
+        {/* DAO Header */}
+        <div className="flex items-center gap-4 mb-6">
+          {token?.image_url && (
+            <div className="relative h-16 w-16 rounded-full overflow-hidden border border-border">
+              <Image
+                src={token.image_url}
+                alt={`${dao?.name} token`}
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+              {dao?.name}
+            </h1>
+            {dao?.mission && (
+              <p className="text-sm sm:text-base text-muted-foreground mt-1">
+                {dao.mission}
+              </p>
+            )}
+          </div>
+        </div>
 
         {/* Navigation Tabs - Mobile */}
         <div className="block sm:hidden border-b border-border overflow-x-auto mb-4">

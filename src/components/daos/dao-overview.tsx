@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { BsGlobe, BsTwitterX, BsTelegram } from "react-icons/bs";
@@ -63,74 +62,42 @@ function DAOOverview({
 
   return (
     <div className="relative w-full">
-      {/* Hero Section with Gradient Overlay */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-background/50 to-background" />
-        <div className="relative z-10 px-4 sm:px-6 py-8 sm:py-12">
-          <div className="mx-auto max-w-screen-xl">
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-8">
-              {/* Token Image */}
-              {token?.image_url && (
-                <div className="relative h-20 w-20 sm:h-24 sm:w-24 shrink-0">
-                  <Image
-                    src={token.image_url || "/placeholder.svg"}
-                    alt={dao.name}
-                    fill
-                    className="rounded-2xl object-cover ring-1 ring-border/10"
-                  />
-                </div>
-              )}
-              {/* DAO Info */}
-              <div className="flex-1 space-y-4 text-center sm:text-left">
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                    {dao.name}
-                  </h1>
-                  <p className="mt-2 text-base sm:text-lg text-muted-foreground">
-                    {dao.mission}
-                  </p>
-                </div>
-                {/* Social Links */}
-                <div className="flex justify-center sm:justify-start gap-3">
-                  {dao.website_url && (
-                    <a
-                      href={dao.website_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <BsGlobe className="h-5 w-5" />
-                    </a>
-                  )}
-                  {dao.x_url && (
-                    <a
-                      href={dao.x_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <BsTwitterX className="h-5 w-5" />
-                    </a>
-                  )}
-                  {dao.telegram_url && (
-                    <a
-                      href={dao.telegram_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <BsTelegram className="h-5 w-5" />
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Social Links Section */}
+      <div className="flex justify-center sm:justify-start gap-3 mb-8">
+        {dao.website_url && (
+          <a
+            href={dao.website_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <BsGlobe className="h-5 w-5" />
+          </a>
+        )}
+        {dao.x_url && (
+          <a
+            href={dao.x_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <BsTwitterX className="h-5 w-5" />
+          </a>
+        )}
+        {dao.telegram_url && (
+          <a
+            href={dao.telegram_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <BsTelegram className="h-5 w-5" />
+          </a>
+        )}
       </div>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-screen-xl px-4 sm:px-6 space-y-8 sm:space-y-12">
+      <div className="mx-auto max-w-screen-xl space-y-8 sm:space-y-12">
         {/* Key Metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
           <Metric
