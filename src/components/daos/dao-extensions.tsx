@@ -38,7 +38,7 @@ export function DAOExtensions({ extensions }: DAOExtensionsProps) {
 
   const stats = {
     all: extensions.length,
-    active: extensions.filter((e) => e.status === "active").length,
+    active: extensions.filter((e) => e.status === "DEPLOYED").length,
     pending: extensions.filter((e) => e.status === "pending").length,
     inactive: extensions.filter((e) => e.status === "inactive").length,
   };
