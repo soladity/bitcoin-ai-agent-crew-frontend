@@ -239,7 +239,11 @@ export function ProfileView() {
                   <p className="text-sm text-muted-foreground">
                     {profile.discord_username}
                   </p>
-                )}
+                )}{" "}
+                <br />
+                <Button disabled variant="ghost">
+                  Connect
+                </Button>
               </div>
             </div>
 
