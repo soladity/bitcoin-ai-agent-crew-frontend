@@ -230,17 +230,5 @@ function DAOOverview({
   );
 }
 
-// Metric Component
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="space-y-1 text-center sm:text-left">
-      <p className="text-xs sm:text-sm text-muted-foreground">{label}</p>
-      <p className="text-xl sm:text-2xl font-semibold tracking-tight">
-        {value}
-      </p>
-    </div>
-  );
-}
-
 export { DAOOverview };
 export default DAOOverview;

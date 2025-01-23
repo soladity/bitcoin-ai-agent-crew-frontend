@@ -2,7 +2,6 @@
 
 import { useParams } from "next/navigation";
 import DAOOverview from "@/components/daos/dao-overview";
-import { DAOCreationDate } from "@/components/daos/dao-creation-date";
 import { useDAODetails } from "@/hooks/use-dao-details";
 import { Skeleton } from "@/components/ui/skeleton";
 
