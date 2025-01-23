@@ -10,6 +10,11 @@ interface DAOExtensionsProps {
   extensions: Extension[];
 }
 
+function truncateString(str: string): string {
+  if (!str || str.length <= 11) return str;
+  return `${str.slice(0, 5)}...${str.slice(-30)}`;
+}
+
 const getStatusColor = (status: Extension["status"]) => {
   switch (status) {
     case "DEPLOYED":
@@ -88,8 +93,8 @@ export function DAOExtensions({ extensions }: DAOExtensionsProps) {
                   </div>
                   {extension.contract_principal && (
                     <div className="flex items-center gap-2 mb-1">
-                      <code className="text-xs bg-muted truncate max-w-[350px] sm:max-w-[250px] lg:max-w-full">
-                        {extension.contract_principal}
+                      <code className="text-xs bg-muted px-2 py-1 rounded">
+                        {truncateString(extension.contract_principal)}
                       </code>
                     </div>
                   )}
@@ -100,9 +105,7 @@ export function DAOExtensions({ extensions }: DAOExtensionsProps) {
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 mt-1 text-xs text-muted-foreground hover:text-primary transition-colors"
                     >
-                      <span className="truncate max-w-[350px] sm:max-w-[250px] lg:max-w-full">
-                        TX: {extension.tx_id}
-                      </span>
+                      <span>TX: {truncateString(extension.tx_id)}</span>
                       <ArrowUpRight className="h-3 w-3" />
                     </a>
                   )}
@@ -119,7 +122,6 @@ export function DAOExtensions({ extensions }: DAOExtensionsProps) {
   );
 }
 
-// Status Button Component
 function StatusButton({
   status,
   count,
