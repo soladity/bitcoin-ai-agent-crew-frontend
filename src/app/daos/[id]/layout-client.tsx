@@ -66,7 +66,7 @@ export function DAOLayoutClient({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col">
       <div className="container mx-auto px-4 py-4 sm:py-6 flex-grow">
         {/* Breadcrumb */}
         <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-4">

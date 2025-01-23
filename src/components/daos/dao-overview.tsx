@@ -64,7 +64,7 @@ function DAOOverview({
   return (
     <div className="relative w-full">
       {/* Hero Section with Gradient Overlay */}
-      <div className="relative mb-8 sm:mb-16">
+      <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-background/50 to-background" />
         <div className="relative z-10 px-4 sm:px-6 py-8 sm:py-12">
           <div className="mx-auto max-w-screen-xl">
