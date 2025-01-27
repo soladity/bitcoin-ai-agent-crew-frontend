@@ -3,14 +3,14 @@
 ## Prerequisites
 - Node.js (recommended version 18+)
 - npm
-- Backend repository: [aibtcdev-backend](https://github.com/aibtcdev/aibtcdev-backend)
+- Backend repository: [bitcoin-ai-agent-crew-backend](https://github.com/soladity/bitcoin-ai-agent-crew-backend)
 
 ## Getting Started
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/aibtcdev/aibtcdev-frontend.git
-cd aibtcdev-frontend
+git clone https://github.com/soladity/bitcoin-ai-agent-crew-frontend.git
+cd bitcoin-ai-agent-crew-frontend
 ```
 
 ### 2. Environment Setup
@@ -31,8 +31,8 @@ npm install
 ### 4. Run Backend
 Clone and set up the backend repository:
 ```bash
-git clone https://github.com/aibtcdev/aibtcdev-backend.git
-cd aibtcdev-backend
+git clone https://github.com/soladity/bitcoin-ai-agent-crew-backend.git
+cd bitcoin-ai-agent-crew-backend
 # Follow backend setup instructions
 ```
 
